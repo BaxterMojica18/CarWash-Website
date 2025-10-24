@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Car Wash Management</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo">🚗</span>
+            <h2 id="sidebarName">CarWash</h2>
+        </div>
+        <ul>
+            <li><a href="dashboard.html" class="active">Dashboard</a></li>
+            <li><a href="invoices.html">Invoices</a></li>
+            <li><a href="products.html">Products & Services</a></li>
+            <li><a href="settings.html">Settings</a></li>
+            <li><a href="login.html" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+    <main class="content">
+        <header>
+            <h1>Dashboard</h1>
+            <p>Welcome back, Demo User!</p>
+        </header>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Today's Revenue</h3>
+                <p class="stat-value">$1,250</p>
+                <span class="stat-change positive">+12%</span>
+            </div>
+            <div class="stat-card">
+                <h3>Cars Washed</h3>
+                <p class="stat-value">45</p>
+                <span class="stat-change positive">+8%</span>
+            </div>
+            <div class="stat-card">
+                <h3>Active Bays</h3>
+                <p class="stat-value">3/5</p>
+                <span class="stat-change">60%</span>
+            </div>
+            <div class="stat-card">
+                <h3>Pending Invoices</h3>
+                <p class="stat-value">7</p>
+                <span class="stat-change negative">-3</span>
+            </div>
+        </div>
+        <div class="charts-section">
+            <div class="chart-card">
+                <h3>Weekly Revenue</h3>
+                <div class="chart-placeholder">📈 Chart visualization here</div>
+            </div>
+            <div class="chart-card">
+                <h3>Recent Activity</h3>
+                <ul class="activity-list">
+                    <li>Invoice #1023 created - $85</li>
+                    <li>Bay 2 completed service</li>
+                    <li>New product added: Premium Wax</li>
+                    <li>Invoice #1022 paid - $120</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

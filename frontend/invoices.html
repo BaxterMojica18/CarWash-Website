@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoices - Car Wash Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo">🚗</span>
+            <h2 id="sidebarName">CarWash</h2>
+        </div>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="invoices.html" class="active">Invoices</a></li>
+            <li><a href="products.html">Products & Services</a></li>
+            <li><a href="settings.html">Settings</a></li>
+            <li><a href="login.html">Logout</a></li>
+        </ul>
+    </nav>
+    <main class="content">
+        <header>
+            <h1>Invoices</h1>
+            <button class="btn-primary" onclick="showCreateInvoice()">+ Create Invoice</button>
+        </header>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Reference</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceTable">
+                </tbody>
+            </table>
+        </div>
+        <div id="createInvoiceModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2 id="modalTitle">Create Invoice</h2>
+                <form id="invoiceForm">
+                    <input type="hidden" id="editInvoiceId">
+                    <div class="form-group">
+                        <label>Customer Name</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Service</label>
+                        <select id="service" required>
+                            <option value="25">Basic Wash - $25</option>
+                            <option value="45">Premium Wash - $45</option>
+                            <option value="65">Deluxe Wash - $65</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Bay</label>
+                        <select id="bay" required>
+                            <option>Bay 1</option>
+                            <option>Bay 2</option>
+                            <option>Bay 3</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="status" onchange="toggleInstallment()" required>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                            <option value="installment">Installment</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="installmentGroup" style="display: none;">
+                        <label>Installment Period</label>
+                        <select id="installmentMonths">
+                            <option value="2">2 Months</option>
+                            <option value="3">3 Months</option>
+                            <option value="6">6 Months</option>
+                            <option value="12">12 Months</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Save Invoice</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/invoices.js"></script>
+</body>
+</html>

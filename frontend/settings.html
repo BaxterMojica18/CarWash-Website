@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Car Wash Management</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo">🚗</span>
+            <h2 id="sidebarName">CarWash</h2>
+        </div>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="invoices.html">Invoices</a></li>
+            <li><a href="products.html">Products & Services</a></li>
+            <li><a href="settings.html" class="active">Settings</a></li>
+            <li><a href="login.html">Logout</a></li>
+        </ul>
+    </nav>
+    <main class="content">
+        <header>
+            <h1>Settings</h1>
+        </header>
+        <div class="settings-section">
+            <div class="section-header">
+                <h2>Washing Bays</h2>
+                <button class="btn-primary" onclick="showAddBay()">+ Add Bay</button>
+            </div>
+            <div class="bays-grid" id="baysGrid">
+            </div>
+        </div>
+        <div class="settings-section">
+            <h2>Theme Customization</h2>
+            <div class="form-group">
+                <label>Saved Presets</label>
+                <select id="presetSelect" onchange="loadPreset()">
+                    <option value="">-- Select Preset --</option>
+                </select>
+            </div>
+            <form id="themeForm">
+                <div class="form-group">
+                    <label>Preset Name</label>
+                    <input type="text" id="presetName" placeholder="My Custom Theme" required>
+                </div>
+                <div class="theme-grid">
+                    <div class="form-group">
+                        <label>Text Color</label>
+                        <select id="textColor">
+                            <option value="black">Black</option>
+                            <option value="dark-grey">Dark Grey</option>
+                            <option value="white">White</option>
+                        </select>
+                        <label>Brightness: <span id="textBrightVal">100</span>%</label>
+                        <input type="range" id="textBrightness" min="50" max="150" value="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Card Color</label>
+                        <select id="cardColor">
+                            <option value="white">White</option>
+                            <option value="grey">Grey</option>
+                            <option value="dark-blue">Dark Blue</option>
+                        </select>
+                        <label>Brightness: <span id="cardBrightVal">100</span>%</label>
+                        <input type="range" id="cardBrightness" min="50" max="150" value="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Input Field Color</label>
+                        <select id="inputColor">
+                            <option value="white">White</option>
+                            <option value="grey">Grey</option>
+                            <option value="dark-blue">Dark Blue</option>
+                        </select>
+                        <label>Brightness: <span id="inputBrightVal">100</span>%</label>
+                        <input type="range" id="inputBrightness" min="50" max="150" value="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Dropdown Color</label>
+                        <select id="dropdownColor">
+                            <option value="white">White</option>
+                            <option value="grey">Grey</option>
+                            <option value="dark-blue">Dark Blue</option>
+                        </select>
+                        <label>Brightness: <span id="dropdownBrightVal">100</span>%</label>
+                        <input type="range" id="dropdownBrightness" min="50" max="150" value="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Button Color</label>
+                        <input type="color" id="buttonColor" value="#667eea">
+                    </div>
+                    <div class="form-group">
+                        <label>Sidebar Color</label>
+                        <input type="color" id="sidebarColor" value="#2c3e50">
+                    </div>
+                    <div class="form-group">
+                        <label>Sidebar Active Button</label>
+                        <input type="color" id="sidebarActiveColor" value="#34495e">
+                    </div>
+                    <div class="form-group">
+                        <label>Background Color</label>
+                        <input type="color" id="bgColor" value="#f5f5f5">
+                    </div>
+                </div>
+                <button type="button" class="btn-primary" onclick="previewTheme()">Preview</button>
+                <button type="submit" class="btn-primary">Save as Preset</button>
+            </form>
+        </div>
+        <div class="settings-section">
+            <h2>Invoice Customization</h2>
+            <form id="invoiceCustomForm">
+                <div class="form-group">
+                    <label>Invoice Address</label>
+                    <input type="text" id="invoiceAddress" placeholder="123 Main Street">
+                </div>
+                <div class="form-group">
+                    <label>Invoice Phone</label>
+                    <input type="tel" id="invoicePhone" placeholder="(555) 123-4567">
+                </div>
+                <div class="form-group">
+                    <label>Invoice Email</label>
+                    <input type="email" id="invoiceEmail" placeholder="info@carwash.com">
+                </div>
+                <button type="submit" class="btn-primary">Save Invoice Settings</button>
+            </form>
+        </div>
+        <div class="settings-section">
+            <h2>Business Information</h2>
+            <form id="businessForm">
+                <div class="form-group">
+                    <label>Business Name</label>
+                    <input type="text" id="businessName" value="Premium Car Wash">
+                </div>
+                <div class="form-group">
+                    <label>Logo</label>
+                    <div class="logo-upload">
+                        <div class="logo-preview" id="logoPreview">
+                            <span id="currentLogo">🚗</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Predefined Logos</label>
+                            <select id="logoSelect" onchange="selectPredefinedLogo()">
+                                <option value="🚗">🚗 Car</option>
+                                <option value="💧">💧 Water Drop</option>
+                                <option value="🫧">🫧 Bubbles</option>
+                                <option value="✨">✨ Sparkles</option>
+                                <option value="🧼">🧼 Soap</option>
+                                <option value="🚿">🚿 Shower</option>
+                            </select>
+                        </div>
+                        <p style="font-size: 12px; opacity: 0.7; margin: 10px 0;">Or upload custom logo:</p>
+                        <input type="file" id="logoFile" accept="image/*" onchange="previewLogo()">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" value="123 Main Street">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" value="(555) 123-4567">
+                </div>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </form>
+        </div>
+        <div id="addBayModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeBayModal()">&times;</span>
+                <h2 id="bayModalTitle">Add Washing Bay</h2>
+                <form id="bayForm">
+                    <input type="hidden" id="editBayId">
+                    <div class="form-group">
+                        <label>Bay Name</label>
+                        <input type="text" id="bayName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="bayStatus">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary" id="baySubmitBtn">Add Bay</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Car Wash Management</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-box">
+            <h1>🚗 Car Wash Management</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" value="demo@carwash.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" value="demo123" required>
+                </div>
+                <button type="submit" class="btn-primary">Login</button>
+                <button type="button" class="btn-secondary" onclick="demoLogin()">Demo Login</button>
+                <p class="demo-info">Demo: demo@carwash.com / demo123</p>
+            </form>
+        </div>
+    </div>
+    <script src="js/api.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>
