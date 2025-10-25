@@ -1,14 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from app import schemas, crud, database
-from app.routers.auth import get_current_user
+from app.routers.auth import get_current_user, get_current_user_optional_query
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.pdfgen import canvas
+from PIL import Image
 import io
 
 router = APIRouter()
@@ -83,6 +85,89 @@ def download_invoice_pdf(invoice_id: int, db: Session = Depends(database.get_db)
         buffer,
         media_type="application/pdf",
         headers={'Content-Disposition': f'attachment; filename="invoice-{invoice.invoice_number}.pdf"'}
+    )
+
+@router.get("/{invoice_id}/jpg")
+def download_invoice_jpg(invoice_id: int, db: Session = Depends(database.get_db), current_user = Depends(get_current_user_optional_query)):
+    from PIL import Image, ImageDraw, ImageFont
+    
+    invoice = crud.get_invoice(db, invoice_id)
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    # Create image
+    img = Image.new('RGB', (850, 1100), color='white')
+    draw = ImageDraw.Draw(img)
+    
+    try:
+        font_title = ImageFont.truetype("arial.ttf", 28)
+        font_normal = ImageFont.truetype("arial.ttf", 16)
+        font_bold = ImageFont.truetype("arialbd.ttf", 18)
+    except:
+        font_title = ImageFont.load_default()
+        font_normal = ImageFont.load_default()
+        font_bold = ImageFont.load_default()
+    
+    # Draw invoice content
+    y = 50
+    draw.text((250, y), f"Invoice #{invoice.invoice_number}", fill='black', font=font_title)
+    
+    y += 70
+    draw.text((50, y), f"Date: {invoice.date.strftime('%Y-%m-%d %H:%M')}", fill='black', font=font_normal)
+    y += 35
+    draw.text((50, y), f"Customer: {invoice.customer_name}", fill='black', font=font_normal)
+    y += 35
+    draw.text((50, y), f"Location: {invoice.location.name}", fill='black', font=font_normal)
+    
+    # Draw table
+    y += 60
+    table_top = y
+    
+    # Table header background
+    draw.rectangle([(40, y), (810, y + 35)], fill='#4CAF50')
+    
+    # Table header text
+    draw.text((50, y + 8), "Item", fill='white', font=font_bold)
+    draw.text((350, y + 8), "Qty", fill='white', font=font_bold)
+    draw.text((480, y + 8), "Unit Price", fill='white', font=font_bold)
+    draw.text((650, y + 8), "Subtotal", fill='white', font=font_bold)
+    
+    y += 35
+    
+    # Table rows
+    for item in invoice.items:
+        product = db.query(database.ProductService).filter(database.ProductService.id == item.product_service_id).first()
+        item_name = product.name if product else f"Item #{item.product_service_id}"
+        
+        # Alternate row background
+        draw.rectangle([(40, y), (810, y + 30)], fill='#F5F5DC')
+        
+        draw.text((50, y + 5), item_name[:35], fill='black', font=font_normal)
+        draw.text((350, y + 5), str(item.quantity), fill='black', font=font_normal)
+        draw.text((480, y + 5), f"${item.unit_price:.2f}", fill='black', font=font_normal)
+        draw.text((650, y + 5), f"${item.subtotal:.2f}", fill='black', font=font_normal)
+        y += 30
+    
+    # Table border
+    draw.rectangle([(40, table_top), (810, y)], outline='black', width=2)
+    
+    # Vertical lines
+    draw.line([(340, table_top), (340, y)], fill='black', width=1)
+    draw.line([(470, table_top), (470, y)], fill='black', width=1)
+    draw.line([(640, table_top), (640, y)], fill='black', width=1)
+    
+    # Total
+    y += 40
+    draw.text((480, y), f"TOTAL: ${invoice.total_amount:.2f}", fill='black', font=font_bold)
+    
+    img_buffer = io.BytesIO()
+    img.save(img_buffer, format='JPEG', quality=95)
+    img_buffer.seek(0)
+    
+    return StreamingResponse(
+        img_buffer,
+        media_type="image/jpeg",
+        headers={'Content-Disposition': f'attachment; filename="invoice-{invoice.invoice_number}.jpg"'}
     )
 
 @router.get("/dashboard/stats", response_model=schemas.DashboardStats)

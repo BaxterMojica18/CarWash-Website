@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - CarWash Management System</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .register-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .register-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .register-box {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .register-box h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .register-box > p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .user-info p {
+            margin: 5px 0;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .plan-badge {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body class="register-page">
+    <div class="register-container">
+        <div class="register-box">
+            <h1>Select Your Plan</h1>
+            <p>Choose the perfect plan for your business</p>
+            
+            <div id="userInfo" class="user-info"></div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="plan">Select Plan *</label>
+                    <select id="plan" required>
+                        <option value="">-- Select Plan --</option>
+                        <option value="onetime">One-Time Payment - ₱1,999</option>
+                        <option value="lite">Lite - ₱299/month</option>
+                        <option value="plus">Plus - ₱399/month</option>
+                        <option value="pro">Pro - ₱499/month</option>
+                    </select>
+                </div>
+
+                <div id="planBadge" class="plan-badge" style="display: none;"></div>
+
+                <button type="submit" class="btn-primary" style="width: 100%;">Complete Registration</button>
+            </form>
+
+            <div class="back-link">
+                <a href="/">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user came from signup
+        const signupData = localStorage.getItem('signupData');
+        
+        if (!signupData) {
+            // Redirect to signup if no data
+            window.location.href = '/signup.html';
+        } else {
+            // Display user info
+            const userData = JSON.parse(signupData);
+            const userInfoDiv = document.getElementById('userInfo');
+            userInfoDiv.innerHTML = `
+                <p><strong>Name:</strong> ${userData.fullName}</p>
+                <p><strong>Email:</strong> ${userData.email}</p>
+                <p><strong>Phone:</strong> ${userData.phone}</p>
+            `;
+        }
+
+        // Get plan from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const planParam = urlParams.get('plan');
+        
+        if (planParam) {
+            document.getElementById('plan').value = planParam;
+            updatePlanBadge(planParam);
+        }
+
+        document.getElementById('plan').addEventListener('change', function() {
+            updatePlanBadge(this.value);
+        });
+
+        function updatePlanBadge(plan) {
+            const badge = document.getElementById('planBadge');
+            const planNames = {
+                'onetime': 'One-Time Payment - ₱1,999',
+                'lite': 'Lite Plan - ₱299/month',
+                'plus': 'Plus Plan - ₱399/month',
+                'pro': 'Pro Plan - ₱499/month'
+            };
+            
+            if (plan && planNames[plan]) {
+                badge.textContent = 'Selected: ' + planNames[plan];
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const userData = JSON.parse(signupData);
+            const registrationData = {
+                ...userData,
+                plan: document.getElementById('plan').value
+            };
+
+            // Store complete registration data
+            localStorage.setItem('registrationData', JSON.stringify(registrationData));
+            localStorage.removeItem('signupData');
+            
+            alert('Registration completed! We will contact you shortly to activate your account.');
+            window.location.href = '/login.html';
+        });
+    </script>
+</body>
+</html>

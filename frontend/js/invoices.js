@@ -1,26 +1,41 @@
 let locations = [];
 let products = [];
+let allInvoices = [];
 
 async function loadInvoices() {
     try {
-        const invoices = await API.invoices.getAll();
-        const tbody = document.getElementById('invoiceTable');
-        tbody.innerHTML = invoices.map(inv => `
-            <tr>
-                <td>${inv.id}</td>
-                <td>${inv.invoice_number}</td>
-                <td>${inv.customer_name}</td>
-                <td>${new Date(inv.date).toLocaleDateString()}</td>
-                <td>$${inv.total_amount.toFixed(2)}</td>
-                <td><span class="badge-success">Completed</span></td>
-                <td>
-                    <button onclick="downloadPDF(${inv.id}, '${inv.invoice_number}')">Download PDF</button>
-                </td>
-            </tr>
-        `).join('');
+        allInvoices = await API.invoices.getAll();
+        displayInvoices(allInvoices);
     } catch (error) {
         console.error('Failed to load invoices:', error);
     }
+}
+
+function displayInvoices(invoices) {
+    const tbody = document.getElementById('invoiceTable');
+    tbody.innerHTML = invoices.map(inv => `
+        <tr>
+            <td>${inv.id}</td>
+            <td>${inv.invoice_number}</td>
+            <td>${inv.customer_name}</td>
+            <td>${new Date(inv.date).toLocaleDateString()}</td>
+            <td>$${inv.total_amount.toFixed(2)}</td>
+            <td><span class="badge-success">Completed</span></td>
+            <td>
+                <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;" onclick="downloadPDF(${inv.id}, '${inv.invoice_number}')">PDF</button>
+                <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="downloadJPG(${inv.id}, '${inv.invoice_number}')">JPG</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function searchInvoices() {
+    const searchTerm = document.getElementById('searchInvoice').value.toLowerCase();
+    const filtered = allInvoices.filter(inv => 
+        inv.invoice_number.toLowerCase().includes(searchTerm) ||
+        inv.customer_name.toLowerCase().includes(searchTerm)
+    );
+    displayInvoices(filtered);
 }
 
 async function loadFormData() {
@@ -87,19 +102,54 @@ document.getElementById('invoiceForm').addEventListener('submit', async function
 });
 
 function downloadPDF(id, invoiceNumber) {
-    const token = getToken();
+    const token = localStorage.getItem('token');
     const url = `http://localhost:8000/api/invoices/${id}/pdf`;
     
     fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(response => response.blob())
+    .then(response => {
+        if (!response.ok) throw new Error('Download failed');
+        return response.blob();
+    })
     .then(blob => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `invoice-${invoiceNumber}.pdf`;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error => {
+        console.error('PDF download error:', error);
+        alert('Failed to download PDF');
+    });
+}
+
+async function downloadJPG(id, invoiceNumber) {
+    const token = localStorage.getItem('token');
+    const url = `http://localhost:8000/api/invoices/${id}/jpg?token=${token}`;
+    
+    fetch(url)
+    .then(response => {
+        if (!response.ok) throw new Error('Download failed');
+        return response.blob();
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `invoice-${invoiceNumber}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error => {
+        console.error('JPG download error:', error);
+        alert('Failed to download JPG');
     });
 }
 

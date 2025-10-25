@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.database import create_tables
-from app.routers import auth, settings, invoices
+from app.routers import auth, settings, invoices, reports
 import os
 
 app = FastAPI(
@@ -30,10 +30,7 @@ except Exception as e:
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
 app.include_router(invoices.router, prefix="/api/invoices", tags=["Invoices"])
-
-# Serve frontend static files
-app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
-app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
+app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 
 @app.get("/api/health")
 def health_check():
@@ -41,7 +38,7 @@ def health_check():
 
 @app.get("/")
 def read_root():
-    return FileResponse("frontend/login.html")
+    return FileResponse("frontend/index.html")
 
 @app.get("/{page}.html")
 def read_page(page: str):
@@ -49,3 +46,7 @@ def read_page(page: str):
     if os.path.exists(file_path):
         return FileResponse(file_path)
     return {"error": "Page not found"}
+
+# Serve frontend static files
+app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
+app.mount("/js", StaticFiles(directory="frontend/js"), name="js")

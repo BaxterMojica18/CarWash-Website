@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services - Car Wash Management</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo">🚗</span>
+            <h2 id="sidebarName">CarWash</h2>
+        </div>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="invoices.html">Invoices</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="services.html" class="active">Services</a></li>
+            <li><a href="reports.html">Reports</a></li>
+            <li><a href="settings.html">Settings</a></li>
+            <li><a href="login.html">Logout</a></li>
+        </ul>
+    </nav>
+    <main class="content">
+        <header>
+            <h1>Services</h1>
+            <button class="btn-primary" onclick="showAddService()">+ Add Service</button>
+        </header>
+        <div class="products-grid" id="servicesGrid">
+        </div>
+        <div id="addServiceModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeServiceModal()">&times;</span>
+                <h2 id="serviceModalTitle">Add Service</h2>
+                <form id="serviceForm">
+                    <input type="hidden" id="editServiceId">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="serviceName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Price</label>
+                        <input type="number" id="servicePrice" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="serviceDescription" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary" id="serviceSubmitBtn">Add Service</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/services.js"></script>
+</body>
+</html>

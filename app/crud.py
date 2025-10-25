@@ -23,7 +23,10 @@ def create_user(db: Session, email: str, password: str, is_demo: bool = False):
     return user
 
 def get_locations(db: Session, user_id: int):
-    return db.query(database.Location).filter(database.Location.user_id == user_id).all()
+    return db.query(database.Location).filter(
+        database.Location.user_id == user_id,
+        database.Location.status == "A"
+    ).all()
 
 def create_location(db: Session, location: schemas.LocationCreate, user_id: int):
     db_location = database.Location(**location.dict(), user_id=user_id)
@@ -50,16 +53,29 @@ def delete_location(db: Session, location_id: int, user_id: int):
         database.Location.user_id == user_id
     ).first()
     if db_location:
-        db.delete(db_location)
+        db_location.status = "D"
+        db_location.deleted_at = datetime.now()
         db.commit()
+        db.refresh(db_location)
     return db_location
 
 def get_products_services(db: Session, user_id: int):
-    return db.query(database.ProductService).filter(database.ProductService.user_id == user_id).all()
+    return db.query(database.ProductService).filter(
+        database.ProductService.user_id == user_id,
+        database.ProductService.status == "A"
+    ).all()
 
 def create_product_service(db: Session, product: schemas.ProductServiceCreate, user_id: int):
     db_product = database.ProductService(**product.dict(), user_id=user_id)
     db.add(db_product)
+    db.flush()
+    
+    # Generate product_id or service_id
+    if product.type == 'product':
+        db_product.product_id = f"PROD-{str(db_product.id).zfill(6)}"
+    else:
+        db_product.service_id = f"SERV-{str(db_product.id).zfill(6)}"
+    
     db.commit()
     db.refresh(db_product)
     return db_product
@@ -74,6 +90,8 @@ def update_product_service(db: Session, product_id: int, product: schemas.Produc
         db_product.price = product.price
         db_product.description = product.description
         db_product.type = product.type
+        db_product.quantity = product.quantity
+        db_product.quantity_unit = product.quantity_unit
         db.commit()
         db.refresh(db_product)
     return db_product
@@ -84,8 +102,10 @@ def delete_product_service(db: Session, product_id: int, user_id: int):
         database.ProductService.user_id == user_id
     ).first()
     if db_product:
-        db.delete(db_product)
+        db_product.status = "D"
+        db_product.deleted_at = datetime.now()
         db.commit()
+        db.refresh(db_product)
     return db_product
 
 def create_invoice(db: Session, invoice: schemas.InvoiceCreate, user_id: int):
@@ -122,7 +142,19 @@ def get_invoice(db: Session, invoice_id: int):
     return db.query(database.Invoice).filter(database.Invoice.id == invoice_id).first()
 
 def get_invoices(db: Session):
-    return db.query(database.Invoice).all()
+    return db.query(database.Invoice).filter(database.Invoice.status == "A").all()
+
+def delete_invoice(db: Session, invoice_id: int, user_id: int):
+    db_invoice = db.query(database.Invoice).filter(
+        database.Invoice.id == invoice_id,
+        database.Invoice.user_id == user_id
+    ).first()
+    if db_invoice:
+        db_invoice.status = "D"
+        db_invoice.deleted_at = datetime.now()
+        db.commit()
+        db.refresh(db_invoice)
+    return db_invoice
 
 def get_dashboard_stats(db: Session):
     total_revenue = db.query(database.Invoice).with_entities(
@@ -202,3 +234,18 @@ def save_invoice_customization(db: Session, user_id: int, custom: schemas.Invoic
     db.commit()
     db.refresh(db_custom)
     return db_custom
+
+def get_user_profile(db: Session, user_id: int):
+    return db.query(database.UserProfile).filter(database.UserProfile.user_id == user_id).first()
+
+def save_user_profile(db: Session, user_id: int, profile: schemas.UserProfileCreate):
+    db_profile = get_user_profile(db, user_id)
+    if db_profile:
+        for key, value in profile.dict().items():
+            setattr(db_profile, key, value)
+    else:
+        db_profile = database.UserProfile(**profile.dict(), user_id=user_id)
+        db.add(db_profile)
+    db.commit()
+    db.refresh(db_profile)
+    return db_profile

@@ -102,3 +102,14 @@ def get_invoice_custom(db: Session = Depends(database.get_db), current_user = De
 @router.post("/invoice-custom", response_model=schemas.InvoiceCustomization)
 def save_invoice_custom(custom: schemas.InvoiceCustomizationCreate, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     return crud.save_invoice_customization(db, current_user.id, custom)
+
+@router.get("/profile", response_model=schemas.UserProfile)
+def get_profile(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    profile = crud.get_user_profile(db, current_user.id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile
+
+@router.post("/profile", response_model=schemas.UserProfile)
+def save_profile(profile: schemas.UserProfileCreate, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    return crud.save_user_profile(db, current_user.id, profile)

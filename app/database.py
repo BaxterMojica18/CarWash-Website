@@ -37,22 +37,38 @@ class User(Base):
     is_demo = Column(Boolean, default=False)
     invoices = relationship("Invoice", back_populates="creator")
 
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    name = Column(String)
+    role = Column(String)
+    photo = Column(String, nullable=True)
+
 class Location(Base):
     __tablename__ = "locations"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     address = Column(String)
     user_id = Column(Integer, ForeignKey("users.id"))
+    status = Column(String, default="A")
+    deleted_at = Column(DateTime, nullable=True)
     invoices = relationship("Invoice", back_populates="location")
 
 class ProductService(Base):
     __tablename__ = "products_services"
     id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(String, nullable=True, index=True)
+    service_id = Column(String, nullable=True, index=True)
     name = Column(String, index=True)
     price = Column(Float)
     description = Column(String, nullable=True)
     type = Column(String)
+    quantity = Column(Float, nullable=True)
+    quantity_unit = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    status = Column(String, default="A")
+    deleted_at = Column(DateTime, nullable=True)
 
 class Invoice(Base):
     __tablename__ = "invoices"
@@ -63,6 +79,8 @@ class Invoice(Base):
     total_amount = Column(Float)
     location_id = Column(Integer, ForeignKey("locations.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
+    status = Column(String, default="A")
+    deleted_at = Column(DateTime, nullable=True)
     location = relationship("Location", back_populates="invoices")
     creator = relationship("User", back_populates="invoices")
     items = relationship("InvoiceItem", back_populates="invoice")
@@ -111,6 +129,10 @@ class CustomTheme(Base):
     # Dropdown color: white, grey, dark-blue
     dropdown_color = Column(String, default="white")
     dropdown_brightness = Column(Integer, default=100)
+    
+    # Delete button customization
+    delete_button_brightness = Column(Integer, default=100)
+    delete_button_saturation = Column(Integer, default=100)
 
 class BusinessInfo(Base):
     __tablename__ = "business_info"
@@ -130,6 +152,17 @@ class InvoiceCustomization(Base):
     invoice_address = Column(String, nullable=True)
     invoice_phone = Column(String, nullable=True)
     invoice_email = Column(String, nullable=True)
+
+class ReportCache(Base):
+    __tablename__ = "reports_cache"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    report_type = Column(String)
+    filter_period = Column(String)
+    filter_value = Column(String)
+    generated_at = Column(DateTime)
+    total_sales = Column(Float)
+    total_invoices = Column(Integer)
 
 def create_tables():
     try:

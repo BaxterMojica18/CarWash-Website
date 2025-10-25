@@ -17,6 +17,7 @@
             <li><a href="dashboard.html">Dashboard</a></li>
             <li><a href="invoices.html">Invoices</a></li>
             <li><a href="products.html">Products & Services</a></li>
+            <li><a href="reports.html">Reports</a></li>
             <li><a href="settings.html" class="active">Settings</a></li>
             <li><a href="login.html">Logout</a></li>
         </ul>
@@ -103,6 +104,21 @@
                         <label>Background Color</label>
                         <input type="color" id="bgColor" value="#f5f5f5">
                     </div>
+                </div>
+                <h3 style="margin-top: 20px; margin-bottom: 15px;">Delete Button Configuration</h3>
+                <div class="theme-grid">
+                    <div class="form-group">
+                        <label>Delete Button Brightness</label>
+                        <label>Brightness: <span id="deleteBrightVal">100</span>%</label>
+                        <input type="range" id="deleteBrightness" min="50" max="150" value="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Delete Button Saturation</label>
+                        <label>Saturation: <span id="deleteSatVal">100</span>%</label>
+                        <input type="range" id="deleteSaturation" min="0" max="100" value="100">
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
                 </div>
                 <button type="button" class="btn-primary" onclick="previewTheme()">Preview</button>
                 <button type="submit" class="btn-primary">Save as Preset</button>

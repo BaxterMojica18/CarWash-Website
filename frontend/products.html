@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products & Services - Car Wash Management</title>
+    <title>Products - Car Wash Management</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -16,22 +16,24 @@
         <ul>
             <li><a href="dashboard.html">Dashboard</a></li>
             <li><a href="invoices.html">Invoices</a></li>
-            <li><a href="products.html" class="active">Products & Services</a></li>
+            <li><a href="products.html" class="active">Products</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="reports.html">Reports</a></li>
             <li><a href="settings.html">Settings</a></li>
             <li><a href="login.html">Logout</a></li>
         </ul>
     </nav>
     <main class="content">
         <header>
-            <h1>Products & Services</h1>
-            <button class="btn-primary" onclick="showAddProduct()">+ Add Product/Service</button>
+            <h1>Products</h1>
+            <button class="btn-primary" onclick="showAddProduct()">+ Add Product</button>
         </header>
         <div class="products-grid" id="productsGrid">
         </div>
         <div id="addProductModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeProductModal()">&times;</span>
-                <h2 id="productModalTitle">Add Product/Service</h2>
+                <h2 id="productModalTitle">Add Product</h2>
                 <form id="productForm">
                     <input type="hidden" id="editProductId">
                     <div class="form-group">
@@ -45,6 +47,18 @@
                     <div class="form-group">
                         <label>Description</label>
                         <textarea id="productDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" id="productQuantity" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity Unit</label>
+                        <select id="productQuantityUnit" required>
+                            <option value="ML">ML</option>
+                            <option value="L">L</option>
+                            <option value="Gallons">Gallons</option>
+                        </select>
                     </div>
                     <button type="submit" class="btn-primary" id="productSubmitBtn">Add Product</button>
                 </form>

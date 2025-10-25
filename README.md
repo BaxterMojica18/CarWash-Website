@@ -15,6 +15,8 @@ A full-stack web application for managing car wash operations with dashboard, in
 - ✅ Invoice creation and PDF generation
 - ✅ Manage washing bays (locations)
 - ✅ Manage products and services
+- ✅ Sales reports with filtering (day/month/year)
+- ✅ Export reports as PDF or CSV
 - ✅ Demo account for testing
 
 ## Setup Instructions
@@ -105,6 +107,11 @@ python test_api.py
 - `GET /api/invoices/{id}` - Get specific invoice
 - `GET /api/invoices/{id}/pdf` - Download invoice as PDF
 - `GET /api/invoices/dashboard/stats` - Get dashboard statistics
+
+### Reports
+- `GET /api/reports/sales` - Get sales report with filters (period, date, month, year)
+- `GET /api/reports/sales/download/csv` - Download sales report as CSV
+- `GET /api/reports/sales/download/pdf` - Download sales report as PDF
 
 ## API Documentation
 

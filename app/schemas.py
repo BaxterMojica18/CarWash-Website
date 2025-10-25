@@ -28,6 +28,8 @@ class ProductServiceBase(BaseModel):
     price: float
     description: Optional[str] = None
     type: str
+    quantity: Optional[float] = None
+    quantity_unit: Optional[str] = None
 
 class ProductServiceCreate(ProductServiceBase):
     pass
@@ -87,6 +89,8 @@ class CustomThemeCreate(BaseModel):
     bg_color: str = "#f5f5f5"
     dropdown_color: str = "white"
     dropdown_brightness: int = 100
+    delete_button_brightness: int = 100
+    delete_button_saturation: int = 100
 
 class CustomTheme(CustomThemeCreate):
     id: int
@@ -115,6 +119,17 @@ class InvoiceCustomizationCreate(BaseModel):
     invoice_email: Optional[str] = None
 
 class InvoiceCustomization(InvoiceCustomizationCreate):
+    id: int
+    user_id: int
+    class Config:
+        from_attributes = True
+
+class UserProfileCreate(BaseModel):
+    name: str
+    role: str
+    photo: Optional[str] = None
+
+class UserProfile(UserProfileCreate):
     id: int
     user_id: int
     class Config:

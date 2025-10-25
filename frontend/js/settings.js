@@ -7,8 +7,8 @@ async function loadBays() {
                 <h3>${loc.name}</h3>
                 <p>${loc.address}</p>
                 <div class="bay-actions">
-                    <button onclick="editBay(${loc.id}, '${loc.name}', '${loc.address}')">Edit</button>
-                    <button onclick="deleteBay(${loc.id})">Delete</button>
+                    <button class="btn-edit" onclick="editBay(${loc.id}, '${loc.name}', '${loc.address}')">Edit</button>
+                    <button class="btn-delete" onclick="deleteBay(${loc.id})">Delete</button>
                 </div>
             </div>
         `).join('');
@@ -91,6 +91,8 @@ function previewTheme() {
     const sidebarColor = document.getElementById('sidebarColor').value;
     const sidebarActiveColor = document.getElementById('sidebarActiveColor').value;
     const bgColor = document.getElementById('bgColor').value;
+    const deleteBrightness = document.getElementById('deleteBrightness').value;
+    const deleteSaturation = document.getElementById('deleteSaturation').value;
     
     document.documentElement.style.setProperty('--text-color', textColor);
     document.documentElement.style.setProperty('--card-bg', cardColor);
@@ -99,6 +101,8 @@ function previewTheme() {
     document.documentElement.style.setProperty('--sidebar-color', sidebarColor);
     document.documentElement.style.setProperty('--sidebar-active-color', sidebarActiveColor);
     document.documentElement.style.setProperty('--bg-color', bgColor);
+    document.documentElement.style.setProperty('--delete-brightness', deleteBrightness);
+    document.documentElement.style.setProperty('--delete-saturation', deleteSaturation);
     
     document.querySelectorAll('input, select, textarea').forEach(el => {
         el.style.backgroundColor = inputColor;
@@ -120,7 +124,9 @@ document.getElementById('themeForm').addEventListener('submit', async function(e
         button_color: document.getElementById('buttonColor').value,
         sidebar_color: document.getElementById('sidebarColor').value,
         sidebar_active_color: document.getElementById('sidebarActiveColor').value,
-        bg_color: document.getElementById('bgColor').value
+        bg_color: document.getElementById('bgColor').value,
+        delete_button_brightness: parseInt(document.getElementById('deleteBrightness').value),
+        delete_button_saturation: parseInt(document.getElementById('deleteSaturation').value)
     };
     
     try {
@@ -175,12 +181,15 @@ function applyThemeFromData(theme) {
     document.getElementById('sidebarColor').value = theme.sidebar_color;
     document.getElementById('sidebarActiveColor').value = theme.sidebar_active_color;
     document.getElementById('bgColor').value = theme.bg_color;
+    document.getElementById('deleteBrightness').value = theme.delete_button_brightness || 100;
+    document.getElementById('deleteSaturation').value = theme.delete_button_saturation || 100;
     previewTheme();
 }
 
-['textBrightness', 'cardBrightness', 'inputBrightness', 'dropdownBrightness'].forEach(id => {
+['textBrightness', 'cardBrightness', 'inputBrightness', 'dropdownBrightness', 'deleteBrightness', 'deleteSaturation'].forEach(id => {
     document.getElementById(id).addEventListener('input', function() {
-        document.getElementById(id.replace('ness', 'Val')).textContent = this.value;
+        const valId = id.includes('Saturation') ? 'deleteSatVal' : id.replace('ness', 'Val');
+        document.getElementById(valId).textContent = this.value;
     });
 });
 

@@ -1,16 +1,20 @@
+let allProducts = [];
+
 async function loadProducts() {
     try {
         const products = await API.products.getAll();
+        allProducts = products;
+        const productsList = products.filter(p => p.type === 'product');
         const grid = document.getElementById('productsGrid');
-        grid.innerHTML = products.map(prod => `
+        grid.innerHTML = productsList.map(prod => `
             <div class="product-card">
                 <h3>${prod.name}</h3>
                 <p class="price">$${prod.price.toFixed(2)}</p>
                 <p>${prod.description || ''}</p>
-                <span class="badge">${prod.type}</span>
+                <span class="badge">product - ${prod.quantity || 0} ${prod.quantity_unit || 'N/A'}</span>
                 <div class="product-actions">
-                    <button onclick='editProduct(${JSON.stringify(prod)})'>Edit</button>
-                    <button onclick="deleteProduct(${prod.id})">Delete</button>
+                    <button class="btn-edit" onclick='editProduct(${prod.id})'>Edit</button>
+                    <button class="btn-delete" onclick="deleteProduct(${prod.id})">Delete</button>
                 </div>
             </div>
         `).join('');
@@ -21,26 +25,33 @@ async function loadProducts() {
 
 function showAddProduct() {
     document.getElementById('addProductModal').style.display = 'block';
-    document.getElementById('productModalTitle').textContent = 'Add Product/Service';
+    document.getElementById('productModalTitle').textContent = 'Add Product';
     document.getElementById('productForm').reset();
     document.getElementById('editProductId').value = '';
+    document.getElementById('productSubmitBtn').textContent = 'Add Product';
 }
 
 function closeProductModal() {
     document.getElementById('addProductModal').style.display = 'none';
 }
 
-function editProduct(product) {
+function editProduct(id) {
+    const product = allProducts.find(p => p.id === id);
+    if (!product) return;
+    
     document.getElementById('addProductModal').style.display = 'block';
-    document.getElementById('productModalTitle').textContent = 'Edit Product/Service';
+    document.getElementById('productModalTitle').textContent = 'Edit Product';
     document.getElementById('editProductId').value = product.id;
     document.getElementById('productName').value = product.name;
     document.getElementById('productPrice').value = product.price;
     document.getElementById('productDescription').value = product.description || '';
+    document.getElementById('productQuantity').value = product.quantity || 1;
+    document.getElementById('productQuantityUnit').value = product.quantity_unit || 'ML';
+    document.getElementById('productSubmitBtn').textContent = 'Save';
 }
 
 async function deleteProduct(id) {
-    if (confirm('Delete this product/service?')) {
+    if (confirm('Delete this product?')) {
         try {
             await API.products.delete(id);
             loadProducts();
@@ -57,7 +68,9 @@ document.getElementById('productForm').addEventListener('submit', async function
         name: document.getElementById('productName').value,
         price: parseFloat(document.getElementById('productPrice').value),
         description: document.getElementById('productDescription').value,
-        type: 'service'
+        quantity: parseFloat(document.getElementById('productQuantity').value),
+        quantity_unit: document.getElementById('productQuantityUnit').value,
+        type: 'product'
     };
     
     try {

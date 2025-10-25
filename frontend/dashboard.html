@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Car Wash Management</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
@@ -16,16 +17,44 @@
         <ul>
             <li><a href="dashboard.html" class="active">Dashboard</a></li>
             <li><a href="invoices.html">Invoices</a></li>
-            <li><a href="products.html">Products & Services</a></li>
-            <li><a href="settings.html">Settings</a></li>
-            <li><a href="login.html" onclick="logout()">Logout</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="reports.html">Reports</a></li>
         </ul>
     </nav>
     <main class="content">
         <header>
             <h1>Dashboard</h1>
-            <p>Welcome back, Demo User!</p>
+            <div class="profile-dropdown">
+                <div class="profile-icon" onclick="toggleProfileMenu()">
+                    <img id="profilePhoto" src="" alt="Profile">
+                </div>
+                <div class="profile-menu" id="profileMenu" style="display: none;">
+                    <div class="profile-info">
+                        <img id="menuProfilePhoto" src="" alt="Profile" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #667eea;">
+                        <div>
+                            <strong id="profileName">Demo User</strong>
+                            <p id="profileRole" style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Admin</p>
+                        </div>
+                    </div>
+                    <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
+                    <a href="#" onclick="showEditProfile(); return false;">✏️ Edit Profile</a>
+                    <a href="settings.html">⚙️ Settings</a>
+                    <a href="login.html" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
         </header>
+        <div style="margin-bottom: 25px; display: flex; align-items: center; gap: 12px;">
+            <label for="dashboardFilter" style="font-weight: 600; color: #2c3e50; font-size: 15px;">Filter by:</label>
+            <select id="dashboardFilter" onchange="filterDashboard()" class="filter-select">
+                <option value="weekly">📅 Weekly</option>
+                <option value="biweekly">📅 Bi-Weekly</option>
+                <option value="monthly">📅 Monthly</option>
+                <option value="quarterly">📅 Quarterly</option>
+                <option value="semiannually">📅 Semi-Annually</option>
+                <option value="annually">📅 Annually</option>
+            </select>
+        </div>
         <div class="stats-grid">
             <div class="stat-card">
                 <h3>Today's Revenue</h3>
@@ -50,20 +79,50 @@
         </div>
         <div class="charts-section">
             <div class="chart-card">
-                <h3>Weekly Revenue</h3>
-                <div class="chart-placeholder">📈 Chart visualization here</div>
+                <h3 id="revenueChartTitle">Weekly Revenue</h3>
+                <canvas id="revenueChart" style="max-height: 250px;"></canvas>
             </div>
             <div class="chart-card">
                 <h3>Recent Activity</h3>
-                <ul class="activity-list">
+                <ul class="activity-list" id="activityList" style="max-height: 200px; overflow-y: auto;">
                     <li>Invoice #1023 created - $85</li>
                     <li>Bay 2 completed service</li>
                     <li>New product added: Premium Wax</li>
                     <li>Invoice #1022 paid - $120</li>
+                    <li>Invoice #1021 created - $95</li>
+                    <li>Bay 1 completed service</li>
+                    <li>Invoice #1020 paid - $150</li>
+                    <li>New service added: Deluxe Wash</li>
                 </ul>
             </div>
         </div>
     </main>
+    
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditProfile()">&times;</span>
+            <h2>Edit Profile</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="editName" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <input type="text" id="editRole" required>
+                </div>
+                <div class="form-group">
+                    <label>Profile Photo</label>
+                    <input type="file" id="editPhoto" accept="image/*">
+                    <div style="margin-top: 10px;">
+                        <img id="photoPreview" src="" alt="Preview" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: none; background: #667eea;">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">Save Profile</button>
+            </form>
+        </div>
+    </div>
+    
     <script src="js/api.js"></script>
     <script src="js/menu.js"></script>
     <script src="js/dashboard.js"></script>
