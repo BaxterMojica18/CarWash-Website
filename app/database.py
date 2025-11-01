@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Float, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Float, ForeignKey, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from dotenv import load_dotenv
@@ -22,12 +22,36 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+role_permissions = Table('role_permissions', Base.metadata,
+    Column('role_id', Integer, ForeignKey('roles.id')),
+    Column('permission_id', Integer, ForeignKey('permissions.id'))
+)
+
+user_roles = Table('user_roles', Base.metadata,
+    Column('user_id', Integer, ForeignKey('users.id')),
+    Column('role_id', Integer, ForeignKey('roles.id'))
+)
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+class Role(Base):
+    __tablename__ = "roles"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True)
+    description = Column(String)
+    permissions = relationship("Permission", secondary=role_permissions, back_populates="roles")
+
+class Permission(Base):
+    __tablename__ = "permissions"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True)
+    description = Column(String)
+    roles = relationship("Role", secondary=role_permissions, back_populates="permissions")
 
 class User(Base):
     __tablename__ = "users"
@@ -36,6 +60,7 @@ class User(Base):
     password_hash = Column(String)
     is_demo = Column(Boolean, default=False)
     invoices = relationship("Invoice", back_populates="creator")
+    roles = relationship("Role", secondary=user_roles)
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"

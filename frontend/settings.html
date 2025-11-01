@@ -16,16 +16,25 @@
         <ul>
             <li><a href="dashboard.html">Dashboard</a></li>
             <li><a href="invoices.html">Invoices</a></li>
-            <li><a href="products.html">Products & Services</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="services.html">Services</a></li>
             <li><a href="reports.html">Reports</a></li>
             <li><a href="settings.html" class="active">Settings</a></li>
-            <li><a href="login.html">Logout</a></li>
+            <li><a href="login.html" onclick="logout()">Logout</a></li>
         </ul>
     </nav>
     <main class="content">
         <header>
             <h1>Settings</h1>
         </header>
+        <div class="settings-section" id="userManagementSection" style="display: none;">
+            <div class="section-header">
+                <h2>User Management</h2>
+                <button class="btn-primary" onclick="showAddUser()">+ Add User</button>
+            </div>
+            <div class="users-grid" id="usersGrid">
+            </div>
+        </div>
         <div class="settings-section">
             <div class="section-header">
                 <h2>Washing Bays</h2>
@@ -181,6 +190,75 @@
                 <button type="submit" class="btn-primary">Save Changes</button>
             </form>
         </div>
+        <div id="addUserModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeUserModal()">&times;</span>
+                <h2 id="userModalTitle">Add User</h2>
+                <form id="userForm">
+                    <input type="hidden" id="editUserId">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="userName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="userEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="userRole" required>
+                            <option value="staff">Staff</option>
+                            <option value="owner">Owner</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary" id="userSubmitBtn">Add User</button>
+                </form>
+            </div>
+        </div>
+        <div id="editPermissionsModal" class="modal">
+            <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+                <span class="close" onclick="closePermissionsModal()">&times;</span>
+                <h2>Edit User Permissions</h2>
+                <p id="permUserEmail" style="color: #666; margin-bottom: 20px;"></p>
+                <form id="permissionsForm">
+                    <input type="hidden" id="permUserId">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <div class="form-group">
+                            <h3>Invoice Permissions</h3>
+                            <label><input type="checkbox" name="permission" value="add_invoice"> Add Invoice</label><br>
+                            <label><input type="checkbox" name="permission" value="edit_invoice"> Edit Invoice</label><br>
+                            <label><input type="checkbox" name="permission" value="delete_invoice"> Delete Invoice</label>
+                        </div>
+                        <div class="form-group">
+                            <h3>Product Permissions</h3>
+                            <label><input type="checkbox" name="permission" value="add_product"> Add Product</label><br>
+                            <label><input type="checkbox" name="permission" value="edit_product"> Edit Product</label><br>
+                            <label><input type="checkbox" name="permission" value="delete_product"> Delete Product</label>
+                        </div>
+                        <div class="form-group">
+                            <h3>Service Permissions</h3>
+                            <label><input type="checkbox" name="permission" value="add_service"> Add Service</label><br>
+                            <label><input type="checkbox" name="permission" value="edit_service"> Edit Service</label><br>
+                            <label><input type="checkbox" name="permission" value="delete_service"> Delete Service</label>
+                        </div>
+                        <div class="form-group">
+                            <h3>Bay Permissions</h3>
+                            <label><input type="checkbox" name="permission" value="add_bay"> Add Bay</label><br>
+                            <label><input type="checkbox" name="permission" value="edit_bay"> Edit Bay</label><br>
+                            <label><input type="checkbox" name="permission" value="delete_bay"> Delete Bay</label>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <h3>Other Permissions</h3>
+                            <label><input type="checkbox" name="permission" value="edit_theme"> Edit Theme Options</label><br>
+                            <label><input type="checkbox" name="permission" value="view_reports"> View Reports</label><br>
+                            <label><input type="checkbox" name="permission" value="manage_users"> Manage Users</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" style="margin-top: 20px;">Save Permissions</button>
+                </form>
+            </div>
+        </div>
         <div id="addBayModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeBayModal()">&times;</span>
@@ -205,6 +283,7 @@
     </main>
     <script src="js/api.js"></script>
     <script src="js/menu.js"></script>
+    <script src="js/toast.js"></script>
     <script src="js/settings.js"></script>
 </body>
 </html>

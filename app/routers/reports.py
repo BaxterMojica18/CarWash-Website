@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
 from app.database import get_db, Invoice, ReportCache
-from app.routers.auth import get_current_user, get_current_user_optional_query
+from app.dependencies import get_current_user
+from app.routers.auth import get_current_user_optional_query
+from app.permissions import has_permission
 from datetime import datetime, timedelta
 from typing import Optional
 from fastapi.responses import StreamingResponse
@@ -24,7 +26,7 @@ def get_sales_report(
     start_year: Optional[int] = None,
     end_year: Optional[int] = None,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(has_permission("view_reports"))
 ):
     from app.database import InvoiceItem, ProductService
     user_id = current_user.id

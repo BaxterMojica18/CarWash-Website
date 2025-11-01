@@ -8,6 +8,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         setToken(response.access_token);
         localStorage.setItem('userEmail', email);
         localStorage.setItem('isDemo', response.is_demo);
+        localStorage.setItem('user_permissions', JSON.stringify(response.permissions || []));
         window.location.href = '/dashboard.html';
     } catch (error) {
         alert('Login failed: ' + error.message);
@@ -20,6 +21,7 @@ async function demoLogin() {
         setToken(response.access_token);
         localStorage.setItem('userEmail', 'demo@carwash.com');
         localStorage.setItem('isDemo', true);
+        localStorage.setItem('user_permissions', JSON.stringify(response.permissions || []));
         window.location.href = '/dashboard.html';
     } catch (error) {
         alert('Demo login failed: ' + error.message);
