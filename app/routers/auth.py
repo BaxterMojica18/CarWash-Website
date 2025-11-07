@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from jose import jwt
+from jose import jwt, JWTError
 from app import schemas, crud, database
 from app.dependencies import get_current_user, oauth2_scheme
 from app.permissions import get_user_permissions, is_admin_or_owner
