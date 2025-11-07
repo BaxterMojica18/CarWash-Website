@@ -1,0 +1,42 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check file changes
+      run: |
+        echo "📝 Files changed in this PR:"
+        git diff --name-only origin/main...HEAD
+    
+    - name: Check for sensitive data
+      run: |
+        echo "🔒 Checking for sensitive data..."
+        if grep -r "password.*=" --include="*.py" --include="*.js" --exclude-dir=".git" .; then
+          echo "⚠️ Warning: Potential hardcoded passwords found"
+        else
+          echo "✅ No hardcoded passwords detected"
+        fi
+      continue-on-error: true
+    
+    - name: Check code size
+      run: |
+        echo "📊 Code statistics:"
+        echo "Python files: $(find . -name '*.py' | wc -l)"
+        echo "JavaScript files: $(find . -name '*.js' | wc -l)"
+        echo "HTML files: $(find . -name '*.html' | wc -l)"
+    
+    - name: Validate JSON files
+      run: |
+        echo "🔍 Validating JSON files..."
+        for file in $(find . -name "*.json" -not -path "./node_modules/*"); do
+          python -m json.tool "$file" > /dev/null && echo "✅ $file" || echo "❌ $file"
+        done
+      continue-on-error: true
