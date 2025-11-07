@@ -26,12 +26,27 @@
     </nav>
     <main class="content">
         <header>
-            <h1>Sales Reports</h1>
-            <p>Filter and download sales reports</p>
+            <h1>Reports</h1>
+            <p>View sales, product, and service statistics</p>
         </header>
+        
+        <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="stat-card" onclick="showSalesReport()" style="cursor: pointer;">
+                <h3>📊 Sales Report</h3>
+                <p style="font-size: 14px; margin-top: 10px;">View overall sales statistics</p>
+            </div>
+            <div class="stat-card" onclick="showProductStats()" style="cursor: pointer;">
+                <h3>📦 Product Statistics</h3>
+                <p style="font-size: 14px; margin-top: 10px;">Analyze product performance</p>
+            </div>
+            <div class="stat-card" onclick="showServiceStats()" style="cursor: pointer;">
+                <h3>🔧 Service Statistics</h3>
+                <p style="font-size: 14px; margin-top: 10px;">Track service metrics</p>
+            </div>
+        </div>
 
-        <div class="settings-section">
-            <h2>Filter Sales Report</h2>
+        <div id="salesReportSection" class="settings-section">
+            <h2>Sales Report</h2>
             <div class="form-group">
                 <label for="periodType">Report Period</label>
                 <select id="periodType" onchange="updateFilterFields()">
@@ -175,6 +190,104 @@
                     <tbody id="reportTableBody">
                     </tbody>
                 </table>
+            </div>
+        </div>
+        
+        <div id="productStatsSection" class="settings-section" style="display: none;">
+            <h2>Product Statistics</h2>
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
+                <label for="productFilter" style="font-weight: 600;">Filter by:</label>
+                <select id="productFilter" onchange="filterProducts()" style="padding: 8px;">
+                    <option value="">Please Select</option>
+                    <option value="weekly">This Week</option>
+                    <option value="monthly">This Month</option>
+                    <option value="quarterly">This Quarter</option>
+                    <option value="annually">This Year</option>
+                </select>
+            </div>
+            
+            <div id="productStatsContent" style="display: none;">
+                <div class="stats-grid" style="margin-bottom: 20px;">
+                    <div class="stat-card">
+                        <h3>Total Products Sold</h3>
+                        <p class="stat-value" id="totalProductsSold">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <p class="stat-value" id="productsRevenue">$0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Top Product</h3>
+                        <p class="stat-value" style="font-size: 18px;" id="topProductName">N/A</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average per Sale</h3>
+                        <p class="stat-value" id="avgProductSale">$0</p>
+                    </div>
+                </div>
+                
+                <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Units Sold</th>
+                                <th>Revenue</th>
+                                <th>Avg Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productStatsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="serviceStatsSection" class="settings-section" style="display: none;">
+            <h2>Service Statistics</h2>
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
+                <label for="serviceFilter" style="font-weight: 600;">Filter by:</label>
+                <select id="serviceFilter" onchange="filterServices()" style="padding: 8px;">
+                    <option value="">Please Select</option>
+                    <option value="weekly">This Week</option>
+                    <option value="monthly">This Month</option>
+                    <option value="quarterly">This Quarter</option>
+                    <option value="annually">This Year</option>
+                </select>
+            </div>
+            
+            <div id="serviceStatsContent" style="display: none;">
+                <div class="stats-grid" style="margin-bottom: 20px;">
+                    <div class="stat-card">
+                        <h3>Total Services Performed</h3>
+                        <p class="stat-value" id="totalServicesPerformed">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <p class="stat-value" id="servicesRevenue">$0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Top Service</h3>
+                        <p class="stat-value" style="font-size: 18px;" id="topServiceName">N/A</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average per Service</h3>
+                        <p class="stat-value" id="avgServicePrice">$0</p>
+                    </div>
+                </div>
+                
+                <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Service Name</th>
+                                <th>Times Performed</th>
+                                <th>Revenue</th>
+                                <th>Avg Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="serviceStatsTable"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>

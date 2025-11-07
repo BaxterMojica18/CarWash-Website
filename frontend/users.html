@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Car Wash</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo">🚗</span>
+            <h2 id="sidebarName">CarWash</h2>
+        </div>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="invoices.html">Invoices</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="reports.html">Reports</a></li>
+            <li><a href="settings.html">Settings</a></li>
+            <li><a href="login.html" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+    <main class="content">
+        <header>
+            <h1>User Management</h1>
+        </header>
+        <div class="settings-section">
+            <h2>Users & Permissions</h2>
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Roles</th>
+                        <th>Permissions</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+
+    <div id="editRoleModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Edit User Roles</h2>
+            <form id="editRoleForm">
+                <input type="hidden" id="editUserId">
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="text" id="editUserEmail" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Roles:</label>
+                    <label><input type="checkbox" name="role" value="admin"> Admin</label>
+                    <label><input type="checkbox" name="role" value="owner"> Owner</label>
+                    <label><input type="checkbox" name="role" value="staff"> Staff</label>
+                </div>
+                <button type="submit" class="btn-primary">Update Roles</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script>
+        let users = [];
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/users`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                users = await response.json();
+                renderUsers();
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        function renderUsers() {
+            const tbody = document.querySelector('#usersTable tbody');
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.email}</td>
+                    <td>${user.roles.join(', ')}</td>
+                    <td>${user.permissions.join(', ')}</td>
+                    <td>
+                        <button onclick="editUserRoles(${user.user_id}, '${user.email}', '${user.roles.join(',')}')" class="btn-primary">Edit Roles</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editUserRoles(userId, email, roles) {
+            document.getElementById('editUserId').value = userId;
+            document.getElementById('editUserEmail').value = email;
+            
+            const roleCheckboxes = document.querySelectorAll('input[name="role"]');
+            roleCheckboxes.forEach(cb => {
+                cb.checked = roles.split(',').includes(cb.value);
+            });
+            
+            document.getElementById('editRoleModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('editRoleModal').style.display = 'none';
+        }
+
+        document.getElementById('editRoleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = parseInt(document.getElementById('editUserId').value);
+            const selectedRoles = Array.from(document.querySelectorAll('input[name="role"]:checked'))
+                .map(cb => cb.value);
+            
+            try {
+                await fetch(`${API_BASE}/auth/users/roles`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ user_id: userId, roles: selectedRoles })
+                });
+                
+                closeModal();
+                loadUsers();
+                alert('User roles updated successfully');
+            } catch (error) {
+                alert('Error updating roles: ' + error.message);
+            }
+        });
+
+        loadUsers();
+    </script>
+</body>
+</html>

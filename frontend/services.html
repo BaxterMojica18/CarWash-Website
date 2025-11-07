@@ -26,8 +26,10 @@
     <main class="content">
         <header>
             <h1>Services</h1>
-            <button class="btn-primary" onclick="showAddService()">+ Add Service</button>
+            <button class="btn-primary" onclick="showAddService()" data-permission="manage_products">+ Add Service</button>
         </header>
+        
+        
         <div class="products-grid" id="servicesGrid">
         </div>
         <div id="addServiceModal" class="modal">
@@ -55,6 +57,12 @@
     </main>
     <script src="js/api.js"></script>
     <script src="js/menu.js"></script>
+    <script src="js/permissions.js"></script>
     <script src="js/services.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            permissionManager.hideElementsWithoutPermission();
+        });
+    </script>
 </body>
 </html>

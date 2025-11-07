@@ -6,24 +6,26 @@ async function loadDashboard(period = 'weekly') {
         const invoices = await API.invoices.getAll();
         
         // Calculate filtered stats based on period
-        const filteredData = filterDataByPeriod(invoices, period);
+        const filteredData = await filterDataByPeriod(invoices, period);
         
         document.querySelector('.stats-grid').innerHTML = `
-            <div class="stat-card">
+            <div class="stat-card" onclick="navigateToReports('${period}')" style="cursor: pointer;">
                 <h3>Total Revenue</h3>
                 <p class="stat-value">$${filteredData.totalRevenue.toFixed(2)}</p>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" onclick="navigateToInvoices('${period}')" style="cursor: pointer;">
                 <h3>Total Invoices</h3>
                 <p class="stat-value">${filteredData.totalInvoices}</p>
             </div>
-            <div class="stat-card">
-                <h3>Active Locations</h3>
-                <p class="stat-value">${stats.active_locations}</p>
+            <div class="stat-card" onclick="navigateToServices()" style="cursor: pointer;">
+                <h3>Most Popular Service</h3>
+                <p class="stat-value" style="font-size: 20px;">${filteredData.topService || 'N/A'}</p>
+                <span class="stat-change">${filteredData.topServiceCount || 0} sold</span>
             </div>
-            <div class="stat-card">
-                <h3>Average per Invoice</h3>
-                <p class="stat-value">$${filteredData.avgPerInvoice.toFixed(2)}</p>
+            <div class="stat-card" onclick="navigateToProducts()" style="cursor: pointer;">
+                <h3>Top Product Sold</h3>
+                <p class="stat-value" style="font-size: 20px;">${filteredData.topProduct || 'N/A'}</p>
+                <span class="stat-change">${filteredData.topProductCount || 0} sold</span>
             </div>
         `;
         
@@ -46,7 +48,7 @@ async function loadDashboard(period = 'weekly') {
     }
 }
 
-function filterDataByPeriod(invoices, period) {
+async function filterDataByPeriod(invoices, period) {
     const now = new Date();
     let startDate = new Date();
     
@@ -83,10 +85,51 @@ function filterDataByPeriod(invoices, period) {
     const totalInvoices = filtered.length;
     const avgPerInvoice = totalInvoices > 0 ? totalRevenue / totalInvoices : 0;
     
+    // Get products to determine top service and product
+    const products = await API.products.getAll();
+    const productMap = {};
+    products.forEach(p => productMap[p.id] = p);
+    
+    // Count services and products
+    const serviceCounts = {};
+    const productCounts = {};
+    
+    filtered.forEach(inv => {
+        inv.items.forEach(item => {
+            const product = productMap[item.product_service_id];
+            if (product) {
+                if (product.type === 'service') {
+                    serviceCounts[product.name] = (serviceCounts[product.name] || 0) + item.quantity;
+                } else {
+                    productCounts[product.name] = (productCounts[product.name] || 0) + item.quantity;
+                }
+            }
+        });
+    });
+    
+    // Find top service and product
+    let topService = 'N/A';
+    let topServiceCount = 0;
+    Object.entries(serviceCounts).forEach(([name, count]) => {
+        if (count > topServiceCount) {
+            topService = name;
+            topServiceCount = count;
+        }
+    });
+    
+    let topProduct = 'N/A';
+    let topProductCount = 0;
+    Object.entries(productCounts).forEach(([name, count]) => {
+        if (count > topProductCount) {
+            topProduct = name;
+            topProductCount = count;
+        }
+    });
+    
     // Prepare chart data
     const chartData = prepareChartData(filtered, period);
     
-    return { totalRevenue, totalInvoices, avgPerInvoice, chartData };
+    return { totalRevenue, totalInvoices, avgPerInvoice, chartData, topService, topServiceCount, topProduct, topProductCount };
 }
 
 function prepareChartData(invoices, period) {
@@ -238,10 +281,29 @@ document.addEventListener('click', function(event) {
 
 function filterDashboard() {
     const period = document.getElementById('dashboardFilter').value;
-    console.log('Filtering dashboard by:', period);
-    // In a real implementation, this would fetch filtered data from the backend
-    // For now, just reload the dashboard
     loadDashboard(period);
+}
+
+function navigateToReports(period) {
+    localStorage.setItem('reportFilter', period);
+    window.location.href = 'reports.html';
+}
+
+function navigateToInvoices(period) {
+    localStorage.setItem('invoiceFilter', period);
+    window.location.href = 'invoices.html';
+}
+
+function navigateToServices() {
+    const period = document.getElementById('dashboardFilter').value;
+    localStorage.setItem('serviceFilter', period);
+    window.location.href = 'services.html';
+}
+
+function navigateToProducts() {
+    const period = document.getElementById('dashboardFilter').value;
+    localStorage.setItem('productFilter', period);
+    window.location.href = 'products.html';
 }
 
 loadDashboard();

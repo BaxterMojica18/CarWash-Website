@@ -2,16 +2,16 @@ async function loadServices() {
     try {
         const products = await API.products.getAll();
         const servicesList = products.filter(p => p.type === 'service');
+        
         const grid = document.getElementById('servicesGrid');
         grid.innerHTML = servicesList.map(service => `
             <div class="product-card">
                 <h3>${service.name}</h3>
                 <p class="price">$${service.price.toFixed(2)}</p>
                 <p>${service.description || ''}</p>
-                <span class="badge">service</span>
                 <div class="product-actions">
-                    <button class="btn-edit" onclick='editService(${JSON.stringify(service)})'>Edit</button>
-                    <button class="btn-delete" onclick="deleteService(${service.id})">Delete</button>
+                    <button class="btn-edit" onclick='editService(${JSON.stringify(service)})' data-permission="manage_products">Edit</button>
+                    <button class="btn-delete" onclick="deleteService(${service.id})" data-permission="manage_products">Delete</button>
                 </div>
             </div>
         `).join('');

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -10,6 +10,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     is_demo: bool
+    permissions: List[str] = []
 
 class LocationBase(BaseModel):
     name: str
@@ -134,3 +135,22 @@ class UserProfile(UserProfileCreate):
     user_id: int
     class Config:
         from_attributes = True
+
+class UserPermissions(BaseModel):
+    user_id: int
+    email: str
+    roles: List[str]
+    permissions: List[str]
+
+class UpdateUserRoles(BaseModel):
+    user_id: int
+    roles: List[str]
+
+class CreateUser(BaseModel):
+    name: str
+    email: EmailStr
+    role: str
+
+class UpdateUserPermissions(BaseModel):
+    user_id: int
+    permissions: List[str]

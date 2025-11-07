@@ -1,11 +1,22 @@
 let locations = [];
 let products = [];
 let allInvoices = [];
+let filteredInvoices = [];
 
 async function loadInvoices() {
     try {
         allInvoices = await API.invoices.getAll();
-        displayInvoices(allInvoices);
+        filteredInvoices = allInvoices;
+        
+        // Check if navigated from dashboard with filter
+        const savedFilter = localStorage.getItem('invoiceFilter');
+        if (savedFilter) {
+            document.getElementById('invoiceFilter').value = savedFilter;
+            localStorage.removeItem('invoiceFilter');
+            filterInvoices();
+        } else {
+            displayInvoices(allInvoices);
+        }
     } catch (error) {
         console.error('Failed to load invoices:', error);
     }
@@ -29,9 +40,41 @@ function displayInvoices(invoices) {
     `).join('');
 }
 
+function filterInvoices() {
+    const period = document.getElementById('invoiceFilter').value;
+    const now = new Date();
+    let startDate = new Date();
+    
+    if (period === 'all') {
+        filteredInvoices = allInvoices;
+    } else {
+        switch(period) {
+            case 'weekly':
+                startDate.setDate(now.getDate() - 7);
+                break;
+            case 'monthly':
+                startDate.setMonth(now.getMonth() - 1);
+                break;
+            case 'quarterly':
+                startDate.setMonth(now.getMonth() - 3);
+                break;
+            case 'annually':
+                startDate.setFullYear(now.getFullYear() - 1);
+                break;
+        }
+        
+        filteredInvoices = allInvoices.filter(inv => {
+            const invDate = new Date(inv.date);
+            return invDate >= startDate && invDate <= now;
+        });
+    }
+    
+    searchInvoices();
+}
+
 function searchInvoices() {
     const searchTerm = document.getElementById('searchInvoice').value.toLowerCase();
-    const filtered = allInvoices.filter(inv => 
+    const filtered = filteredInvoices.filter(inv => 
         inv.invoice_number.toLowerCase().includes(searchTerm) ||
         inv.customer_name.toLowerCase().includes(searchTerm)
     );

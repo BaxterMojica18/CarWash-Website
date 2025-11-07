@@ -13,7 +13,7 @@ async function loadBays() {
             </div>
         `).join('');
     } catch (error) {
-        console.error('Failed to load bays:', error);
+        showToast('Failed to load bays', 'error');
     }
 }
 
@@ -40,8 +40,9 @@ async function deleteBay(id) {
         try {
             await API.locations.delete(id);
             loadBays();
+            showToast('Bay deleted successfully', 'success');
         } catch (error) {
-            alert('Failed to delete bay');
+            showToast('Failed to delete bay', 'error');
         }
     }
 }
@@ -55,13 +56,15 @@ document.getElementById('bayForm').addEventListener('submit', async function(e) 
     try {
         if (id) {
             await API.locations.update(id, { name, address });
+            showToast('Bay updated successfully', 'success');
         } else {
             await API.locations.create({ name, address });
+            showToast('Bay created successfully', 'success');
         }
         closeBayModal();
         loadBays();
     } catch (error) {
-        alert('Failed to save bay');
+        showToast('Failed to save bay', 'error');
     }
 });
 
@@ -131,10 +134,10 @@ document.getElementById('themeForm').addEventListener('submit', async function(e
     
     try {
         await API.settings.saveTheme(data);
-        alert('Theme preset saved!');
+        showToast('Theme preset saved!', 'success');
         loadPresets();
     } catch (error) {
-        alert('Failed to save theme');
+        showToast('Failed to save theme', 'error');
     }
 });
 
@@ -226,9 +229,9 @@ document.getElementById('businessForm').addEventListener('submit', async functio
     
     try {
         await API.settings.saveBusiness(data);
-        alert('Business information saved!');
+        showToast('Business information saved!', 'success');
     } catch (error) {
-        alert('Failed to save business info');
+        showToast('Failed to save business info', 'error');
     }
 });
 
@@ -242,11 +245,186 @@ document.getElementById('invoiceCustomForm').addEventListener('submit', async fu
     
     try {
         await API.settings.saveInvoiceCustom(data);
-        alert('Invoice settings saved!');
+        showToast('Invoice settings saved!', 'success');
     } catch (error) {
-        alert('Failed to save invoice settings');
+        showToast('Failed to save invoice settings', 'error');
     }
 });
 
+async function checkUserPermissions() {
+    try {
+        const response = await fetch(`${API_BASE}/auth/me/permissions`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const data = await response.json();
+        const roles = data.roles || [];
+        if (roles.includes('admin') || roles.includes('owner')) {
+            document.getElementById('userManagementSection').style.display = 'block';
+            loadUsers();
+        }
+    } catch (error) {
+        console.error('Failed to check permissions:', error);
+    }
+}
+
+async function loadUsers() {
+    try {
+        const response = await fetch(`${API_BASE}/auth/users`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const users = await response.json();
+        const grid = document.getElementById('usersGrid');
+        grid.innerHTML = users.map(user => `
+            <div class="bay-card">
+                <h3>${user.email}</h3>
+                <p>Roles: ${user.roles.join(', ') || 'Custom'}</p>
+                <p style="font-size: 12px; color: #666;">${user.permissions.length} permissions</p>
+                <div class="bay-actions">
+                    <button class="btn-edit" onclick="editUser(${user.user_id}, '${user.email}', '${user.roles[0] || 'staff'}')">Edit Role</button>
+                    <button class="btn-primary" onclick="editPermissions(${user.user_id})">Permissions</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load users:', error);
+    }
+}
+
+function showAddUser() {
+    document.getElementById('addUserModal').style.display = 'block';
+    document.getElementById('userModalTitle').textContent = 'Add User';
+    document.getElementById('userForm').reset();
+    document.getElementById('editUserId').value = '';
+    document.getElementById('userName').disabled = false;
+    document.getElementById('userEmail').disabled = false;
+    document.getElementById('userSubmitBtn').textContent = 'Add User';
+}
+
+function closeUserModal() {
+    document.getElementById('addUserModal').style.display = 'none';
+}
+
+function editUser(id, email, role) {
+    document.getElementById('addUserModal').style.display = 'block';
+    document.getElementById('userModalTitle').textContent = 'Edit User Role';
+    document.getElementById('editUserId').value = id;
+    document.getElementById('userName').value = '';
+    document.getElementById('userName').disabled = true;
+    document.getElementById('userEmail').value = email;
+    document.getElementById('userEmail').disabled = true;
+    document.getElementById('userRole').value = role;
+    document.getElementById('userSubmitBtn').textContent = 'Update Role';
+}
+
+async function editPermissions(userId) {
+    try {
+        const response = await fetch(`${API_BASE}/auth/users/${userId}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const user = await response.json();
+        
+        document.getElementById('editPermissionsModal').style.display = 'block';
+        document.getElementById('permUserId').value = userId;
+        document.getElementById('permUserEmail').textContent = `User: ${user.email}`;
+        
+        const checkboxes = document.querySelectorAll('#permissionsForm input[name="permission"]');
+        checkboxes.forEach(cb => {
+            cb.checked = user.permissions.includes(cb.value);
+        });
+    } catch (error) {
+        showToast('Failed to load user permissions', 'error');
+    }
+}
+
+function closePermissionsModal() {
+    document.getElementById('editPermissionsModal').style.display = 'none';
+}
+
+async function deleteUser(id) {
+    if (confirm('Delete this user?')) {
+        alert('User deletion not yet implemented');
+    }
+}
+
+document.getElementById('userForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('editUserId').value;
+    const name = document.getElementById('userName').value;
+    const email = document.getElementById('userEmail').value;
+    const role = document.getElementById('userRole').value;
+    
+    try {
+        if (id) {
+            // Update existing user
+            const response = await fetch(`${API_BASE}/auth/users/roles`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ user_id: parseInt(id), roles: [role] })
+            });
+            
+            if (response.ok) {
+                closeUserModal();
+                loadUsers();
+                showToast('User role updated successfully!', 'success');
+            } else {
+                showToast('Failed to update user', 'error');
+            }
+        } else {
+            // Create new user
+            const response = await fetch(`${API_BASE}/auth/users`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ name, email, role })
+            });
+            
+            if (response.ok) {
+                closeUserModal();
+                loadUsers();
+                showToast('User created successfully! Default password: password123', 'success');
+            } else {
+                const error = await response.json();
+                showToast(error.detail || 'Failed to create user', 'error');
+            }
+        }
+    } catch (error) {
+        showToast('Failed to save user', 'error');
+    }
+});
+
+document.getElementById('permissionsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const userId = parseInt(document.getElementById('permUserId').value);
+    const selectedPermissions = Array.from(document.querySelectorAll('#permissionsForm input[name="permission"]:checked'))
+        .map(cb => cb.value);
+    
+    try {
+        const response = await fetch(`${API_BASE}/auth/users/permissions`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ user_id: userId, permissions: selectedPermissions })
+        });
+        
+        if (response.ok) {
+            closePermissionsModal();
+            loadUsers();
+            showToast('User permissions updated successfully!', 'success');
+        } else {
+            showToast('Failed to update permissions', 'error');
+        }
+    } catch (error) {
+        showToast('Failed to update permissions', 'error');
+    }
+});
+
+checkUserPermissions();
 loadBays();
 loadPresets();

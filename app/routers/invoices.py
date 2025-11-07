@@ -3,7 +3,9 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app import schemas, crud, database
-from app.routers.auth import get_current_user, get_current_user_optional_query
+from app.dependencies import get_current_user
+from app.routers.auth import get_current_user_optional_query
+from app.permissions import has_permission
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.units import inch
@@ -16,7 +18,7 @@ import io
 router = APIRouter()
 
 @router.post("/", response_model=schemas.Invoice)
-def create_invoice(invoice: schemas.InvoiceCreate, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+def create_invoice(invoice: schemas.InvoiceCreate, db: Session = Depends(database.get_db), current_user = Depends(has_permission("manage_invoices"))):
     return crud.create_invoice(db, invoice, current_user.id)
 
 @router.get("/", response_model=List[schemas.Invoice])

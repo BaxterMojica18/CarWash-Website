@@ -61,7 +61,6 @@ def delete_location(db: Session, location_id: int, user_id: int):
 
 def get_products_services(db: Session, user_id: int):
     return db.query(database.ProductService).filter(
-        database.ProductService.user_id == user_id,
         database.ProductService.status == "A"
     ).all()
 
