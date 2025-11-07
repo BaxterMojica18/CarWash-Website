@@ -10,11 +10,16 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Fetch main branch
+      run: git fetch origin main:main
     
     - name: Check file changes
       run: |
         echo "📝 Files changed in this PR:"
-        git diff --name-only origin/main...HEAD
+        git diff --name-only main...HEAD
     
     - name: Check for sensitive data
       run: |
