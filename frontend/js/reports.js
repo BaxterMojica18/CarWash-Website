@@ -18,15 +18,12 @@ async function generateReport() {
     const periodType = document.getElementById('periodType').value;
     let params = `period=${periodType}`;
     
-    console.log('Generating report for period:', periodType);
-    
     if (periodType === 'day') {
         const date = document.getElementById('filterDate').value;
         if (!date) {
             alert('Please select a date');
             return;
         }
-        console.log('Selected date:', date);
         params += `&date=${date}`;
     } else if (periodType === 'day_range') {
         const startDate = document.getElementById('startDate').value;
@@ -55,19 +52,16 @@ async function generateReport() {
     }
     
     try {
-        console.log('API call:', `/reports/sales?${params}`);
         const response = await apiRequest(`/reports/sales?${params}`);
-        console.log('API response:', response);
         currentReportData = response;
         displayReport(response);
     } catch (error) {
-        console.error('Error details:', error);
+        console.error('Error generating report:', error);
         alert('Error generating report: ' + error.message);
     }
 }
 
 function displayReport(data) {
-    console.log('Report data:', data);
     document.getElementById('reportResults').style.display = 'block';
     document.getElementById('totalSales').textContent = `₱${data.total_sales.toFixed(2)}`;
     document.getElementById('totalInvoices').textContent = data.total_invoices;
@@ -86,19 +80,12 @@ function displayReport(data) {
         tbody.appendChild(row);
     });
     
-    console.log('Chart data:', data.chart_data);
-    console.log('Category data:', data.category_data);
-    
     if (data.chart_data && data.chart_data.labels && data.chart_data.labels.length > 0) {
         renderLineChart(data.chart_data);
-    } else {
-        console.warn('No chart data available');
     }
     
     if (data.category_data && data.category_data.labels && data.category_data.labels.length > 0) {
         renderPieChart(data.category_data);
-    } else {
-        console.warn('No category data available');
     }
     
     if (data.product_category_data && data.product_category_data.labels && data.product_category_data.labels.length > 0) {
@@ -107,12 +94,8 @@ function displayReport(data) {
 }
 
 function renderLineChart(chartData) {
-    console.log('Rendering line chart with:', chartData);
     const canvas = document.getElementById('lineChart');
-    if (!canvas) {
-        console.error('Line chart canvas not found');
-        return;
-    }
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
     if (lineChart) {
@@ -155,12 +138,8 @@ function renderLineChart(chartData) {
 }
 
 function renderPieChart(categoryData) {
-    console.log('Rendering pie chart with:', categoryData);
     const canvas = document.getElementById('pieChart');
-    if (!canvas) {
-        console.error('Pie chart canvas not found');
-        return;
-    }
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
     if (pieChart) {
@@ -270,12 +249,8 @@ async function downloadCSV() {
 }
 
 function renderProductPieChart(productData) {
-    console.log('Rendering product pie chart with:', productData);
     const canvas = document.getElementById('productPieChart');
-    if (!canvas) {
-        console.error('Product pie chart canvas not found');
-        return;
-    }
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
     if (productPieChart) {
@@ -323,3 +298,210 @@ document.getElementById('rangeYear').value = now.getFullYear();
 document.getElementById('filterYear').value = now.getFullYear();
 document.getElementById('startYear').value = now.getFullYear() - 1;
 document.getElementById('endYear').value = now.getFullYear();
+
+function showSalesReport() {
+    document.getElementById('salesReportSection').style.display = 'block';
+    document.getElementById('productStatsSection').style.display = 'none';
+    document.getElementById('serviceStatsSection').style.display = 'none';
+}
+
+function showProductStats() {
+    document.getElementById('salesReportSection').style.display = 'none';
+    document.getElementById('productStatsSection').style.display = 'block';
+    document.getElementById('serviceStatsSection').style.display = 'none';
+    
+    const savedFilter = localStorage.getItem('productFilter');
+    if (savedFilter) {
+        document.getElementById('productFilter').value = savedFilter;
+        localStorage.removeItem('productFilter');
+        filterProducts();
+    }
+}
+
+function showServiceStats() {
+    document.getElementById('salesReportSection').style.display = 'none';
+    document.getElementById('productStatsSection').style.display = 'none';
+    document.getElementById('serviceStatsSection').style.display = 'block';
+    
+    const savedFilter = localStorage.getItem('serviceFilter');
+    if (savedFilter) {
+        document.getElementById('serviceFilter').value = savedFilter;
+        localStorage.removeItem('serviceFilter');
+        filterServices();
+    }
+}
+
+async function filterProducts() {
+    const period = document.getElementById('productFilter').value;
+    if (!period) {
+        document.getElementById('productStatsContent').style.display = 'none';
+        return;
+    }
+    
+    const now = new Date();
+    let startDate = new Date();
+    
+    switch(period) {
+        case 'weekly': startDate.setDate(now.getDate() - 7); break;
+        case 'monthly': startDate.setMonth(now.getMonth() - 1); break;
+        case 'quarterly': startDate.setMonth(now.getMonth() - 3); break;
+        case 'annually': startDate.setFullYear(now.getFullYear() - 1); break;
+    }
+    
+    const allProducts = await API.products.getAll();
+    const allInvoices = await API.invoices.getAll();
+    const filteredInvoices = allInvoices.filter(inv => {
+        const invDate = new Date(inv.date);
+        return invDate >= startDate && invDate <= now;
+    });
+    
+    const productStats = {};
+    let totalRevenue = 0, totalSold = 0;
+    
+    filteredInvoices.forEach(inv => {
+        inv.items.forEach(item => {
+            const product = allProducts.find(p => p.id === item.product_service_id && p.type === 'product');
+            if (product) {
+                if (!productStats[product.id]) {
+                    productStats[product.id] = { name: product.name, quantity: 0, revenue: 0 };
+                }
+                productStats[product.id].quantity += item.quantity;
+                productStats[product.id].revenue += item.subtotal;
+                totalRevenue += item.subtotal;
+                totalSold += item.quantity;
+            }
+        });
+    });
+    
+    let topProduct = 'N/A', maxQuantity = 0;
+    Object.values(productStats).forEach(stat => {
+        if (stat.quantity > maxQuantity) {
+            maxQuantity = stat.quantity;
+            topProduct = stat.name;
+        }
+    });
+    
+    document.getElementById('productStatsContent').style.display = 'block';
+    document.getElementById('totalProductsSold').textContent = totalSold;
+    document.getElementById('productsRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
+    document.getElementById('topProductName').textContent = topProduct;
+    document.getElementById('avgProductSale').textContent = totalSold > 0 ? `$${(totalRevenue / totalSold).toFixed(2)}` : '$0';
+    
+    document.getElementById('productStatsTable').innerHTML = Object.values(productStats)
+        .sort((a, b) => b.quantity - a.quantity)
+        .map(stat => `
+            <tr>
+                <td>${stat.name}</td>
+                <td>${stat.quantity}</td>
+                <td>$${stat.revenue.toFixed(2)}</td>
+                <td>$${(stat.revenue / stat.quantity).toFixed(2)}</td>
+            </tr>
+        `).join('');
+}
+
+async function filterServices() {
+    const period = document.getElementById('serviceFilter').value;
+    if (!period) {
+        document.getElementById('serviceStatsContent').style.display = 'none';
+        return;
+    }
+    
+    const now = new Date();
+    let startDate = new Date();
+    
+    switch(period) {
+        case 'weekly': startDate.setDate(now.getDate() - 7); break;
+        case 'monthly': startDate.setMonth(now.getMonth() - 1); break;
+        case 'quarterly': startDate.setMonth(now.getMonth() - 3); break;
+        case 'annually': startDate.setFullYear(now.getFullYear() - 1); break;
+    }
+    
+    const allProducts = await API.products.getAll();
+    const allInvoices = await API.invoices.getAll();
+    const filteredInvoices = allInvoices.filter(inv => {
+        const invDate = new Date(inv.date);
+        return invDate >= startDate && invDate <= now;
+    });
+    
+    const serviceStats = {};
+    let totalRevenue = 0, totalPerformed = 0;
+    
+    filteredInvoices.forEach(inv => {
+        inv.items.forEach(item => {
+            const service = allProducts.find(p => p.id === item.product_service_id && p.type === 'service');
+            if (service) {
+                if (!serviceStats[service.id]) {
+                    serviceStats[service.id] = { name: service.name, quantity: 0, revenue: 0 };
+                }
+                serviceStats[service.id].quantity += item.quantity;
+                serviceStats[service.id].revenue += item.subtotal;
+                totalRevenue += item.subtotal;
+                totalPerformed += item.quantity;
+            }
+        });
+    });
+    
+    let topService = 'N/A', maxQuantity = 0;
+    Object.values(serviceStats).forEach(stat => {
+        if (stat.quantity > maxQuantity) {
+            maxQuantity = stat.quantity;
+            topService = stat.name;
+        }
+    });
+    
+    document.getElementById('serviceStatsContent').style.display = 'block';
+    document.getElementById('totalServicesPerformed').textContent = totalPerformed;
+    document.getElementById('servicesRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
+    document.getElementById('topServiceName').textContent = topService;
+    document.getElementById('avgServicePrice').textContent = totalPerformed > 0 ? `$${(totalRevenue / totalPerformed).toFixed(2)}` : '$0';
+    
+    document.getElementById('serviceStatsTable').innerHTML = Object.values(serviceStats)
+        .sort((a, b) => b.quantity - a.quantity)
+        .map(stat => `
+            <tr>
+                <td>${stat.name}</td>
+                <td>${stat.quantity}</td>
+                <td>$${stat.revenue.toFixed(2)}</td>
+                <td>$${(stat.revenue / stat.quantity).toFixed(2)}</td>
+            </tr>
+        `).join('');
+}
+
+// Check if navigated from dashboard with filter
+const savedFilter = localStorage.getItem('reportFilter');
+if (savedFilter) {
+    const periodMap = {
+        'weekly': { type: 'day_range', days: 7 },
+        'biweekly': { type: 'day_range', days: 14 },
+        'monthly': { type: 'month', months: 1 },
+        'quarterly': { type: 'month_range', months: 3 },
+        'semiannually': { type: 'month_range', months: 6 },
+        'annually': { type: 'year', years: 1 }
+    };
+    
+    const config = periodMap[savedFilter];
+    if (config) {
+        document.getElementById('periodType').value = config.type;
+        updateFilterFields();
+        
+        if (config.type === 'year') {
+            document.getElementById('filterYear').value = now.getFullYear();
+        } else if (config.type === 'month') {
+            document.getElementById('filterMonth').value = now.getMonth() + 1;
+            document.getElementById('filterMonthYear').value = now.getFullYear();
+        } else if (config.type === 'month_range') {
+            const startMonth = config.months === 3 ? now.getMonth() - 2 : now.getMonth() - 5;
+            document.getElementById('startMonth').value = Math.max(1, startMonth + 1);
+            document.getElementById('endMonth').value = now.getMonth() + 1;
+            document.getElementById('rangeYear').value = now.getFullYear();
+        } else if (config.type === 'day_range') {
+            const startDate = new Date(now);
+            startDate.setDate(now.getDate() - config.days);
+            document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+            document.getElementById('endDate').value = now.toISOString().split('T')[0];
+        }
+        
+        localStorage.removeItem('reportFilter');
+        setTimeout(() => generateReport(), 100);
+    }
+}

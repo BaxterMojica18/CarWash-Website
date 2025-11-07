@@ -4,6 +4,7 @@ async function loadProducts() {
     try {
         const products = await API.products.getAll();
         allProducts = products;
+        
         const productsList = products.filter(p => p.type === 'product');
         const grid = document.getElementById('productsGrid');
         grid.innerHTML = productsList.map(prod => `
@@ -11,10 +12,10 @@ async function loadProducts() {
                 <h3>${prod.name}</h3>
                 <p class="price">$${prod.price.toFixed(2)}</p>
                 <p>${prod.description || ''}</p>
-                <span class="badge">product - ${prod.quantity || 0} ${prod.quantity_unit || 'N/A'}</span>
+                <p style="color: #666; font-size: 14px; margin-top: 10px;">Stock: ${prod.quantity || 0} ${prod.quantity_unit || 'units'}</p>
                 <div class="product-actions">
-                    <button class="btn-edit" onclick='editProduct(${prod.id})'>Edit</button>
-                    <button class="btn-delete" onclick="deleteProduct(${prod.id})">Delete</button>
+                    <button class="btn-edit" onclick='editProduct(${prod.id})' data-permission="manage_products">Edit</button>
+                    <button class="btn-delete" onclick="deleteProduct(${prod.id})" data-permission="manage_products">Delete</button>
                 </div>
             </div>
         `).join('');

@@ -30,9 +30,17 @@
             <button class="btn-primary" onclick="showCreateInvoice()">+ Create Invoice</button>
         </header>
         <div class="table-container">
-            <div class="form-group" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
                 <input type="text" id="searchInvoice" placeholder="Search by invoice number, customer name..." onkeyup="searchInvoices()" style="max-width: 400px;">
+                <select id="invoiceFilter" onchange="filterInvoices()" style="padding: 8px;">
+                    <option value="all">All Time</option>
+                    <option value="weekly">This Week</option>
+                    <option value="monthly">This Month</option>
+                    <option value="quarterly">This Quarter</option>
+                    <option value="annually">This Year</option>
+                </select>
             </div>
+            <div style="max-height: 500px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px;">
             <table>
                 <thead>
                     <tr>
@@ -48,6 +56,7 @@
                 <tbody id="invoiceTable">
                 </tbody>
             </table>
+            </div>
         </div>
         <div id="createInvoiceModal" class="modal">
             <div class="modal-content">
