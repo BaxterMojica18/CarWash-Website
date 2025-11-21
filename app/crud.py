@@ -248,3 +248,232 @@ def save_user_profile(db: Session, user_id: int, profile: schemas.UserProfileCre
     db.commit()
     db.refresh(db_profile)
     return db_profile
+
+# Cart CRUD
+def get_cart_items(db: Session, client_id: int):
+    from sqlalchemy.orm import joinedload
+    return db.query(database.CartItem).options(
+        joinedload(database.CartItem.product_service)
+    ).filter(database.CartItem.client_id == client_id).all()
+
+def add_to_cart(db: Session, client_id: int, product_service_id: int, quantity: int):
+    product = db.query(database.ProductService).filter(database.ProductService.id == product_service_id).first()
+    if not product:
+        return None
+    
+    cart_item = db.query(database.CartItem).filter(
+        database.CartItem.client_id == client_id,
+        database.CartItem.product_service_id == product_service_id
+    ).first()
+    
+    if cart_item:
+        cart_item.quantity += quantity
+    else:
+        cart_item = database.CartItem(
+            client_id=client_id,
+            product_service_id=product_service_id,
+            quantity=quantity,
+            price_at_add=product.price,
+            created_at=datetime.now()
+        )
+        db.add(cart_item)
+    
+    db.commit()
+    db.refresh(cart_item)
+    return cart_item
+
+def update_cart_item(db: Session, item_id: int, client_id: int, quantity: int):
+    cart_item = db.query(database.CartItem).filter(
+        database.CartItem.id == item_id,
+        database.CartItem.client_id == client_id
+    ).first()
+    if cart_item:
+        cart_item.quantity = quantity
+        db.commit()
+        db.refresh(cart_item)
+    return cart_item
+
+def remove_cart_item(db: Session, item_id: int, client_id: int):
+    cart_item = db.query(database.CartItem).filter(
+        database.CartItem.id == item_id,
+        database.CartItem.client_id == client_id
+    ).first()
+    if cart_item:
+        db.delete(cart_item)
+        db.commit()
+    return cart_item
+
+def clear_cart(db: Session, client_id: int):
+    db.query(database.CartItem).filter(database.CartItem.client_id == client_id).delete()
+    db.commit()
+
+# Order CRUD
+def create_order_from_cart(db: Session, client_id: int, payment_method: str = None):
+    cart_items = get_cart_items(db, client_id)
+    if not cart_items:
+        return None
+    
+    order_number = f"ORD-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    total = sum(item.quantity * item.price_at_add for item in cart_items)
+    
+    order = database.Order(
+        order_number=order_number,
+        client_id=client_id,
+        status="pending",
+        total_amount=total,
+        payment_method=payment_method,
+        created_at=datetime.now(),
+        updated_at=datetime.now()
+    )
+    db.add(order)
+    db.commit()
+    db.refresh(order)
+    
+    for item in cart_items:
+        order_item = database.OrderItem(
+            order_id=order.id,
+            product_service_id=item.product_service_id,
+            quantity=item.quantity,
+            unit_price=item.price_at_add,
+            subtotal=item.quantity * item.price_at_add
+        )
+        db.add(order_item)
+    
+    db.commit()
+    clear_cart(db, client_id)
+    db.refresh(order)
+    return order
+
+def get_orders(db: Session, client_id: int = None):
+    from sqlalchemy.orm import joinedload
+    query = db.query(database.Order).options(
+        joinedload(database.Order.items).joinedload(database.OrderItem.product_service)
+    )
+    if client_id:
+        query = query.filter(database.Order.client_id == client_id)
+    return query.order_by(database.Order.created_at.desc()).all()
+
+def get_order(db: Session, order_id: int):
+    from sqlalchemy.orm import joinedload
+    return db.query(database.Order).options(
+        joinedload(database.Order.items).joinedload(database.OrderItem.product_service)
+    ).filter(database.Order.id == order_id).first()
+
+def update_order_status(db: Session, order_id: int, status: str):
+    order = db.query(database.Order).filter(database.Order.id == order_id).first()
+    if order:
+        order.status = status
+        order.updated_at = datetime.now()
+        db.commit()
+        db.refresh(order)
+    return order
+
+# Reservation CRUD
+def create_reservation(db: Session, client_id: int, service_id: int, location_id: int, vehicle_plate: str):
+    service = db.query(database.ProductService).filter(database.ProductService.id == service_id).first()
+    if not service or service.type != 'service':
+        return None
+    
+    max_position = db.query(database.Reservation).filter(
+        database.Reservation.location_id == location_id,
+        database.Reservation.status.in_(['pending', 'accepted', 'in_progress'])
+    ).with_entities(database.Reservation.queue_position).order_by(database.Reservation.queue_position.desc()).first()
+    
+    queue_position = (max_position[0] + 1) if max_position and max_position[0] else 1
+    
+    reservation_number = f"RES-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    
+    reservation = database.Reservation(
+        reservation_number=reservation_number,
+        client_id=client_id,
+        service_id=service_id,
+        location_id=location_id,
+        vehicle_plate=vehicle_plate,
+        status="pending",
+        queue_position=queue_position,
+        created_at=datetime.now(),
+        updated_at=datetime.now()
+    )
+    db.add(reservation)
+    db.commit()
+    db.refresh(reservation)
+    return reservation
+
+def get_reservations(db: Session, client_id: int = None, location_id: int = None):
+    from sqlalchemy.orm import joinedload
+    query = db.query(database.Reservation).options(
+        joinedload(database.Reservation.service),
+        joinedload(database.Reservation.location)
+    )
+    if client_id:
+        query = query.filter(database.Reservation.client_id == client_id)
+    if location_id:
+        query = query.filter(database.Reservation.location_id == location_id)
+    return query.order_by(database.Reservation.created_at.desc()).all()
+
+def get_reservation(db: Session, reservation_id: int):
+    from sqlalchemy.orm import joinedload
+    return db.query(database.Reservation).options(
+        joinedload(database.Reservation.service),
+        joinedload(database.Reservation.location)
+    ).filter(database.Reservation.id == reservation_id).first()
+
+def update_reservation_status(db: Session, reservation_id: int, status: str):
+    reservation = db.query(database.Reservation).filter(database.Reservation.id == reservation_id).first()
+    if not reservation:
+        return None
+    
+    old_status = reservation.status
+    reservation.status = status
+    reservation.updated_at = datetime.now()
+    
+    if status in ['completed', 'cancelled'] and old_status in ['pending', 'accepted', 'in_progress']:
+        location_id = reservation.location_id
+        old_position = reservation.queue_position
+        reservation.queue_position = None
+        db.commit()
+        
+        if old_position:
+            db.query(database.Reservation).filter(
+                database.Reservation.location_id == location_id,
+                database.Reservation.queue_position > old_position,
+                database.Reservation.status.in_(['pending', 'accepted', 'in_progress'])
+            ).update({database.Reservation.queue_position: database.Reservation.queue_position - 1})
+    
+    db.commit()
+    db.refresh(reservation)
+    return reservation
+
+def get_queue(db: Session, location_id: int):
+    return db.query(database.Reservation).filter(
+        database.Reservation.location_id == location_id,
+        database.Reservation.status.in_(['pending', 'accepted', 'in_progress'])
+    ).order_by(database.Reservation.queue_position).all()
+
+# Payment Methods CRUD
+def get_payment_methods(db: Session):
+    return db.query(database.PaymentMethod).all()
+
+def create_payment_method(db: Session, name: str, icon: str, is_active: bool):
+    pm = database.PaymentMethod(name=name, icon=icon, is_active=is_active, created_at=datetime.now())
+    db.add(pm)
+    db.commit()
+    db.refresh(pm)
+    return pm
+
+def update_payment_method(db: Session, pm_id: int, name: str, icon: str, is_active: bool):
+    pm = db.query(database.PaymentMethod).filter(database.PaymentMethod.id == pm_id).first()
+    if pm:
+        pm.name = name
+        pm.icon = icon
+        pm.is_active = is_active
+        db.commit()
+        db.refresh(pm)
+    return pm
+
+def delete_payment_method(db: Session, pm_id: int):
+    pm = db.query(database.PaymentMethod).filter(database.PaymentMethod.id == pm_id).first()
+    if pm:
+        db.delete(pm)
+        db.commit()
+    return pm

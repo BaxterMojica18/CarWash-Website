@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop - Car Wash</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="shop-container">
+        <div class="shop-header">
+            <div>
+                <button onclick="window.location.href='/client-dashboard.html'" class="back-btn">← Dashboard</button>
+                <h1 style="display: inline-block; margin-left: 15px;">🚗 Shop Products & Services</h1>
+            </div>
+            <button onclick="window.location.href='/cart.html'" class="cart-btn">
+                <span class="cart-icon">🛒</span>
+                <span class="cart-text">Cart</span>
+                <span class="cart-badge" id="cart-count">0</span>
+            </button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('products')">🧴 Products</button>
+            <button class="tab-btn" onclick="showTab('services')">🚿 Services</button>
+        </div>
+
+        <div id="products-tab" class="tab-content active">
+            <div id="products-grid" class="product-grid"></div>
+        </div>
+
+        <div id="services-tab" class="tab-content">
+            <div id="services-grid" class="product-grid"></div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/toast.js"></script>
+    <script>
+        let products = [];
+        let services = [];
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('http://localhost:8000/api/settings/products', {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                const data = await response.json();
+                products = data.filter(p => p.type === 'product');
+                services = data.filter(p => p.type === 'service');
+                
+                renderProducts();
+                renderServices();
+                updateCartCount();
+            } catch (error) {
+                console.error('Failed to load products:', error);
+                showToast('Failed to load products', 'error');
+            }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            if (products.length === 0) {
+                grid.innerHTML = '<p class="empty-message">No products available</p>';
+                return;
+            }
+            grid.innerHTML = products.map(p => `
+                <div class="product-card">
+                    <div class="product-icon">🧴</div>
+                    <h3 class="product-name">${p.name}</h3>
+                    <p class="product-desc">${p.description || 'Premium car care product'}</p>
+                    <div class="product-footer">
+                        <p class="price">$${p.price.toFixed(2)}</p>
+                        <button onclick="addToCart(${p.id})" class="add-btn">+ Add to Cart</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderServices() {
+            const grid = document.getElementById('services-grid');
+            if (services.length === 0) {
+                grid.innerHTML = '<p class="empty-message">No services available</p>';
+                return;
+            }
+            grid.innerHTML = services.map(s => `
+                <div class="product-card service-card">
+                    <div class="product-icon">🚿</div>
+                    <h3 class="product-name">${s.name}</h3>
+                    <p class="product-desc">${s.description || 'Professional car wash service'}</p>
+                    <div class="product-footer">
+                        <p class="price">$${s.price.toFixed(2)}</p>
+                        <button onclick="reserveService(${s.id})" class="reserve-btn">📅 Reserve Now</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function addToCart(productId) {
+            try {
+                const response = await fetch('http://localhost:8000/api/cart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify({ product_service_id: productId, quantity: 1 })
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to add to cart');
+                }
+                showToast('Added to cart!', 'success');
+                updateCartCount();
+            } catch (error) {
+                console.error('Failed to add to cart:', error);
+                showToast('Failed to add to cart', 'error');
+            }
+        }
+
+        function reserveService(serviceId) {
+            localStorage.setItem('selectedService', serviceId);
+            window.location.href = '/reserve.html';
+        }
+
+        async function updateCartCount() {
+            try {
+                const response = await fetch('http://localhost:8000/api/cart', {
+                    headers: {
+                        'Authorization': `Bearer ${getToken()}`
+                    }
+                });
+                const cart = await response.json();
+                const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+                document.getElementById('cart-count').textContent = count;
+            } catch (error) {
+                console.error('Failed to update cart count:', error);
+            }
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        loadProducts();
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .shop-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .shop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .shop-header h1 {
+            color: white;
+            margin: 0;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .back-btn, .cart-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover, .cart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .cart-icon {
+            font-size: 20px;
+        }
+        
+        .cart-badge {
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            background: rgba(255,255,255,0.3);
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.4);
+        }
+        
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+        }
+        
+        .product-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .product-name {
+            font-size: 1.5rem;
+            margin: 0 0 10px 0;
+            color: #2d3748;
+        }
+        
+        .product-desc {
+            color: #718096;
+            margin: 0 0 20px 0;
+            flex-grow: 1;
+            line-height: 1.5;
+        }
+        
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-top: auto;
+        }
+        
+        .price {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0;
+        }
+        
+        .add-btn, .reserve-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .add-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .add-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .reserve-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .reserve-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+        
+        .empty-message {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            padding: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .shop-container {
+                padding: 15px;
+            }
+            
+            .shop-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .cart-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            
+            .cart-text {
+                display: none;
+            }
+            
+            .tabs {
+                gap: 10px;
+                padding: 8px;
+            }
+            
+            .tab-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            
+            .product-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .product-card {
+                padding: 20px;
+            }
+            
+            .product-footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .add-btn, .reserve-btn {
+                width: 100%;
+                padding: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .shop-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .shop-header h1 {
+                text-align: center;
+                font-size: 1.3rem;
+            }
+            
+            .cart-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</body>
+</html>

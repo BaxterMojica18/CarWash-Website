@@ -10,6 +10,7 @@ A full-stack web application for managing car wash operations with dashboard, in
 
 ## Features
 
+### Core Features
 - ✅ User Authentication (Demo & Admin accounts)
 - ✅ Dashboard with stats and reports
 - ✅ Invoice creation and PDF generation
@@ -18,6 +19,15 @@ A full-stack web application for managing car wash operations with dashboard, in
 - ✅ Sales reports with filtering (day/month/year)
 - ✅ Export reports as PDF or CSV
 - ✅ Demo account for testing
+
+### E-Commerce Features (NEW!)
+- ✅ Shopping cart for products
+- ✅ Order management system
+- ✅ Service reservation with queue
+- ✅ Client dashboard
+- ✅ Queue management for owner/admin
+- ✅ Order status tracking
+- ✅ FIFO queue system for car wash services
 
 ## Setup Instructions
 
@@ -85,6 +95,11 @@ python test_api.py
 - Email: `admin@carwash.com`
 - Password: `admin123`
 
+### Client Account (for testing e-commerce)
+- Email: `client@carwash.com`
+- Password: `client123`
+- Note: Run `python create_client_user.py` to create this account
+
 ## API Endpoints
 
 ### Authentication
@@ -136,10 +151,44 @@ Once the server is running, visit:
 ### InvoiceItem
 - id, invoice_id, product_service_id, quantity, unit_price, subtotal
 
+## E-Commerce Setup
+
+To enable the new e-commerce features:
+
+```bash
+# 1. Create new database tables
+python add_ecommerce_tables.py
+
+# 2. Update roles and permissions
+python seed_data.py
+
+# 3. Create test client user
+python create_client_user.py
+
+# 4. Start the server
+start_server.bat
+```
+
+See [ECOMMERCE_SETUP.md](ECOMMERCE_SETUP.md) for detailed documentation.
+
+## New Pages
+
+### Client Pages
+- `/shop.html` - Browse and shop products/services
+- `/cart.html` - Shopping cart
+- `/reserve.html` - Reserve car wash service
+- `/client-dashboard.html` - View orders and reservations
+
+### Owner/Admin Pages
+- `/order-management.html` - Manage customer orders
+- `/queue-management.html` - Manage service queue
+
 ## Next Steps
 
+- [ ] Add email notifications for orders
+- [ ] Add real-time WebSocket for queue updates
+- [ ] Add payment gateway integration
 - [ ] Build Next.js frontend
 - [ ] Deploy to Vercel/Netlify
 - [ ] Add more dashboard charts
-- [ ] Email invoice receipts
-- [ ] Customer management
+- [ ] Customer profiles with saved vehicles

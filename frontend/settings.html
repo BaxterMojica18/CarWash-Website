@@ -16,6 +16,7 @@
         <ul>
             <li><a href="dashboard.html">Dashboard</a></li>
             <li><a href="invoices.html">Invoices</a></li>
+            <li><a href="order-management.html">Orders</a></li>
             <li><a href="products.html">Products</a></li>
             <li><a href="services.html">Services</a></li>
             <li><a href="reports.html">Reports</a></li>
@@ -152,6 +153,14 @@
             </form>
         </div>
         <div class="settings-section">
+            <div class="section-header">
+                <h2>Payment Methods</h2>
+                <button class="btn-primary" onclick="showAddPaymentMethod()">+ Add Payment Method</button>
+            </div>
+            <div class="bays-grid" id="paymentMethodsGrid">
+            </div>
+        </div>
+        <div class="settings-section">
             <h2>Business Information</h2>
             <form id="businessForm">
                 <div class="form-group">
@@ -256,6 +265,31 @@
                         </div>
                     </div>
                     <button type="submit" class="btn-primary" style="margin-top: 20px;">Save Permissions</button>
+                </form>
+            </div>
+        </div>
+        <div id="addPaymentMethodModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closePaymentMethodModal()">&times;</span>
+                <h2 id="paymentMethodModalTitle">Add Payment Method</h2>
+                <form id="paymentMethodForm">
+                    <input type="hidden" id="editPaymentMethodId">
+                    <div class="form-group">
+                        <label>Payment Method Name</label>
+                        <input type="text" id="paymentMethodName" placeholder="e.g., Credit Card" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Icon (Emoji)</label>
+                        <input type="text" id="paymentMethodIcon" placeholder="💳" maxlength="2" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="paymentMethodStatus">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary" id="paymentMethodSubmitBtn">Add Payment Method</button>
                 </form>
             </div>
         </div>

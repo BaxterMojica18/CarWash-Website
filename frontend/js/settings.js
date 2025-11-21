@@ -425,6 +425,115 @@ document.getElementById('permissionsForm').addEventListener('submit', async func
     }
 });
 
+// Payment Methods Management
+let paymentMethods = [];
+
+async function loadPaymentMethods() {
+    try {
+        const response = await fetch(`${API_BASE}/settings/payment-methods`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        paymentMethods = await response.json();
+        renderPaymentMethods();
+    } catch (error) {
+        console.error('Failed to load payment methods:', error);
+    }
+}
+
+function renderPaymentMethods() {
+    const grid = document.getElementById('paymentMethodsGrid');
+    if (paymentMethods.length === 0) {
+        grid.innerHTML = '<p style="color: #666;">No payment methods configured yet.</p>';
+        return;
+    }
+    grid.innerHTML = paymentMethods.map(pm => `
+        <div class="bay-card">
+            <h3>${pm.icon} ${pm.name}</h3>
+            <p>Status: <span style="color: ${pm.is_active ? '#28a745' : '#dc3545'};">${pm.is_active ? 'Active' : 'Inactive'}</span></p>
+            <div class="bay-actions">
+                <button class="btn-edit" onclick="editPaymentMethod(${pm.id}, '${pm.name}', '${pm.icon}', ${pm.is_active})">Edit</button>
+                <button class="btn-delete" onclick="deletePaymentMethod(${pm.id})">Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showAddPaymentMethod() {
+    document.getElementById('addPaymentMethodModal').style.display = 'block';
+    document.getElementById('paymentMethodModalTitle').textContent = 'Add Payment Method';
+    document.getElementById('paymentMethodForm').reset();
+    document.getElementById('editPaymentMethodId').value = '';
+    document.getElementById('paymentMethodSubmitBtn').textContent = 'Add Payment Method';
+}
+
+function closePaymentMethodModal() {
+    document.getElementById('addPaymentMethodModal').style.display = 'none';
+}
+
+function editPaymentMethod(id, name, icon, isActive) {
+    document.getElementById('addPaymentMethodModal').style.display = 'block';
+    document.getElementById('paymentMethodModalTitle').textContent = 'Edit Payment Method';
+    document.getElementById('editPaymentMethodId').value = id;
+    document.getElementById('paymentMethodName').value = name;
+    document.getElementById('paymentMethodIcon').value = icon;
+    document.getElementById('paymentMethodStatus').value = isActive ? 'active' : 'inactive';
+    document.getElementById('paymentMethodSubmitBtn').textContent = 'Update Payment Method';
+}
+
+async function deletePaymentMethod(id) {
+    if (confirm('Delete this payment method?')) {
+        try {
+            await fetch(`${API_BASE}/settings/payment-methods/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            loadPaymentMethods();
+            showToast('Payment method deleted', 'success');
+        } catch (error) {
+            showToast('Failed to delete payment method', 'error');
+        }
+    }
+}
+
+document.getElementById('paymentMethodForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('editPaymentMethodId').value;
+    const data = {
+        name: document.getElementById('paymentMethodName').value,
+        icon: document.getElementById('paymentMethodIcon').value,
+        is_active: document.getElementById('paymentMethodStatus').value === 'active'
+    };
+    
+    try {
+        if (id) {
+            await fetch(`${API_BASE}/settings/payment-methods/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(data)
+            });
+            showToast('Payment method updated', 'success');
+        } else {
+            await fetch(`${API_BASE}/settings/payment-methods`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(data)
+            });
+            showToast('Payment method added', 'success');
+        }
+        closePaymentMethodModal();
+        loadPaymentMethods();
+    } catch (error) {
+        showToast('Failed to save payment method', 'error');
+    }
+});
+
 checkUserPermissions();
 loadBays();
 loadPresets();
+loadPaymentMethods();

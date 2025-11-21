@@ -189,6 +189,66 @@ class ReportCache(Base):
     total_sales = Column(Float)
     total_invoices = Column(Integer)
 
+class CartItem(Base):
+    __tablename__ = "cart_items"
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("users.id"))
+    product_service_id = Column(Integer, ForeignKey("products_services.id"))
+    quantity = Column(Integer)
+    price_at_add = Column(Float)
+    created_at = Column(DateTime)
+    client = relationship("User")
+    product_service = relationship("ProductService")
+
+class Order(Base):
+    __tablename__ = "orders"
+    id = Column(Integer, primary_key=True, index=True)
+    order_number = Column(String, unique=True, index=True)
+    client_id = Column(Integer, ForeignKey("users.id"))
+    status = Column(String, default="pending")
+    total_amount = Column(Float)
+    payment_method = Column(String, nullable=True)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+    client = relationship("User")
+    items = relationship("OrderItem", back_populates="order")
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    product_service_id = Column(Integer, ForeignKey("products_services.id"))
+    quantity = Column(Integer)
+    unit_price = Column(Float)
+    subtotal = Column(Float)
+    order = relationship("Order", back_populates="items")
+    product_service = relationship("ProductService")
+
+class Reservation(Base):
+    __tablename__ = "reservations"
+    id = Column(Integer, primary_key=True, index=True)
+    reservation_number = Column(String, unique=True, index=True)
+    client_id = Column(Integer, ForeignKey("users.id"))
+    service_id = Column(Integer, ForeignKey("products_services.id"))
+    location_id = Column(Integer, ForeignKey("locations.id"))
+    vehicle_plate = Column(String)
+    status = Column(String, default="pending")
+    queue_position = Column(Integer, nullable=True)
+    estimated_start_time = Column(DateTime, nullable=True)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+    client = relationship("User")
+    service = relationship("ProductService")
+    location = relationship("Location")
+
+class PaymentMethod(Base):
+    __tablename__ = "payment_methods"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    icon = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=DateTime)
+
 def create_tables():
     try:
         Base.metadata.create_all(bind=engine)

@@ -1,9 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from pydantic import BaseModel
 from app import schemas, crud, database
 from app.dependencies import get_current_user
 from app.permissions import has_permission
+
+class PaymentMethodCreate(BaseModel):
+    name: str
+    icon: str
+    is_active: bool
+
+class PaymentMethodResponse(BaseModel):
+    id: int
+    name: str
+    icon: str
+    is_active: bool
+    class Config:
+        from_attributes = True
 
 router = APIRouter()
 
@@ -114,3 +128,25 @@ def get_profile(db: Session = Depends(database.get_db), current_user = Depends(g
 @router.post("/profile", response_model=schemas.UserProfile)
 def save_profile(profile: schemas.UserProfileCreate, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     return crud.save_user_profile(db, current_user.id, profile)
+
+@router.get("/payment-methods", response_model=List[PaymentMethodResponse])
+def get_payment_methods(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    return crud.get_payment_methods(db)
+
+@router.post("/payment-methods", response_model=PaymentMethodResponse)
+def create_payment_method(pm: PaymentMethodCreate, db: Session = Depends(database.get_db), current_user = Depends(has_permission("manage_settings"))):
+    return crud.create_payment_method(db, pm.name, pm.icon, pm.is_active)
+
+@router.put("/payment-methods/{pm_id}", response_model=PaymentMethodResponse)
+def update_payment_method(pm_id: int, pm: PaymentMethodCreate, db: Session = Depends(database.get_db), current_user = Depends(has_permission("manage_settings"))):
+    result = crud.update_payment_method(db, pm_id, pm.name, pm.icon, pm.is_active)
+    if not result:
+        raise HTTPException(status_code=404, detail="Payment method not found")
+    return result
+
+@router.delete("/payment-methods/{pm_id}")
+def delete_payment_method(pm_id: int, db: Session = Depends(database.get_db), current_user = Depends(has_permission("manage_settings"))):
+    result = crud.delete_payment_method(db, pm_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Payment method not found")
+    return {"message": "Payment method deleted"}

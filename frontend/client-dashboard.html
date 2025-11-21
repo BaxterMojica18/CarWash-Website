@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - Car Wash</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <h2 id="welcomeMessage" style="font-size: 18px; line-height: 1.4;">Welcome back!</h2>
+        </div>
+        <ul>
+            <li><a href="/client-dashboard.html" class="active">Dashboard</a></li>
+            <li><a href="/shop.html">Shop</a></li>
+            <li><a href="/cart.html">Cart</a></li>
+            <li><a href="/reserve.html">Reserve Service</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <header>
+            <h1>My Dashboard</h1>
+            <div class="profile-dropdown">
+                <div class="profile-icon" onclick="toggleProfileMenu()">
+                    <img src="https://ui-avatars.com/api/?name=Client&background=667eea&color=fff" alt="Profile">
+                </div>
+                <div class="profile-menu" id="profileMenu" style="display: none;">
+                    <div class="profile-info">
+                        <img src="https://ui-avatars.com/api/?name=Client&background=667eea&color=fff" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%;">
+                        <div>
+                            <strong id="userEmail">Loading...</strong>
+                            <p style="margin: 0; font-size: 12px; color: #666;">Client</p>
+                        </div>
+                    </div>
+                    <a href="/client-dashboard.html">📊 Dashboard</a>
+                    <a href="/shop.html">🛍️ Shop</a>
+                    <a href="/cart.html">🛒 Cart</a>
+                    <a href="/reserve.html">📅 Reserve</a>
+                    <a href="#" onclick="logout(); return false;">🚪 Logout</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="stats-grid" style="margin-bottom: 40px;">
+            <div class="stat-card">
+                <h3>Active Orders</h3>
+                <div class="stat-value" id="activeOrdersCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active Reservations</h3>
+                <div class="stat-value" id="activeReservationsCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Orders</h3>
+                <div class="stat-value" id="totalOrdersCount">0</div>
+            </div>
+        </div>
+
+        <div class="table-container" style="margin-bottom: 30px;">
+            <h2>Active Orders</h2>
+            <div id="active-orders"></div>
+        </div>
+
+        <div class="table-container" style="margin-bottom: 30px;">
+            <h2>Active Reservations</h2>
+            <div id="active-reservations"></div>
+        </div>
+
+        <div class="table-container" style="margin-bottom: 30px;">
+            <h2>Order History</h2>
+            <div id="order-history"></div>
+        </div>
+
+        <div class="table-container" style="margin-bottom: 30px;">
+            <h2>Reservation History</h2>
+            <div id="reservation-history"></div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/menu.js"></script>
+    <script>
+        async function loadDashboard() {
+            const token = getToken();
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:8000/api/client/dashboard', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/login.html';
+                        return;
+                    }
+                    throw new Error('Failed to load dashboard');
+                }
+                const data = await response.json();
+                
+                document.getElementById('activeOrdersCount').textContent = data.active_orders.length;
+                document.getElementById('activeReservationsCount').textContent = data.active_reservations.length;
+                document.getElementById('totalOrdersCount').textContent = data.active_orders.length + data.order_history.length;
+                
+                renderOrders('active-orders', data.active_orders);
+                renderOrders('order-history', data.order_history);
+                renderReservations('active-reservations', data.active_reservations);
+                renderReservations('reservation-history', data.reservation_history);
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                showToast('Failed to load dashboard', 'error');
+            }
+        }
+
+        function renderOrders(containerId, orders) {
+            const container = document.getElementById(containerId);
+            
+            if (orders.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No orders found.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                            <th>Items</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${orders.map(order => `
+                            <tr>
+                                <td><strong>${order.order_number}</strong></td>
+                                <td><span class="badge ${order.status}">${order.status}</span></td>
+                                <td>$${order.total_amount.toFixed(2)}</td>
+                                <td>${order.items?.length || 0}</td>
+                                <td>${new Date(order.created_at).toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderReservations(containerId, reservations) {
+            const container = document.getElementById(containerId);
+            
+            if (reservations.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No reservations found.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Reservation #</th>
+                            <th>Service</th>
+                            <th>Location</th>
+                            <th>Vehicle</th>
+                            <th>Status</th>
+                            <th>Queue</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${reservations.map(res => `
+                            <tr>
+                                <td><strong>${res.reservation_number}</strong></td>
+                                <td>${res.service.name}</td>
+                                <td>${res.location.name}</td>
+                                <td>${res.vehicle_plate}</td>
+                                <td><span class="badge ${res.status}">${res.status}</span></td>
+                                <td>${res.queue_position ? `<strong>#${res.queue_position}</strong>` : '-'}</td>
+                                <td>${new Date(res.created_at).toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        document.addEventListener('click', function(event) {
+            const profileDropdown = document.querySelector('.profile-dropdown');
+            if (!profileDropdown.contains(event.target)) {
+                document.getElementById('profileMenu').style.display = 'none';
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('isDemo');
+            localStorage.removeItem('user_permissions');
+            window.location.href = '/login.html';
+        }
+
+        const userEmail = localStorage.getItem('userEmail') || 'Client';
+        const clientName = userEmail.split('@')[0].charAt(0).toUpperCase() + userEmail.split('@')[0].slice(1);
+        document.getElementById('userEmail').textContent = userEmail;
+        document.getElementById('welcomeMessage').textContent = `Welcome back, ${clientName}!`;
+
+        loadDashboard();
+        setInterval(loadDashboard, 30000);
+    </script>
+</body>
+</html>
