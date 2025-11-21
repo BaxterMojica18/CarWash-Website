@@ -29,6 +29,16 @@ A full-stack web application for managing car wash operations with dashboard, in
 - ✅ Order status tracking
 - ✅ FIFO queue system for car wash services
 
+## Security Best Practices
+
+**Before deploying to production:**
+1. Change all default passwords in the database
+2. Generate a strong `SECRET_KEY` in your `.env` file
+3. Use environment variables for all sensitive data
+4. Never commit `.env` files to version control
+5. Enable HTTPS/SSL for production deployments
+6. Use strong, unique passwords for database access
+
 ## Setup Instructions
 
 ### Option 1: Docker Setup (Recommended)
@@ -87,15 +97,18 @@ python test_api.py
 
 ## Login Credentials
 
-### Demo Account
+> **⚠️ SECURITY NOTE:** These are demo/test credentials for development only. 
+> Never use these passwords in production. Change all default passwords before deploying.
+
+### Demo Account (Development Only)
 - Email: `demo@carwash.com`
 - Password: `demo123`
 
-### Admin Account
+### Admin Account (Development Only)
 - Email: `admin@carwash.com`
 - Password: `admin123`
 
-### Client Account (for testing e-commerce)
+### Client Account (Development Only)
 - Email: `client@carwash.com`
 - Password: `client123`
 - Note: Run `python create_client_user.py` to create this account
