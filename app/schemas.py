@@ -154,3 +154,77 @@ class CreateUser(BaseModel):
 class UpdateUserPermissions(BaseModel):
     user_id: int
     permissions: List[str]
+
+class CartItemCreate(BaseModel):
+    product_service_id: int
+    quantity: int
+
+class CartItemUpdate(BaseModel):
+    quantity: int
+
+class CartItemResponse(BaseModel):
+    id: int
+    product_service_id: int
+    quantity: int
+    price_at_add: float
+    product_service: ProductService
+    class Config:
+        from_attributes = True
+
+class OrderCreate(BaseModel):
+    payment_method: Optional[str] = None
+
+class OrderStatusUpdate(BaseModel):
+    status: str
+
+class OrderItemResponse(BaseModel):
+    id: int
+    product_service_id: int
+    quantity: int
+    unit_price: float
+    subtotal: float
+    product_service: ProductService
+    class Config:
+        from_attributes = True
+
+class OrderResponse(BaseModel):
+    id: int
+    order_number: str
+    client_id: int
+    status: str
+    total_amount: float
+    payment_method: Optional[str]
+    created_at: datetime
+    items: List[OrderItemResponse]
+    class Config:
+        from_attributes = True
+
+class ReservationCreate(BaseModel):
+    service_id: int
+    location_id: int
+    vehicle_plate: str
+
+class ReservationStatusUpdate(BaseModel):
+    status: str
+
+class ReservationResponse(BaseModel):
+    id: int
+    reservation_number: str
+    client_id: int
+    service_id: int
+    location_id: int
+    vehicle_plate: str
+    status: str
+    queue_position: Optional[int]
+    estimated_start_time: Optional[datetime]
+    created_at: datetime
+    service: ProductService
+    location: Location
+    class Config:
+        from_attributes = True
+
+class ClientDashboard(BaseModel):
+    active_orders: List[OrderResponse]
+    order_history: List[OrderResponse]
+    active_reservations: List[ReservationResponse]
+    reservation_history: List[ReservationResponse]

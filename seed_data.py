@@ -1,5 +1,7 @@
 from app.database import SessionLocal
 from app import crud, database
+from datetime import datetime, timedelta
+import random
 
 db = SessionLocal()
 
@@ -7,7 +9,8 @@ db = SessionLocal()
 roles_data = [
     {"name": "admin", "description": "Full system access"},
     {"name": "owner", "description": "Business owner access"},
-    {"name": "staff", "description": "Limited staff access"}
+    {"name": "staff", "description": "Limited staff access"},
+    {"name": "client", "description": "Customer access"}
 ]
 
 for role_data in roles_data:
@@ -34,7 +37,14 @@ permissions_data = [
     {"name": "add_bay", "description": "Add washing bays"},
     {"name": "edit_bay", "description": "Edit washing bays"},
     {"name": "delete_bay", "description": "Delete washing bays"},
-    {"name": "view_reports", "description": "View sales reports"}
+    {"name": "view_reports", "description": "View sales reports"},
+    {"name": "view_products", "description": "View products and services"},
+    {"name": "manage_cart", "description": "Manage shopping cart"},
+    {"name": "place_order", "description": "Place product orders"},
+    {"name": "reserve_service", "description": "Reserve car wash services"},
+    {"name": "view_own_orders", "description": "View own orders and reservations"},
+    {"name": "manage_orders", "description": "Manage all orders"},
+    {"name": "manage_queue", "description": "Manage service queue"}
 ]
 
 for perm_data in permissions_data:
@@ -49,10 +59,14 @@ print("[OK] Permissions created")
 admin_role = db.query(database.Role).filter(database.Role.name == "admin").first()
 owner_role = db.query(database.Role).filter(database.Role.name == "owner").first()
 staff_role = db.query(database.Role).filter(database.Role.name == "staff").first()
+client_role = db.query(database.Role).filter(database.Role.name == "client").first()
 
 all_permissions = db.query(database.Permission).all()
 staff_permissions = db.query(database.Permission).filter(
     database.Permission.name.in_(["add_invoice", "view_reports"])
+).all()
+client_permissions = db.query(database.Permission).filter(
+    database.Permission.name.in_(["view_products", "manage_cart", "place_order", "reserve_service", "view_own_orders"])
 ).all()
 
 if admin_role:
@@ -61,6 +75,8 @@ if owner_role:
     owner_role.permissions = all_permissions
 if staff_role:
     staff_role.permissions = staff_permissions
+if client_role:
+    client_role.permissions = client_permissions
 db.commit()
 print("[OK] Permissions assigned to roles")
 
@@ -111,6 +127,48 @@ if db.query(database.ProductService).count() == 0:
         db.add(db_prod)
     db.commit()
     print("[OK] Products/Services created")
+
+# Create sample invoices
+if db.query(database.Invoice).count() == 0:
+    customers = ["John Doe", "Jane Smith", "Bob Johnson", "Alice Williams", "Charlie Brown"]
+    locations = db.query(database.Location).all()
+    products = db.query(database.ProductService).all()
+    
+    for i in range(10):
+        invoice_date = datetime.now() - timedelta(days=random.randint(0, 7))
+        
+        invoice = database.Invoice(
+            invoice_number=f"INV-{invoice_date.strftime('%Y%m%d%H%M%S')}-{i}",
+            date=invoice_date,
+            customer_name=random.choice(customers),
+            total_amount=0,
+            location_id=random.choice(locations).id,
+            user_id=admin_user.id,
+            status="A"
+        )
+        db.add(invoice)
+        db.flush()
+        
+        total = 0
+        for _ in range(random.randint(1, 3)):
+            product = random.choice(products)
+            quantity = random.randint(1, 3)
+            subtotal = product.price * quantity
+            total += subtotal
+            
+            item = database.InvoiceItem(
+                invoice_id=invoice.id,
+                product_service_id=product.id,
+                quantity=quantity,
+                unit_price=product.price,
+                subtotal=subtotal
+            )
+            db.add(item)
+        
+        invoice.total_amount = total
+    
+    db.commit()
+    print("[OK] Sample invoices created")
 
 print("\n[OK] Database seeded successfully!")
 print("\nDemo Login:")

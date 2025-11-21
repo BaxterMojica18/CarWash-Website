@@ -25,8 +25,6 @@ services:
       sh -c "sleep 10 && 
              python migrate_db.py && 
              python seed_data.py &&
-             python add_permissions.py &&
-             python assign_user_roles.py &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
 volumes:
