@@ -1,15 +1,34 @@
 async function loadBays() {
     try {
+        const response = await fetch(`${API_BASE}/auth/me/permissions`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const data = await response.json();
+        const permissions = data.permissions || [];
+        const canManage = permissions.includes('manage_locations');
+        const canView = permissions.includes('view_locations') || canManage;
+        
+        if (!canView) {
+            document.querySelector('.settings-section:has(#baysGrid)').style.display = 'none';
+            return;
+        }
+        
+        if (canManage) {
+            document.getElementById('addBayBtn').style.display = 'inline-block';
+        }
+        
         const locations = await API.locations.getAll();
         const grid = document.getElementById('baysGrid');
         grid.innerHTML = locations.map(loc => `
             <div class="bay-card">
                 <h3>${loc.name}</h3>
                 <p>${loc.address}</p>
+                ${canManage ? `
                 <div class="bay-actions">
                     <button class="btn-edit" onclick="editBay(${loc.id}, '${loc.name}', '${loc.address}')">Edit</button>
                     <button class="btn-delete" onclick="deleteBay(${loc.id})">Delete</button>
                 </div>
+                ` : ''}
             </div>
         `).join('');
     } catch (error) {
@@ -258,7 +277,8 @@ async function checkUserPermissions() {
         });
         const data = await response.json();
         const roles = data.roles || [];
-        if (roles.includes('admin') || roles.includes('owner')) {
+        // Only superadmin can see user management in settings
+        if (roles.includes('superadmin')) {
             document.getElementById('userManagementSection').style.display = 'block';
             loadUsers();
         }
@@ -534,6 +554,172 @@ document.getElementById('paymentMethodForm').addEventListener('submit', async fu
 });
 
 checkUserPermissions();
+checkSuperadminAccess();
 loadBays();
 loadPresets();
 loadPaymentMethods();
+
+async function checkSuperadminAccess() {
+    try {
+        const response = await fetch(`${API_BASE}/auth/me/permissions`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const data = await response.json();
+        const roles = data.roles || [];
+        if (roles.includes('superadmin')) {
+            document.getElementById('dashboardCustomSection').style.display = 'block';
+            loadDashboardSettings();
+            loadDashboardModules();
+        }
+    } catch (error) {
+        console.error('Failed to check superadmin access:', error);
+    }
+}
+
+async function loadDashboardSettings() {
+    try {
+        const response = await fetch(`${API_BASE}/dashboard/settings`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const settings = await response.json();
+        
+        document.getElementById('websiteName').value = settings.website_name;
+        document.getElementById('primaryColor').value = settings.primary_color;
+        document.getElementById('backgroundColor').value = settings.background_color;
+        document.getElementById('sidebarColorCustom').value = settings.sidebar_color;
+        document.getElementById('layoutType').value = settings.layout_type;
+    } catch (error) {
+        console.error('Failed to load dashboard settings:', error);
+    }
+}
+
+document.getElementById('dashboardCustomForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const data = {
+        website_name: document.getElementById('websiteName').value,
+        primary_color: document.getElementById('primaryColor').value,
+        background_color: document.getElementById('backgroundColor').value,
+        sidebar_color: document.getElementById('sidebarColorCustom').value,
+        layout_type: document.getElementById('layoutType').value
+    };
+    
+    try {
+        await fetch(`${API_BASE}/dashboard/settings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify(data)
+        });
+        showToast('Dashboard settings saved!', 'success');
+    } catch (error) {
+        showToast('Failed to save dashboard settings', 'error');
+    }
+});
+
+async function loadDashboardModules() {
+    try {
+        const response = await fetch(`${API_BASE}/dashboard/modules`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const modules = await response.json();
+        
+        const list = document.getElementById('modulesList');
+        list.innerHTML = modules.map(mod => `
+            <div class="bay-card">
+                <h3>${mod.title}</h3>
+                <p>Type: ${mod.module_type} | Width: ${mod.width} | Position: ${mod.position}</p>
+                <p>Visible: ${mod.is_visible ? 'Yes' : 'No'}</p>
+                <div class="bay-actions">
+                    <button class="btn-edit" onclick="editModule(${mod.id}, '${mod.module_name}', '${mod.module_type}', '${mod.title}', '${mod.width}', ${mod.position}, ${mod.is_visible})">Edit</button>
+                    <button class="btn-delete" onclick="deleteModule(${mod.id})">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load modules:', error);
+    }
+}
+
+function showAddModule() {
+    document.getElementById('addModuleModal').style.display = 'block';
+    document.getElementById('moduleModalTitle').textContent = 'Add Dashboard Module';
+    document.getElementById('moduleForm').reset();
+    document.getElementById('editModuleId').value = '';
+    document.getElementById('moduleSubmitBtn').textContent = 'Add Module';
+}
+
+function closeModuleModal() {
+    document.getElementById('addModuleModal').style.display = 'none';
+}
+
+function editModule(id, name, type, title, width, position, visible) {
+    document.getElementById('addModuleModal').style.display = 'block';
+    document.getElementById('moduleModalTitle').textContent = 'Edit Dashboard Module';
+    document.getElementById('editModuleId').value = id;
+    document.getElementById('moduleName').value = name;
+    document.getElementById('moduleType').value = type;
+    document.getElementById('moduleTitle').value = title;
+    document.getElementById('moduleWidth').value = width;
+    document.getElementById('modulePosition').value = position;
+    document.getElementById('moduleVisible').checked = visible;
+    document.getElementById('moduleSubmitBtn').textContent = 'Update Module';
+}
+
+async function deleteModule(id) {
+    if (confirm('Delete this module?')) {
+        try {
+            await fetch(`${API_BASE}/dashboard/modules/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            loadDashboardModules();
+            showToast('Module deleted successfully', 'success');
+        } catch (error) {
+            showToast('Failed to delete module', 'error');
+        }
+    }
+}
+
+document.getElementById('moduleForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('editModuleId').value;
+    const data = {
+        module_name: document.getElementById('moduleName').value,
+        module_type: document.getElementById('moduleType').value,
+        title: document.getElementById('moduleTitle').value,
+        width: document.getElementById('moduleWidth').value,
+        position: parseInt(document.getElementById('modulePosition').value),
+        is_visible: document.getElementById('moduleVisible').checked,
+        config: {}
+    };
+    
+    try {
+        if (id) {
+            await fetch(`${API_BASE}/dashboard/modules/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(data)
+            });
+            showToast('Module updated successfully', 'success');
+        } else {
+            await fetch(`${API_BASE}/dashboard/modules`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(data)
+            });
+            showToast('Module created successfully', 'success');
+        }
+        closeModuleModal();
+        loadDashboardModules();
+    } catch (error) {
+        showToast('Failed to save module', 'error');
+    }
+});

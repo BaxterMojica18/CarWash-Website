@@ -29,6 +29,14 @@ A full-stack web application for managing car wash operations with dashboard, in
 - ✅ Order status tracking
 - ✅ FIFO queue system for car wash services
 
+### Permissions Management (NEW!)
+- ✅ Role-based access control (RBAC)
+- ✅ 6 granular permissions (products, locations, invoices, reports, settings, users)
+- ✅ Visual permissions management UI
+- ✅ Real-time permission toggling
+- ✅ Search and filter users
+- ✅ Admin/Owner dashboard for user management
+
 ## Security Best Practices
 
 **Before deploying to production:**
@@ -104,14 +112,20 @@ python test_api.py
 - Email: `demo@carwash.com`
 - Password: `demo123`
 
+### Superadmin Account (Development Only)
+- Email: `owner@carwash.com`
+- Password: `owner123`
+- Note: Run `python create_superadmin.py` to create this account
+
 ### Admin Account (Development Only)
 - Email: `admin@carwash.com`
 - Password: `admin123`
 
-### Client Account (Development Only)
-- Email: `client@carwash.com`
-- Password: `client123`
-- Note: Run `python create_client_user.py` to create this account
+### Demo Accounts (For Testing)
+- **Client:** `demo-client@carwash.com` / `demo123` (10 orders, 10 reservations max)
+- **Staff:** `demo-staff@carwash.com` / `demo123` (10 invoices max)
+- **Admin:** `demo-admin@carwash.com` / `demo123` (1 product, 1 service, 10 invoices max)
+- Note: Run `python create_demo_users.py` to create these accounts
 
 ## API Endpoints
 
@@ -195,6 +209,7 @@ See [ECOMMERCE_SETUP.md](ECOMMERCE_SETUP.md) for detailed documentation.
 ### Owner/Admin Pages
 - `/order-management.html` - Manage customer orders
 - `/queue-management.html` - Manage service queue
+- `/permissions-management.html` - Manage user permissions (Admin/Owner only)
 
 ## Next Steps
 

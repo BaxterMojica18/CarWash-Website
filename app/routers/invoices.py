@@ -23,10 +23,18 @@ def create_invoice(invoice: schemas.InvoiceCreate, db: Session = Depends(databas
 
 @router.get("/", response_model=List[schemas.Invoice])
 def get_invoices(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    from app.permissions import get_user_permissions
+    perms = get_user_permissions(current_user)
+    if 'view_invoices' not in perms and 'manage_invoices' not in perms:
+        raise HTTPException(status_code=403, detail="Permission denied")
     return crud.get_invoices(db)
 
 @router.get("/{invoice_id}", response_model=schemas.Invoice)
 def get_invoice(invoice_id: int, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    from app.permissions import get_user_permissions
+    perms = get_user_permissions(current_user)
+    if 'view_invoices' not in perms and 'manage_invoices' not in perms:
+        raise HTTPException(status_code=403, detail="Permission denied")
     invoice = crud.get_invoice(db, invoice_id)
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
