@@ -2,6 +2,11 @@
 
 A full-stack web application for managing car wash operations with dashboard, invoicing, and settings management.
 
+## 📚 Documentation
+
+**For complete system updates, features, and change history, see:**
+- **[SYSTEM_UPDATES_DATA_HISTORY_LOGS.md](SYSTEM_UPDATES_DATA_HISTORY_LOGS.md)** - Comprehensive documentation of all features, updates, and changes
+
 ## Tech Stack
 
 - **Backend**: Python FastAPI
