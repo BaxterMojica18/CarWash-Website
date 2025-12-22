@@ -118,5 +118,22 @@ const API = {
                 method: 'POST',
                 body: JSON.stringify(data)
             })
+    },
+    
+    reservations: {
+        create: (data) => 
+            apiRequest('/reservations/', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }),
+        getAll: (locationId = null) => 
+            apiRequest(`/reservations/${locationId ? `?location_id=${locationId}` : ''}`),
+        getById: (id) => apiRequest(`/reservations/${id}`),
+        updateStatus: (id, status) => 
+            apiRequest(`/reservations/${id}/status`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status })
+            }),
+        getQueue: (locationId) => apiRequest(`/reservations/queue?location_id=${locationId}`)
     }
 };

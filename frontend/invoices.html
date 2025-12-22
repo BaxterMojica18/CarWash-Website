@@ -18,6 +18,7 @@
             <li><a href="dashboard.html">Dashboard</a></li>
             <li><a href="invoices.html" class="active">Invoices</a></li>
             <li><a href="order-management.html">Orders</a></li>
+            <li><a href="queue-management.html">Queue</a></li>
             <li><a href="products.html">Products</a></li>
             <li><a href="services.html">Services</a></li>
             <li><a href="reports.html">Reports</a></li>
@@ -31,9 +32,11 @@
             <button class="btn-primary" onclick="showCreateInvoice()">+ Create Invoice</button>
         </header>
         <div class="table-container">
-            <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
-                <input type="text" id="searchInvoice" placeholder="Search by invoice number, customer name..." onkeyup="searchInvoices()" style="max-width: 400px;">
-                <select id="invoiceFilter" onchange="filterInvoices()" style="padding: 8px;">
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+                <div style="position: relative; flex: 1; max-width: 400px;">
+                    <input type="text" id="searchInvoice" placeholder="🔍 Search by invoice number, customer name..." onkeyup="searchInvoices()" style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                </div>
+                <select id="invoiceFilter" onchange="filterInvoices()" style="padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: white; cursor: pointer; transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'">
                     <option value="all">All Time</option>
                     <option value="weekly">This Week</option>
                     <option value="monthly">This Month</option>

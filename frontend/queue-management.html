@@ -4,49 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Queue Management - Car Wash</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Service Queue Management</h1>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo">🚗</span>
+            <h2 id="sidebarName">CarWash</h2>
+        </div>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="invoices.html">Invoices</a></li>
+            <li><a href="order-management.html">Orders</a></li>
+            <li><a href="queue-management.html" class="active">Queue</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="reports.html">Reports</a></li>
+            <li><a href="settings.html">Settings</a></li>
+            <li><a href="login.html" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+    <main class="content">
+        <header>
+            <h1>Service Queue Management</h1>
+        </header>
         
-        <div class="location-selector">
-            <label>Select Location:</label>
-            <select id="location-select" onchange="loadQueue()">
+        <div class="filters" style="display: flex; gap: 10px; margin-bottom: 30px; padding: 15px; border-radius: 15px; flex-wrap: wrap; background: white; border: 1px solid #e0e0e0;">
+            <button onclick="filterReservations('all')" class="filter-btn active" data-filter="all" style="padding: 12px 20px; border: 2px solid #667eea; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: #667eea; color: white; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">All Reservations</button>
+            <button onclick="filterReservations('pending')" class="filter-btn" data-filter="pending" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Pending</button>
+            <button onclick="filterReservations('accepted')" class="filter-btn" data-filter="accepted" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Accepted</button>
+            <button onclick="filterReservations('in_progress')" class="filter-btn" data-filter="in_progress" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">In Progress</button>
+            <button onclick="filterReservations('completed')" class="filter-btn" data-filter="completed" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Completed</button>
+            <select id="location-select" onchange="loadQueue()" style="padding: 12px 20px; border: 2px solid #e0e0e0; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; color: #333;">
                 <option value="">All Locations</option>
             </select>
         </div>
 
-        <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('queue')">Active Queue</button>
-            <button class="tab-btn" onclick="showTab('all')">All Reservations</button>
-        </div>
+        <div id="reservations-list"></div>
+    </main>
 
-        <div id="queue-tab" class="tab-content active">
-            <h2>Current Queue</h2>
-            <div id="queue-list"></div>
-        </div>
-
-        <div id="all-tab" class="tab-content">
-            <h2>All Reservations</h2>
-            <div id="all-reservations"></div>
-        </div>
-    </div>
-
-    <script src="/js/api.js"></script>
-    <script src="/js/toast.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/toast.js"></script>
     <script>
+        let allReservations = [];
+        let currentFilter = 'all';
         let locations = [];
-        let reservations = [];
 
         async function loadLocations() {
             try {
-                locations = await apiRequest('/api/settings/locations', 'GET');
+                const token = getToken();
+                const response = await fetch('http://localhost:8000/api/settings/locations', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                locations = await response.json();
                 const select = document.getElementById('location-select');
                 select.innerHTML = '<option value="">All Locations</option>' +
                     locations.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
             } catch (error) {
-                showToast('Failed to load locations', 'error');
+                console.error('Failed to load locations:', error);
             }
         }
 
@@ -54,86 +71,115 @@
             const locationId = document.getElementById('location-select').value;
             
             try {
-                if (locationId) {
-                    const queue = await apiRequest(`/api/reservations/queue?location_id=${locationId}`, 'GET');
-                    renderQueue(queue);
-                    
-                    reservations = await apiRequest(`/api/reservations?location_id=${locationId}`, 'GET');
-                } else {
-                    reservations = await apiRequest('/api/reservations', 'GET');
-                    const queue = reservations.filter(r => ['pending', 'accepted', 'in_progress'].includes(r.status));
-                    renderQueue(queue);
-                }
-                
-                renderAllReservations();
+                const token = getToken();
+                const url = locationId 
+                    ? `http://localhost:8000/api/reservations/?location_id=${locationId}`
+                    : 'http://localhost:8000/api/reservations/';
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                allReservations = await response.json();
+                renderReservations();
             } catch (error) {
-                showToast('Failed to load queue', 'error');
+                console.error('Failed to load reservations:', error);
+                showToast('Failed to load reservations', 'error');
             }
         }
 
-        function renderQueue(queue) {
-            const container = document.getElementById('queue-list');
-            
-            if (queue.length === 0) {
-                container.innerHTML = '<p>No active reservations in queue.</p>';
+        function filterReservations(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === status) {
+                    btn.style.background = '#667eea';
+                    btn.style.color = 'white';
+                    btn.style.border = '2px solid #667eea';
+                    btn.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.3)';
+                } else {
+                    btn.style.background = 'white';
+                    btn.style.color = '#333';
+                    btn.style.border = '2px solid #e0e0e0';
+                    btn.style.boxShadow = 'none';
+                }
+            });
+            renderReservations();
+        }
+
+        function renderReservations() {
+            const container = document.getElementById('reservations-list');
+            let filtered = currentFilter === 'all' 
+                ? allReservations 
+                : allReservations.filter(r => r.status === currentFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: white; font-size: 1.5rem; padding: 60px 20px; background: rgba(255,255,255,0.2); border-radius: 20px;">📭 No reservations found</div>';
                 return;
             }
 
-            container.innerHTML = queue.map(res => `
-                <div class="queue-item">
-                    <div class="queue-position">#${res.queue_position || '-'}</div>
-                    <div class="queue-details">
-                        <h3>${res.reservation_number}</h3>
-                        <p><strong>${res.service.name}</strong> at ${res.location.name}</p>
-                        <p>Vehicle: ${res.vehicle_plate}</p>
-                        <p>Status: <span class="status status-${res.status}">${res.status}</span></p>
-                        <p>Created: ${new Date(res.created_at).toLocaleString()}</p>
+            container.innerHTML = filtered.map(res => `
+                <div style="background: white; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden; transition: all 0.3s ease;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <h3 style="color: white; margin: 0 0 8px 0; font-size: 1.3rem;">🧾 ${res.reservation_number}</h3>
+                            <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9rem;">📅 ${new Date(res.created_at).toLocaleString()}</p>
+                            ${res.queue_position ? `<p style="color: white; margin: 5px 0 0 0; font-weight: bold;">Queue Position: #${res.queue_position}</p>` : ''}
+                        </div>
+                        <span style="padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; background: ${getStatusColor(res.status)}">${res.status.replace('_', ' ').toUpperCase()}</span>
                     </div>
-                    <div class="queue-actions">
+                    <div style="padding: 25px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
+                                <span style="font-weight: 600; color: #495057;">🔧 Service:</span>
+                                <span style="font-weight: bold; color: #667eea;">${res.service.name}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
+                                <span style="font-weight: 600; color: #495057;">📍 Location:</span>
+                                <span style="font-weight: bold; color: #667eea;">${res.location.name}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
+                                <span style="font-weight: 600; color: #495057;">🚗 Vehicle:</span>
+                                <span style="font-weight: bold; color: #667eea;">${res.vehicle_plate}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding: 20px; background: #f8f9fa; display: flex; gap: 10px; flex-wrap: wrap;">
                         ${res.status === 'pending' ? `
-                            <button onclick="updateStatus(${res.id}, 'accepted')" class="btn btn-success">Accept</button>
-                            <button onclick="updateStatus(${res.id}, 'cancelled')" class="btn btn-danger">Reject</button>
+                            <button onclick="updateStatus(${res.id}, 'accepted')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">Accept</button>
+                            <button onclick="updateStatus(${res.id}, 'cancelled')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Reject</button>
                         ` : ''}
                         ${res.status === 'accepted' ? `
-                            <button onclick="updateStatus(${res.id}, 'in_progress')" class="btn">Start Service</button>
+                            <button onclick="updateStatus(${res.id}, 'in_progress')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">Start Service</button>
                         ` : ''}
                         ${res.status === 'in_progress' ? `
-                            <button onclick="updateStatus(${res.id}, 'completed')" class="btn btn-success">Complete</button>
+                            <button onclick="updateStatus(${res.id}, 'completed')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">Mark Complete</button>
                         ` : ''}
                     </div>
                 </div>
             `).join('');
         }
 
-        function renderAllReservations() {
-            const container = document.getElementById('all-reservations');
-            
-            if (reservations.length === 0) {
-                container.innerHTML = '<p>No reservations found.</p>';
-                return;
-            }
-
-            container.innerHTML = reservations.map(res => `
-                <div class="reservation-card">
-                    <div class="card-header">
-                        <div>
-                            <strong>${res.reservation_number}</strong>
-                            ${res.queue_position ? `<span class="queue-badge">#${res.queue_position}</span>` : ''}
-                        </div>
-                        <span class="status status-${res.status}">${res.status}</span>
-                    </div>
-                    <div class="card-body">
-                        <p><strong>${res.service.name}</strong> at ${res.location.name}</p>
-                        <p>Vehicle: ${res.vehicle_plate}</p>
-                        <p>Date: ${new Date(res.created_at).toLocaleString()}</p>
-                    </div>
-                </div>
-            `).join('');
+        function getStatusColor(status) {
+            const colors = {
+                pending: '#fff3cd; color: #856404',
+                accepted: '#d1ecf1; color: #0c5460',
+                in_progress: '#cce5ff; color: #004085',
+                completed: '#d4edda; color: #155724',
+                cancelled: '#f8d7da; color: #721c24'
+            };
+            return colors[status] || '#e0e0e0; color: #333';
         }
 
         async function updateStatus(reservationId, status) {
             try {
-                await apiRequest(`/api/reservations/${reservationId}/status`, 'PATCH', { status });
+                const token = getToken();
+                const response = await fetch(`http://localhost:8000/api/reservations/${reservationId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+                if (!response.ok) throw new Error('Failed to update');
                 showToast('Reservation status updated', 'success');
                 loadQueue();
             } catch (error) {
@@ -141,12 +187,9 @@
             }
         }
 
-        function showTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(`${tab}-tab`).classList.add('active');
-            event.target.classList.add('active');
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
         }
 
         loadLocations().then(() => loadQueue());
@@ -154,104 +197,13 @@
     </script>
 
     <style>
-        .location-selector {
-            margin-bottom: 20px;
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: white;
+            min-height: 100vh;
         }
-        .location-selector select {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-left: 10px;
-        }
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .tab-btn {
-            padding: 10px 20px;
-            border: none;
-            background: #f0f0f0;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .tab-btn.active {
-            background: #667eea;
-            color: white;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .queue-item {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        .queue-position {
-            font-size: 36px;
-            font-weight: bold;
-            color: #667eea;
-            min-width: 60px;
-            text-align: center;
-        }
-        .queue-details {
-            flex: 1;
-        }
-        .queue-details h3 {
-            margin: 0 0 10px 0;
-        }
-        .queue-details p {
-            margin: 5px 0;
-        }
-        .queue-actions button {
-            margin-right: 10px;
-        }
-        .reservation-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            overflow: hidden;
-        }
-        .card-header {
-            background: #f5f5f5;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .card-body {
-            padding: 15px;
-        }
-        .card-body p {
-            margin: 5px 0;
-        }
-        .queue-badge {
-            background: #667eea;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-        .status {
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-accepted { background: #d1ecf1; color: #0c5460; }
-        .status-in_progress { background: #cce5ff; color: #004085; }
-        .status-completed { background: #d4edda; color: #155724; }
-        .status-cancelled { background: #f8d7da; color: #721c24; }
     </style>
 </body>
 </html>

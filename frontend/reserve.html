@@ -48,17 +48,36 @@
         let services = [];
         let locations = [];
 
+        function checkAuth() {
+            const token = getToken();
+            if (!token) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            return true;
+        }
+
         async function loadData() {
+            if (!checkAuth()) return;
+            
             try {
+                const token = getToken();
                 const response = await fetch('http://localhost:8000/api/settings/products', {
-                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
                 if (!response.ok) throw new Error('Failed to load products');
                 const products = await response.json();
                 services = products.filter(p => p.type === 'service');
                 
                 const locResponse = await fetch('http://localhost:8000/api/settings/locations', {
-                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!locResponse.ok) throw new Error('Failed to load locations');
                 locations = await locResponse.json();
@@ -72,7 +91,7 @@
                 }
             } catch (error) {
                 console.error('Failed to load data:', error);
-                showToast('Failed to load data', 'error');
+                showToast('Failed to load data: ' + error.message, 'error');
             }
         }
 
@@ -89,16 +108,24 @@
         document.getElementById('reservation-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            if (!checkAuth()) return;
+            
             const serviceId = parseInt(document.getElementById('service-select').value);
             const locationId = parseInt(document.getElementById('location-select').value);
             const vehiclePlate = document.getElementById('vehicle-plate').value;
 
+            if (!serviceId || !locationId || !vehiclePlate) {
+                showToast('Please fill all fields', 'error');
+                return;
+            }
+
             try {
-                const response = await fetch('http://localhost:8000/api/reservations', {
+                const token = getToken();
+                const response = await fetch('http://localhost:8000/api/reservations/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getToken()}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
                         service_id: serviceId,
@@ -107,17 +134,26 @@
                     })
                 });
 
-                if (!response.ok) throw new Error('Failed to create reservation');
-                const reservation = await response.json();
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login.html';
+                    return;
+                }
 
-                showToast(`Reservation created! Queue position: ${reservation.queue_position}`, 'success');
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to create reservation');
+                }
+
+                showToast(`Reservation created! Queue position: ${data.queue_position}`, 'success');
                 
                 setTimeout(() => {
                     window.location.href = '/client-dashboard.html';
                 }, 2000);
             } catch (error) {
                 console.error('Failed to create reservation:', error);
-                showToast('Failed to create reservation', 'error');
+                showToast(error.message || 'Failed to create reservation', 'error');
             }
         });
 

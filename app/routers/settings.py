@@ -24,10 +24,6 @@ router = APIRouter()
 
 @router.get("/locations", response_model=List[schemas.Location])
 def get_locations(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
-    from app.permissions import get_user_permissions
-    perms = get_user_permissions(current_user)
-    if 'view_locations' not in perms and 'manage_locations' not in perms:
-        raise HTTPException(status_code=403, detail="Permission denied")
     return crud.get_locations(db, current_user.id)
 
 @router.post("/locations", response_model=schemas.Location)

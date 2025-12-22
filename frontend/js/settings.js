@@ -217,9 +217,15 @@ function applyThemeFromData(theme) {
 
 function selectPredefinedLogo() {
     const emoji = document.getElementById('logoSelect').value;
-    document.getElementById('currentLogo').textContent = emoji;
-    localStorage.setItem('logo', emoji);
-    localStorage.setItem('logoType', 'emoji');
+    if (emoji === 'none') {
+        document.getElementById('currentLogo').textContent = '';
+        localStorage.removeItem('logo');
+        localStorage.removeItem('logoType');
+    } else {
+        document.getElementById('currentLogo').textContent = emoji;
+        localStorage.setItem('logo', emoji);
+        localStorage.setItem('logoType', 'emoji');
+    }
 }
 
 function previewLogo() {
