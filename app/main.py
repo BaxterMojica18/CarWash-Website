@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.database import create_tables
-from app.routers import auth, settings, invoices, reports, cart, orders, reservations, client
+from app.routers import auth, settings, invoices, reports, cart, orders, reservations, client, dashboard
 import os
 
 app = FastAPI(
@@ -35,6 +35,7 @@ app.include_router(cart.router, prefix="/api/cart", tags=["Cart"])
 app.include_router(orders.router, prefix="/api/orders", tags=["Orders"])
 app.include_router(reservations.router, prefix="/api/reservations", tags=["Reservations"])
 app.include_router(client.router, prefix="/api/client", tags=["Client"])
+app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
 
 @app.get("/api/health")
 def health_check():

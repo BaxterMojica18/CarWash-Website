@@ -74,14 +74,22 @@ def get_my_permissions(current_user: database.User = Depends(get_current_user)):
 @router.get("/users", response_model=List[schemas.UserPermissions])
 def list_users(db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
     users = db.query(database.User).all()
+    current_user_roles = [role.name for role in current_user.roles]
+    is_superadmin_user = "superadmin" in current_user_roles
+    
     result = []
     for user in users:
-        roles = [role.name for role in user.roles if not role.name.startswith('custom_')]
+        user_roles = [role.name for role in user.roles if not role.name.startswith('custom_')]
+        
+        # Hide superadmin users from non-superadmin users
+        if "superadmin" in user_roles and not is_superadmin_user:
+            continue
+        
         permissions = get_user_permissions(user)
         result.append({
             "user_id": user.id,
             "email": user.email,
-            "roles": roles,
+            "roles": user_roles,
             "permissions": permissions
         })
     return result
@@ -160,3 +168,17 @@ def update_user_permissions(data: schemas.UpdateUserPermissions, db: Session = D
     
     db.commit()
     return {"message": "User permissions updated successfully"}
+
+@router.get("/permissions/all")
+def get_all_permissions(db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
+    permissions = db.query(database.Permission).all()
+    return [{"name": p.name, "description": p.description} for p in permissions]
+
+@router.get("/roles/all")
+def get_all_roles(db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
+    roles = db.query(database.Role).filter(~database.Role.name.startswith('custom_')).all()
+    result = []
+    for role in roles:
+        perms = [p.name for p in role.permissions]
+        result.append({"name": role.name, "description": role.description, "permissions": perms})
+    return result

@@ -306,4 +306,147 @@ function navigateToProducts() {
     window.location.href = 'products.html';
 }
 
-loadDashboard();
+async function applyDashboardSettings() {
+    try {
+        const meResponse = await fetch(`${API_BASE}/auth/me/permissions`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const meData = await meResponse.json();
+        if (meData.roles && meData.roles.includes('superadmin')) {
+            document.getElementById('floatingEditBtn').style.display = 'block';
+        }
+        
+        const response = await fetch(`${API_BASE}/dashboard/settings`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const settings = await response.json();
+        
+        document.documentElement.style.setProperty('--primary-color', settings.primary_color);
+        document.documentElement.style.setProperty('--bg-color', settings.background_color);
+        document.querySelector('.sidebar').style.background = settings.sidebar_color;
+        document.querySelector('.content').style.color = settings.text_color || '#333333';
+        document.getElementById('sidebarName').textContent = settings.website_name;
+        document.getElementById('sidebarLogo').textContent = '🚗';
+        
+        const buttonColor = settings.button_color || settings.primary_color;
+        const sidebarActive = settings.sidebar_active_color || '#34495e';
+        const style = document.createElement('style');
+        style.id = 'dashboard-colors';
+        const existingStyle = document.getElementById('dashboard-colors');
+        if (existingStyle) existingStyle.remove();
+        
+        const cardColor = settings.card_color || '#ffffff';
+        const cardTextColor = settings.card_text_color || '#333333';
+        style.textContent = `
+            .btn-primary, button { background: ${buttonColor} !important; }
+            .stat-card { 
+                background: ${cardColor} !important;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+                border-left: 4px solid ${settings.primary_color} !important;
+            }
+            .stat-card h3 { color: ${cardTextColor} !important; font-size: 14px !important; }
+            .stat-card .stat-value { color: ${cardTextColor} !important; font-size: 32px !important; font-weight: bold !important; }
+            .stat-card .stat-change { 
+                display: inline-block;
+                padding: 4px 8px;
+                background: #f0f0f0;
+                border-radius: 4px;
+                font-size: 12px;
+                color: ${cardTextColor};
+            }
+            .sidebar a.active, .sidebar a:hover { background: ${sidebarActive} !important; }
+        `;
+        document.head.appendChild(style);
+        
+        return await loadCustomModules(settings.layout_type);
+    } catch (error) {
+        console.error('Failed to apply dashboard settings:', error);
+        return false;
+    }
+}
+
+function adjustColor(color, percent) {
+    const num = parseInt(color.replace('#', ''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return '#' + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255)).toString(16).slice(1);
+}
+
+async function loadCustomModules(layoutType) {
+    try {
+        const response = await fetch(`${API_BASE}/dashboard/modules`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const modules = await response.json();
+        
+        if (modules && modules.length > 0) {
+            const statsGrid = document.querySelector('.stats-grid');
+            statsGrid.innerHTML = '';
+            statsGrid.style.display = 'grid';
+            statsGrid.style.gap = '20px';
+            
+            if (layoutType === 'list') {
+                statsGrid.style.gridTemplateColumns = '1fr';
+            } else if (layoutType === 'compact') {
+                statsGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
+            } else {
+                statsGrid.style.gridTemplateColumns = 'repeat(12, 1fr)';
+            }
+            
+            modules.filter(m => m.is_visible).sort((a, b) => a.position - b.position).forEach(mod => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.style.cursor = 'pointer';
+                
+                if (mod.width === 'half') {
+                    card.style.gridColumn = 'span 6';
+                } else if (mod.width === 'third') {
+                    card.style.gridColumn = 'span 4';
+                } else if (mod.width === 'quarter') {
+                    card.style.gridColumn = 'span 3';
+                } else {
+                    card.style.gridColumn = 'span 12';
+                }
+                
+                const templates = {
+                    'revenue_total': `<h3>Total Revenue</h3><p class="stat-value">$12,450</p><span class="stat-change positive">+15%</span>`,
+                    'revenue_average': `<h3>Average Revenue</h3><p class="stat-value">$1,245</p><span class="stat-change">Per invoice</span>`,
+                    'revenue_weekly': `<h3>Weekly Revenue</h3><p class="stat-value">$3,200</p><span class="stat-change positive">+8%</span>`,
+                    'revenue_monthly': `<h3>Monthly Revenue</h3><p class="stat-value">$12,800</p><span class="stat-change positive">+12%</span>`,
+                    'revenue_bimonthly': `<h3>Bi-Monthly Revenue</h3><p class="stat-value">$25,600</p><span class="stat-change">2 months</span>`,
+                    'revenue_semiannual': `<h3>Semi-Annual Revenue</h3><p class="stat-value">$76,800</p><span class="stat-change">6 months</span>`,
+                    'revenue_annual': `<h3>Annual Revenue</h3><p class="stat-value">$153,600</p><span class="stat-change">Year total</span>`,
+                    'invoice_total': `<h3>Total Invoices</h3><p class="stat-value">245</p><span class="stat-change">This month</span>`,
+                    'invoice_average': `<h3>Average Invoice</h3><p class="stat-value">$85</p><span class="stat-change">Per transaction</span>`,
+                    'service_total': `<h3>Total Services</h3><p class="stat-value">189</p><span class="stat-change">Completed</span>`,
+                    'service_popular': `<h3>Most Popular Service</h3><p class="stat-value" style="font-size: 20px;">Premium Wash</p><span class="stat-change">87 times</span>`,
+                    'product_total': `<h3>Products Sold</h3><p class="stat-value">456</p><span class="stat-change">Total units</span>`,
+                    'product_popular': `<h3>Top Product</h3><p class="stat-value" style="font-size: 20px;">Car Wax</p><span class="stat-change">123 sold</span>`,
+                    'recent_activity': `<h3>Recent Activity</h3><ul class="activity-list" style="max-height: 200px; overflow-y: auto; text-align: left; list-style: none; padding: 0;"><li style="padding: 8px; border-bottom: 1px solid #eee;">✓ Invoice #1023 created - $85</li><li style="padding: 8px; border-bottom: 1px solid #eee;">✓ Bay 2 completed service</li><li style="padding: 8px; border-bottom: 1px solid #eee;">✓ New product added</li><li style="padding: 8px;">✓ Invoice #1022 paid - $120</li></ul>`,
+                    'chart': `<h3>${mod.title}</h3><div style="background: #f0f0f0; height: 150px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-top: 10px;">Chart Placeholder</div>`,
+                    'table': `<h3>${mod.title}</h3><table style="width: 100%; margin-top: 10px; border-collapse: collapse;"><tr style="background: #f8f9fa;"><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Column 1</th><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Column 2</th></tr><tr><td style="padding: 8px; border: 1px solid #ddd;">Data 1</td><td style="padding: 8px; border: 1px solid #ddd;">Data 2</td></tr></table>`
+                };
+                
+                card.innerHTML = templates[mod.module_type] || `<h3>${mod.title}</h3><p class="stat-value">Module content</p>`;
+                statsGrid.appendChild(card);
+            });
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Failed to load custom modules:', error);
+        return false;
+    }
+}
+
+applyDashboardSettings().then(hasCustomModules => {
+    if (hasCustomModules) {
+        document.querySelector('.charts-section').style.display = 'none';
+        document.getElementById('dashboardFilter').parentElement.style.display = 'none';
+    } else {
+        loadDashboard();
+    }
+    loadProfile();
+});

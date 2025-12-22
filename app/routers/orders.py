@@ -4,14 +4,17 @@ from typing import List
 from app import schemas, crud, database
 from app.dependencies import get_current_user
 from app.permissions import has_permission, is_admin_or_owner
+from app.demo_limits import DemoLimits
 
 router = APIRouter()
 
 @router.post("/", response_model=schemas.OrderResponse)
 def create_order(order_data: schemas.OrderCreate, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    DemoLimits.check_limit(db, current_user, "orders")
     order = crud.create_order_from_cart(db, current_user.id, order_data.payment_method)
     if not order:
         raise HTTPException(status_code=400, detail="Cart is empty")
+    DemoLimits.increment_usage(db, current_user, "orders")
     return order
 
 @router.get("/", response_model=List[schemas.OrderResponse])

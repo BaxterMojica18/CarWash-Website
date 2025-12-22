@@ -24,7 +24,6 @@ def create_user(db: Session, email: str, password: str, is_demo: bool = False):
 
 def get_locations(db: Session, user_id: int):
     return db.query(database.Location).filter(
-        database.Location.user_id == user_id,
         database.Location.status == "A"
     ).all()
 

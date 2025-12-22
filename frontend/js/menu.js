@@ -41,9 +41,12 @@ function loadBranding() {
     }
     
     const logoType = localStorage.getItem('logoType');
-    if (logo) {
-        const logoElement = document.getElementById('sidebarLogo');
-        if (logoElement) {
+    const logoElement = document.getElementById('sidebarLogo');
+    if (logoElement) {
+        if (!logo || !logoType) {
+            logoElement.style.display = 'none';
+        } else {
+            logoElement.style.display = 'block';
             if (logoType === 'emoji') {
                 logoElement.textContent = logo;
                 logoElement.style.fontSize = '32px';

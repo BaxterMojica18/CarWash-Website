@@ -4,11 +4,13 @@ from typing import List
 from app import schemas, crud, database
 from app.dependencies import get_current_user
 from app.permissions import is_admin_or_owner
+from app.demo_limits import DemoLimits
 
 router = APIRouter()
 
 @router.post("/", response_model=schemas.ReservationResponse)
 def create_reservation(reservation_data: schemas.ReservationCreate, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    DemoLimits.check_limit(db, current_user, "reservations")
     reservation = crud.create_reservation(
         db, 
         current_user.id, 
@@ -18,6 +20,7 @@ def create_reservation(reservation_data: schemas.ReservationCreate, db: Session 
     )
     if not reservation:
         raise HTTPException(status_code=400, detail="Invalid service or service not found")
+    DemoLimits.increment_usage(db, current_user, "reservations")
     return reservation
 
 @router.get("/", response_model=List[schemas.ReservationResponse])

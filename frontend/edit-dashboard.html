@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Dashboard - Car Wash</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .edit-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+        .dashboard-preview {
+            flex: 1;
+            overflow-y: auto;
+            background: #f5f5f5;
+            position: relative;
+        }
+        .dashboard-preview .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 250px;
+            z-index: 100;
+        }
+        .dashboard-preview .content {
+            margin-left: 250px;
+            padding: 20px;
+            padding-bottom: 60px;
+            min-height: 100vh;
+        }
+        .dashboard-preview::-webkit-scrollbar {
+            width: 12px;
+        }
+        .dashboard-preview::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            margin-left: 250px;
+        }
+        .dashboard-preview::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 6px;
+        }
+        .dashboard-preview::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .customization-panel {
+            width: 350px;
+            min-width: 250px;
+            max-width: 600px;
+            background: white;
+            border-left: 2px solid #ddd;
+            padding: 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            position: relative;
+            transition: width 0.3s ease;
+        }
+        .customization-panel.collapsed {
+            width: 0 !important;
+            min-width: 0;
+            padding: 0;
+            border: none;
+            overflow: hidden;
+        }
+        .resize-handle {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            cursor: ew-resize;
+            background: transparent;
+            z-index: 10;
+        }
+        .resize-handle:hover {
+            background: #667eea;
+        }
+        .toggle-panel-btn {
+            position: fixed;
+            right: 370px;
+            top: 20px;
+            z-index: 1001;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: right 0.3s ease;
+        }
+        .toggle-panel-btn:hover {
+            background: #5568d3;
+        }
+        .toggle-panel-btn.panel-closed {
+            right: 10px;
+        }
+        #modulesContainer {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+        .module-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+            cursor: move;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            min-width: 200px;
+            min-height: 150px;
+            grid-column: span 12;
+        }
+        .module-item.width-half {
+            grid-column: span 6;
+        }
+        .module-item.width-third {
+            grid-column: span 4;
+        }
+        .module-item.width-quarter {
+            grid-column: span 3;
+        }
+        .module-item h3 {
+            font-size: 18px;
+            margin: 0 0 10px 0;
+            word-wrap: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .module-item p {
+            font-size: 14px;
+            word-wrap: break-word;
+            margin: 5px 0;
+        }
+        .module-item .stat-value {
+            font-size: 32px !important;
+            font-weight: bold;
+            word-wrap: break-word;
+            margin: 10px 0;
+        }
+        .module-item .stat-card {
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .module-item:hover {
+            border-color: #667eea;
+        }
+        .module-item.dragging {
+            opacity: 0.5;
+        }
+        .module-delete {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 5;
+        }
+        .module-delete:hover {
+            background: #c82333;
+        }
+        .module-width-control {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            gap: 5px;
+            z-index: 5;
+        }
+        .width-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .width-btn:hover {
+            background: #5568d3;
+        }
+        .width-btn.active {
+            background: #28a745;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .stat-card .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+        .panel-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .panel-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .color-picker-group {
+            margin: 10px 0;
+        }
+        .color-picker-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .save-btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .save-btn:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="edit-container">
+        <div class="dashboard-preview" id="dashboardPreview">
+            <nav class="sidebar" id="sidebar">
+                <div class="logo">
+                    <span id="sidebarLogo">🚗</span>
+                    <h2 id="sidebarName">CarWash</h2>
+                </div>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="invoices.html">Invoices</a></li>
+                    <li><a href="order-management.html">Orders</a></li>
+                    <li><a href="products.html">Products</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="reports.html">Reports</a></li>
+                    <li><a href="settings.html">Settings</a></li>
+                </ul>
+            </nav>
+            <main class="content">
+                <header>
+                    <h1>Dashboard Preview</h1>
+                    <p style="color: #666; margin-top: 5px;">Drag modules to reorder • Click ✕ to delete</p>
+                </header>
+                <div id="modulesContainer"></div>
+            </main>
+        </div>
+        
+        <button class="toggle-panel-btn" onclick="togglePanel()" id="toggleBtn">✕</button>
+        
+        <div class="customization-panel" id="customPanel">
+            <div class="resize-handle" id="resizeHandle"></div>
+            <h2>Customize Dashboard</h2>
+            
+            <div class="panel-section">
+                <h3>Colors</h3>
+                <div class="color-picker-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="margin: 0;">Sidebar Color</label>
+                    <input type="color" id="sidebarColorEdit" value="#2c3e50" style="width: 60px; height: 40px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                </div>
+                <div class="color-picker-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="margin: 0;">Background Color</label>
+                    <input type="color" id="backgroundColorEdit" value="#f5f5f5" style="width: 60px; height: 40px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                </div>
+                <div class="color-picker-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="margin: 0;">Primary Color</label>
+                    <input type="color" id="primaryColorEdit" value="#667eea" style="width: 60px; height: 40px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                </div>
+                <div class="color-picker-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="margin: 0;">Button Color</label>
+                    <input type="color" id="buttonColorEdit" value="#667eea" style="width: 60px; height: 40px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                </div>
+                <div class="color-picker-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="margin: 0;">Text Color</label>
+                    <input type="color" id="textColorEdit" value="#333333" style="width: 60px; height: 40px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                </div>
+                <div class="color-picker-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="margin: 0;">Sidebar Active Color</label>
+                    <input type="color" id="sidebarActiveColorEdit" value="#34495e" style="width: 60px; height: 40px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                </div>
+                <div class="color-picker-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="margin: 0;">Card Color</label>
+                    <input type="color" id="cardColorEdit" value="#ffffff" style="width: 60px; height: 40px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                </div>
+                <div class="color-picker-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="margin: 0;">Card Text Color</label>
+                    <input type="color" id="cardTextColorEdit" value="#333333" style="width: 60px; height: 40px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <h3>Add Module</h3>
+                <select id="moduleTypeSelect" style="width: 100%; padding: 8px; margin-bottom: 10px;" onchange="updateModuleTitle()">
+                    <optgroup label="Revenue">
+                        <option value="revenue_total">Total Revenue</option>
+                        <option value="revenue_average">Average Revenue</option>
+                        <option value="revenue_weekly">Weekly Revenue</option>
+                        <option value="revenue_monthly">Monthly Revenue</option>
+                        <option value="revenue_bimonthly">Bi-Monthly Revenue</option>
+                        <option value="revenue_semiannual">Semi-Annual Revenue</option>
+                        <option value="revenue_annual">Annual Revenue</option>
+                    </optgroup>
+                    <optgroup label="Invoices">
+                        <option value="invoice_total">Total Invoices</option>
+                        <option value="invoice_average">Average Invoice Value</option>
+                    </optgroup>
+                    <optgroup label="Services">
+                        <option value="service_total">Total Services</option>
+                        <option value="service_popular">Most Popular Service</option>
+                    </optgroup>
+                    <optgroup label="Products">
+                        <option value="product_total">Total Products Sold</option>
+                        <option value="product_popular">Top Product</option>
+                    </optgroup>
+                    <optgroup label="Other">
+                        <option value="recent_activity">Recent Activity</option>
+                        <option value="chart">Custom Chart</option>
+                        <option value="table">Custom Table</option>
+                    </optgroup>
+                </select>
+                <input type="text" id="moduleTitleInput" placeholder="Module Title" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                <select id="moduleWidthSelect" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                    <option value="full">Full Width</option>
+                    <option value="half">Half Width (1/2)</option>
+                    <option value="third">Third Width (1/3)</option>
+                    <option value="quarter">Quarter Width (1/4)</option>
+                </select>
+                <button onclick="addModule()" style="width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">+ Add Module</button>
+            </div>
+            
+            <div class="panel-section">
+                <h3>Layout</h3>
+                <select id="layoutTypeEdit" style="width: 100%; padding: 8px;">
+                    <option value="grid">Grid</option>
+                    <option value="list">List</option>
+                    <option value="compact">Compact</option>
+                </select>
+            </div>
+            
+            <button class="save-btn" onclick="saveChanges()">💾 Save Changes</button>
+            <button onclick="window.location.href='settings.html'" style="width: 100%; padding: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">Cancel</button>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/toast.js"></script>
+    <script>
+        let modules = [];
+        let draggedElement = null;
+
+        async function loadDashboardSettings() {
+            try {
+                const response = await fetch(`${API_BASE}/dashboard/settings`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const settings = await response.json();
+                
+                document.getElementById('sidebarColorEdit').value = settings.sidebar_color;
+                document.getElementById('backgroundColorEdit').value = settings.background_color;
+                document.getElementById('primaryColorEdit').value = settings.primary_color;
+                document.getElementById('buttonColorEdit').value = settings.button_color || '#667eea';
+                document.getElementById('textColorEdit').value = settings.text_color || '#333333';
+                document.getElementById('sidebarActiveColorEdit').value = settings.sidebar_active_color || '#34495e';
+                document.getElementById('cardColorEdit').value = settings.card_color || '#ffffff';
+                document.getElementById('cardTextColorEdit').value = settings.card_text_color || '#333333';
+                document.getElementById('layoutTypeEdit').value = settings.layout_type;
+                
+                applyColors();
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+            }
+        }
+
+        async function loadModules() {
+            try {
+                const response = await fetch(`${API_BASE}/dashboard/modules`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const existingModules = await response.json();
+                
+                if (existingModules && existingModules.length > 0) {
+                    modules = existingModules;
+                    console.log('Loaded existing modules:', modules.length);
+                } else {
+                    // Load default modules if none exist
+                    modules = [
+                        {id: 1, module_name: 'revenue_total', module_type: 'revenue_total', title: 'Total Revenue', position: 0, width: 'quarter', is_visible: true, config: {}},
+                        {id: 2, module_name: 'invoice_total', module_type: 'invoice_total', title: 'Total Invoices', position: 1, width: 'quarter', is_visible: true, config: {}},
+                        {id: 3, module_name: 'service_popular', module_type: 'service_popular', title: 'Most Popular Service', position: 2, width: 'quarter', is_visible: true, config: {}},
+                        {id: 4, module_name: 'product_popular', module_type: 'product_popular', title: 'Top Product Sold', position: 3, width: 'quarter', is_visible: true, config: {}}
+                    ];
+                    console.log('Using default modules');
+                }
+                renderModules();
+            } catch (error) {
+                console.error('Failed to load modules:', error);
+                modules = [];
+            }
+        }
+
+        function renderModules() {
+            const container = document.getElementById('modulesContainer');
+            container.innerHTML = modules.filter(m => m.is_visible).sort((a, b) => a.position - b.position).map((mod, index) => {
+                const widthClass = mod.width === 'half' ? 'width-half' : 
+                                   mod.width === 'third' ? 'width-third' : 
+                                   mod.width === 'quarter' ? 'width-quarter' : '';
+                return `
+                    <div class="module-item ${widthClass}" draggable="true" data-id="${mod.id}" data-index="${index}" data-width="${mod.width}">
+                        <button class="module-delete" onclick="deleteModule(${mod.id})">✕</button>
+                        <div class="module-width-control">
+                            <button class="width-btn ${mod.width === 'full' ? 'active' : ''}" onclick="changeModuleWidth(${mod.id}, 'full')">Full</button>
+                            <button class="width-btn ${mod.width === 'half' ? 'active' : ''}" onclick="changeModuleWidth(${mod.id}, 'half')">1/2</button>
+                            <button class="width-btn ${mod.width === 'third' ? 'active' : ''}" onclick="changeModuleWidth(${mod.id}, 'third')">1/3</button>
+                            <button class="width-btn ${mod.width === 'quarter' ? 'active' : ''}" onclick="changeModuleWidth(${mod.id}, 'quarter')">1/4</button>
+                        </div>
+                        <h3>${mod.title}</h3>
+                        <p style="font-size: 12px; color: #666;">Type: ${mod.module_type}</p>
+                        ${getModuleContent(mod)}
+                    </div>
+                `;
+            }).join('');
+            
+            setupDragAndDrop();
+        }
+
+        function getModuleContent(mod) {
+            const templates = {
+                'revenue_total': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Total Revenue</h3><p class="stat-value">$12,450</p><span style="color: #28a745; font-size: 12px;">+15% from last period</span></div>',
+                'revenue_average': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Average Revenue</h3><p class="stat-value">$1,245</p><span style="color: #28a745; font-size: 12px;">Per invoice</span></div>',
+                'revenue_weekly': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Weekly Revenue</h3><p class="stat-value">$3,200</p><span style="color: #28a745; font-size: 12px;">+8% vs last week</span></div>',
+                'revenue_monthly': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Monthly Revenue</h3><p class="stat-value">$12,800</p><span style="color: #28a745; font-size: 12px;">+12% vs last month</span></div>',
+                'revenue_bimonthly': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Bi-Monthly Revenue</h3><p class="stat-value">$25,600</p><span style="color: #28a745; font-size: 12px;">2 months total</span></div>',
+                'revenue_semiannual': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Semi-Annual Revenue</h3><p class="stat-value">$76,800</p><span style="color: #28a745; font-size: 12px;">6 months total</span></div>',
+                'revenue_annual': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Annual Revenue</h3><p class="stat-value">$153,600</p><span style="color: #28a745; font-size: 12px;">Year total</span></div>',
+                'invoice_total': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Total Invoices</h3><p class="stat-value">245</p><span style="color: #17a2b8; font-size: 12px;">This month</span></div>',
+                'invoice_average': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Average Invoice</h3><p class="stat-value">$85</p><span style="color: #17a2b8; font-size: 12px;">Per transaction</span></div>',
+                'service_total': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Total Services</h3><p class="stat-value">189</p><span style="color: #6f42c1; font-size: 12px;">Services completed</span></div>',
+                'service_popular': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Most Popular Service</h3><p class="stat-value" style="font-size: 20px;">Premium Wash</p><span style="color: #6f42c1; font-size: 12px;">87 times</span></div>',
+                'product_total': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Products Sold</h3><p class="stat-value">456</p><span style="color: #fd7e14; font-size: 12px;">Total units</span></div>',
+                'product_popular': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Top Product</h3><p class="stat-value" style="font-size: 20px;">Car Wax</p><span style="color: #fd7e14; font-size: 12px;">123 sold</span></div>',
+                'recent_activity': '<div style="padding: 10px;"><h4 style="margin: 0 0 10px 0;">Recent Activity</h4><ul style="list-style: none; padding: 0; margin: 0;"><li style="padding: 8px; border-bottom: 1px solid #eee; font-size: 13px;">✓ Invoice #1023 created - $85</li><li style="padding: 8px; border-bottom: 1px solid #eee; font-size: 13px;">✓ Bay 2 completed service</li><li style="padding: 8px; border-bottom: 1px solid #eee; font-size: 13px;">✓ New product added</li><li style="padding: 8px; font-size: 13px;">✓ Invoice #1022 paid - $120</li></ul></div>',
+                'chart': '<div style="height: 150px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px; margin-top: 10px;">Chart Placeholder</div>',
+                'table': '<table style="width: 100%; margin-top: 10px; border-collapse: collapse;"><tr style="background: #f8f9fa;"><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Column 1</th><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Column 2</th></tr><tr><td style="padding: 8px; border: 1px solid #ddd;">Data 1</td><td style="padding: 8px; border: 1px solid #ddd;">Data 2</td></tr></table>'
+            };
+            
+            return templates[mod.module_type] || '<p>Module content</p>';
+        }
+
+        function updateModuleTitle() {
+            const select = document.getElementById('moduleTypeSelect');
+            const titleInput = document.getElementById('moduleTitleInput');
+            const selectedOption = select.options[select.selectedIndex];
+            titleInput.value = selectedOption.text;
+        }
+
+        function changeModuleWidth(moduleId, width) {
+            const module = modules.find(m => m.id === moduleId);
+            if (module) {
+                module.width = width;
+                renderModules();
+                showToast('Width updated', 'success');
+            }
+        }
+
+        function setupDragAndDrop() {
+            const items = document.querySelectorAll('.module-item');
+            
+            items.forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    draggedElement = this;
+                    this.classList.add('dragging');
+                });
+                
+                item.addEventListener('dragend', function(e) {
+                    this.classList.remove('dragging');
+                });
+                
+                item.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                });
+                
+                item.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    if (draggedElement !== this) {
+                        const allItems = [...document.querySelectorAll('.module-item')];
+                        const draggedIndex = allItems.indexOf(draggedElement);
+                        const targetIndex = allItems.indexOf(this);
+                        
+                        if (draggedIndex < targetIndex) {
+                            this.parentNode.insertBefore(draggedElement, this.nextSibling);
+                        } else {
+                            this.parentNode.insertBefore(draggedElement, this);
+                        }
+                        
+                        updatePositions();
+                    }
+                });
+            });
+        }
+
+        function updatePositions() {
+            const items = document.querySelectorAll('.module-item');
+            items.forEach((item, index) => {
+                const moduleId = parseInt(item.dataset.id);
+                const module = modules.find(m => m.id === moduleId);
+                if (module) {
+                    module.position = index;
+                }
+            });
+        }
+
+        function addModule() {
+            const type = document.getElementById('moduleTypeSelect').value;
+            const title = document.getElementById('moduleTitleInput').value || 'New Module';
+            const width = document.getElementById('moduleWidthSelect').value;
+            
+            const newModule = {
+                id: Date.now(),
+                module_name: `module_${Date.now()}`,
+                module_type: type,
+                title: title,
+                position: modules.length,
+                width: width,
+                is_visible: true,
+                config: {}
+            };
+            
+            modules.push(newModule);
+            renderModules();
+            document.getElementById('moduleTitleInput').value = '';
+            showToast('Module added', 'success');
+        }
+
+        function deleteModule(id) {
+            if (confirm('Delete this module?')) {
+                modules = modules.filter(m => m.id !== id);
+                renderModules();
+                showToast('Module deleted', 'success');
+            }
+        }
+
+        function applyColors() {
+            const sidebar = document.getElementById('sidebarColorEdit').value;
+            const background = document.getElementById('backgroundColorEdit').value;
+            const primary = document.getElementById('primaryColorEdit').value;
+            const button = document.getElementById('buttonColorEdit').value;
+            const text = document.getElementById('textColorEdit').value;
+            const sidebarActive = document.getElementById('sidebarActiveColorEdit').value;
+            const card = document.getElementById('cardColorEdit').value;
+            const cardText = document.getElementById('cardTextColorEdit').value;
+            
+            document.querySelector('.sidebar').style.background = sidebar;
+            document.querySelector('.content').style.background = background;
+            document.querySelector('.content').style.color = text;
+            document.documentElement.style.setProperty('--primary-color', primary);
+            
+            const style = document.createElement('style');
+            style.id = 'dynamic-colors';
+            const existingStyle = document.getElementById('dynamic-colors');
+            if (existingStyle) existingStyle.remove();
+            
+            style.textContent = `
+                .sidebar a.active, .sidebar a:hover { background: ${sidebarActive} !important; }
+                .module-item { background: ${card} !important; color: ${cardText} !important; }
+                .module-item h3, .module-item p, .module-item .stat-value { color: ${cardText} !important; }
+            `;
+            document.head.appendChild(style);
+            
+            document.querySelectorAll('.width-btn, .save-btn, .toggle-panel-btn').forEach(btn => {
+                if (!btn.classList.contains('active')) {
+                    btn.style.background = button;
+                }
+            });
+        }
+
+        document.getElementById('sidebarColorEdit').addEventListener('input', applyColors);
+        document.getElementById('backgroundColorEdit').addEventListener('input', applyColors);
+        document.getElementById('primaryColorEdit').addEventListener('input', applyColors);
+        document.getElementById('buttonColorEdit').addEventListener('input', applyColors);
+        document.getElementById('textColorEdit').addEventListener('input', applyColors);
+        document.getElementById('sidebarActiveColorEdit').addEventListener('input', applyColors);
+        document.getElementById('cardColorEdit').addEventListener('input', applyColors);
+        document.getElementById('cardTextColorEdit').addEventListener('input', applyColors);
+        document.getElementById('layoutTypeEdit').addEventListener('change', applyLayout);
+
+        function applyLayout() {
+            const layout = document.getElementById('layoutTypeEdit').value;
+            const container = document.getElementById('modulesContainer');
+            
+            if (layout === 'list') {
+                container.style.gridTemplateColumns = '1fr';
+            } else if (layout === 'compact') {
+                container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(250px, 1fr))';
+                container.style.gap = '10px';
+            } else {
+                container.style.gridTemplateColumns = 'repeat(12, 1fr)';
+                container.style.gap = '15px';
+            }
+        }
+
+        async function saveChanges() {
+            try {
+                // Save settings
+                const settings = {
+                    website_name: document.getElementById('sidebarName').textContent,
+                    primary_color: document.getElementById('primaryColorEdit').value,
+                    background_color: document.getElementById('backgroundColorEdit').value,
+                    sidebar_color: document.getElementById('sidebarColorEdit').value,
+                    button_color: document.getElementById('buttonColorEdit').value || '#667eea',
+                    text_color: document.getElementById('textColorEdit').value || '#333333',
+                    sidebar_active_color: document.getElementById('sidebarActiveColorEdit').value || '#34495e',
+                    card_color: document.getElementById('cardColorEdit').value || '#ffffff',
+                    card_text_color: document.getElementById('cardTextColorEdit').value || '#333333',
+                    layout_type: document.getElementById('layoutTypeEdit').value
+                };
+                
+                await fetch(`${API_BASE}/dashboard/settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(settings)
+                });
+                
+                // Delete all existing modules
+                const existingModules = await fetch(`${API_BASE}/dashboard/modules`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                }).then(r => r.json());
+                
+                for (const mod of existingModules) {
+                    await fetch(`${API_BASE}/dashboard/modules/${mod.id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    });
+                }
+                
+                // Save new modules
+                for (const mod of modules) {
+                    await fetch(`${API_BASE}/dashboard/modules`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify(mod)
+                    });
+                }
+                
+                showToast('Dashboard saved successfully!', 'success');
+                setTimeout(() => window.location.href = 'dashboard.html', 1500);
+            } catch (error) {
+                console.error('Failed to save:', error);
+                showToast('Failed to save changes', 'error');
+            }
+        }
+
+        // Toggle panel visibility
+        function togglePanel() {
+            const panel = document.getElementById('customPanel');
+            const btn = document.getElementById('toggleBtn');
+            const isCollapsed = panel.classList.contains('collapsed');
+            
+            if (isCollapsed) {
+                panel.classList.remove('collapsed');
+                btn.textContent = '✕';
+                btn.classList.remove('panel-closed');
+            } else {
+                panel.classList.add('collapsed');
+                btn.textContent = '☰';
+                btn.classList.add('panel-closed');
+            }
+        }
+
+        // Resize panel functionality
+        const resizeHandle = document.getElementById('resizeHandle');
+        const panel = document.getElementById('customPanel');
+        let isResizing = false;
+
+        resizeHandle.addEventListener('mousedown', function(e) {
+            isResizing = true;
+            document.body.style.cursor = 'ew-resize';
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            
+            const containerWidth = document.querySelector('.edit-container').offsetWidth;
+            const newWidth = containerWidth - e.clientX;
+            const btn = document.getElementById('toggleBtn');
+            
+            if (newWidth >= 250 && newWidth <= 600) {
+                panel.style.width = newWidth + 'px';
+                btn.style.right = (newWidth + 20) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            isResizing = false;
+            document.body.style.cursor = 'default';
+        });
+
+        loadDashboardSettings();
+        loadModules();
+    </script>
+</body>
+</html>

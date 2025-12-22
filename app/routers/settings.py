@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from app import schemas, crud, database
 from app.dependencies import get_current_user
 from app.permissions import has_permission
+from app.demo_limits import DemoLimits
 
 class PaymentMethodCreate(BaseModel):
     name: str
@@ -49,7 +50,19 @@ def get_products(db: Session = Depends(database.get_db), current_user = Depends(
 
 @router.post("/products", response_model=schemas.ProductService)
 def create_product(product: schemas.ProductServiceCreate, db: Session = Depends(database.get_db), current_user = Depends(has_permission("manage_products"))):
-    return crud.create_product_service(db, product, current_user.id)
+    if product.type == "product":
+        DemoLimits.check_limit(db, current_user, "products")
+    else:
+        DemoLimits.check_limit(db, current_user, "services")
+    
+    result = crud.create_product_service(db, product, current_user.id)
+    
+    if product.type == "product":
+        DemoLimits.increment_usage(db, current_user, "products")
+    else:
+        DemoLimits.increment_usage(db, current_user, "services")
+    
+    return result
 
 @router.put("/products/{product_id}", response_model=schemas.ProductService)
 def update_product(product_id: int, product: schemas.ProductServiceCreate, db: Session = Depends(database.get_db), current_user = Depends(has_permission("manage_products"))):
