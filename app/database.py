@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Float, ForeignKey, Table
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Float, ForeignKey, Table, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from dotenv import load_dotenv
@@ -246,8 +246,10 @@ class PaymentMethod(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     icon = Column(String, nullable=True)
+    qr_image = Column(String, nullable=True)
+    account_number = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=DateTime)
+    created_at = Column(DateTime, server_default=func.now())
 
 def create_tables():
     try:

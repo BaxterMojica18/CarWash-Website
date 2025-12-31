@@ -400,6 +400,30 @@
                 </form>
             </div>
         </div>
+        
+        <!-- E-Wallet Modal -->
+        <div id="ewalletModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeEWalletModal()">&times;</span>
+                <h2>📱 E-Wallet Configuration</h2>
+                <form id="ewalletForm">
+                    <input type="hidden" id="ewalletId">
+                    <div class="form-group">
+                        <label>Account Number / Phone Number</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="ewalletAccount" placeholder="09123456789" style="flex: 1;">
+                            <button type="button" class="btn-primary" onclick="copyAccountNumber()">📋 Copy</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>QR Code Image</label>
+                        <input type="file" id="ewalletQR" accept="image/*">
+                        <div id="qrPreview" style="margin-top: 10px;"></div>
+                    </div>
+                    <button type="submit" class="btn-primary">💾 Save E-Wallet</button>
+                </form>
+            </div>
+        </div>
     </main>
     <script src="js/api.js"></script>
     <script src="js/menu.js"></script>
