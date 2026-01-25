@@ -456,7 +456,7 @@ let paymentMethods = [];
 
 async function loadPaymentMethods() {
     try {
-        const response = await fetch(`${API_BASE}/settings/payment-methods`, {
+        const response = await fetch(`${API_BASE}/payment-methods/`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         paymentMethods = await response.json();
@@ -476,8 +476,9 @@ function renderPaymentMethods() {
         <div class="bay-card">
             <h3>${pm.icon} ${pm.name}</h3>
             <p>Status: <span style="color: ${pm.is_active ? '#28a745' : '#dc3545'};">${pm.is_active ? 'Active' : 'Inactive'}</span></p>
+            ${pm.account_number ? `<p style="font-size: 12px; color: #666;">Account: ${pm.account_number}</p>` : ''}
             <div class="bay-actions">
-                <button class="btn-edit" onclick="editPaymentMethod(${pm.id}, '${pm.name}', '${pm.icon}', ${pm.is_active})">Edit</button>
+                <button class="btn-edit" onclick='editPaymentMethod(${pm.id}, "${pm.name}", "${pm.icon}", ${pm.is_active})'>Edit</button>
                 <button class="btn-delete" onclick="deletePaymentMethod(${pm.id})">Delete</button>
             </div>
         </div>
@@ -497,6 +498,13 @@ function closePaymentMethodModal() {
 }
 
 function editPaymentMethod(id, name, icon, isActive) {
+    // Check if it's E-Wallet to show special modal
+    if (name === 'E-Wallet') {
+        closePaymentMethodModal(); // Close regular modal first
+        showEWalletModal(id);
+        return;
+    }
+    
     document.getElementById('addPaymentMethodModal').style.display = 'block';
     document.getElementById('paymentMethodModalTitle').textContent = 'Edit Payment Method';
     document.getElementById('editPaymentMethodId').value = id;
@@ -506,10 +514,76 @@ function editPaymentMethod(id, name, icon, isActive) {
     document.getElementById('paymentMethodSubmitBtn').textContent = 'Update Payment Method';
 }
 
+async function showEWalletModal(id) {
+    try {
+        const response = await fetch(`${API_BASE}/payment-methods/`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const methods = await response.json();
+        const ewallet = methods.find(m => m.id === id);
+        
+        document.getElementById('ewalletModal').style.display = 'block';
+        document.getElementById('ewalletId').value = id;
+        document.getElementById('ewalletAccount').value = ewallet.account_number || '';
+        
+        if (ewallet.qr_image) {
+            document.getElementById('qrPreview').innerHTML = `<img src="data:image/png;base64,${ewallet.qr_image}" style="max-width: 200px;">`;
+        } else {
+            document.getElementById('qrPreview').innerHTML = '<p style="color: #999;">No QR code uploaded</p>';
+        }
+    } catch (error) {
+        showToast('Failed to load E-Wallet details', 'error');
+    }
+}
+
+function closeEWalletModal() {
+    document.getElementById('ewalletModal').style.display = 'none';
+}
+
+function copyAccountNumber() {
+    const input = document.getElementById('ewalletAccount');
+    input.select();
+    document.execCommand('copy');
+    showToast('Account number copied!', 'success');
+}
+
+document.getElementById('ewalletForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('ewalletId').value;
+    const formData = new FormData();
+    formData.append('name', 'E-Wallet');
+    formData.append('icon', '📱');
+    formData.append('account_number', document.getElementById('ewalletAccount').value);
+    formData.append('is_active', 'true');
+    
+    const fileInput = document.getElementById('ewalletQR');
+    if (fileInput.files[0]) {
+        formData.append('qr_image', fileInput.files[0]);
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/payment-methods/${id}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: formData
+        });
+        
+        if (response.ok) {
+            showToast('E-Wallet updated successfully!', 'success');
+            closeEWalletModal();
+            loadPaymentMethods();
+        } else {
+            showToast('Failed to update E-Wallet', 'error');
+        }
+    } catch (error) {
+        showToast('Failed to update E-Wallet', 'error');
+    }
+});
+
 async function deletePaymentMethod(id) {
     if (confirm('Delete this payment method?')) {
         try {
-            await fetch(`${API_BASE}/settings/payment-methods/${id}`, {
+            await fetch(`${API_BASE}/payment-methods/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
@@ -532,7 +606,7 @@ document.getElementById('paymentMethodForm').addEventListener('submit', async fu
     
     try {
         if (id) {
-            await fetch(`${API_BASE}/settings/payment-methods/${id}`, {
+            await fetch(`${API_BASE}/payment-methods/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -542,7 +616,7 @@ document.getElementById('paymentMethodForm').addEventListener('submit', async fu
             });
             showToast('Payment method updated', 'success');
         } else {
-            await fetch(`${API_BASE}/settings/payment-methods`, {
+            await fetch(`${API_BASE}/payment-methods`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -574,8 +648,9 @@ async function checkSuperadminAccess() {
         const roles = data.roles || [];
         if (roles.includes('superadmin')) {
             document.getElementById('dashboardCustomSection').style.display = 'block';
-            loadDashboardSettings();
-            loadDashboardModules();
+            // Temporarily disabled - dashboard tables not created yet
+            // loadDashboardSettings();
+            // loadDashboardModules();
         }
     } catch (error) {
         console.error('Failed to check superadmin access:', error);
