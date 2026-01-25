@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -6,6 +6,16 @@ from sqladmin import Admin, ModelView
 from app.database import create_tables, engine, User, Location, ProductService, Invoice, Order, Reservation
 from app.routers import auth, settings, invoices, reports, cart, orders, reservations, client, dashboard, payment_methods
 import os
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class NoCacheMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        if request.url.path.endswith(('.html', '.css', '.js')):
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
 
 app = FastAPI(
     title="Car Wash Manager API",
@@ -50,6 +60,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(NoCacheMiddleware)
 
 try:
     create_tables()
