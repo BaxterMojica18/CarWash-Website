@@ -1,7 +1,48 @@
 function toggleMenu() {
     const sidebar = document.getElementById('sidebar');
+    const content = document.querySelector('.content');
+    const toggle = document.querySelector('.menu-toggle');
     sidebar.classList.toggle('active');
+    sidebar.classList.remove('collapsed');
+    if (content) content.classList.remove('sidebar-collapsed');
+    if (toggle) toggle.style.display = 'none';
+    localStorage.removeItem('sidebarCollapsed');
 }
+
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const content = document.querySelector('.content');
+    const toggle = document.querySelector('.menu-toggle');
+    sidebar.classList.add('collapsed');
+    sidebar.classList.remove('active');
+    if (content) content.classList.add('sidebar-collapsed');
+    if (toggle) toggle.style.display = 'block';
+    localStorage.setItem('sidebarCollapsed', '1');
+}
+
+// Inject close button into sidebar
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.querySelector('.menu-toggle');
+    const isCollapsed = localStorage.getItem('sidebarCollapsed');
+
+    if (isCollapsed) {
+        if (sidebar) sidebar.classList.add('collapsed');
+        const content = document.querySelector('.content');
+        if (content) content.classList.add('sidebar-collapsed');
+        if (toggle) toggle.style.display = 'block';
+    } else {
+        if (toggle) toggle.style.display = 'none';
+    }
+
+    if (sidebar) {
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'sidebar-close';
+        closeBtn.innerHTML = '✕';
+        closeBtn.onclick = closeSidebar;
+        sidebar.insertBefore(closeBtn, sidebar.firstChild);
+    }
+});
 
 // Close menu when clicking outside on mobile
 document.addEventListener('click', function(event) {
