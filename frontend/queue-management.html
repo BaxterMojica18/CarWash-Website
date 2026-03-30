@@ -54,6 +54,8 @@
             <button onclick="filterReservations('accepted')" class="filter-btn" data-filter="accepted" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Accepted</button>
             <button onclick="filterReservations('in_progress')" class="filter-btn" data-filter="in_progress" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">In Progress</button>
             <button onclick="filterReservations('completed')" class="filter-btn" data-filter="completed" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Completed</button>
+            <button onclick="filterReservations('delayed')" class="filter-btn" data-filter="delayed" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Delayed</button>
+            <button onclick="filterReservations('cancelled')" class="filter-btn" data-filter="cancelled" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Cancelled</button>
             <select id="location-select" onchange="loadQueue()" style="padding: 12px 20px; border: 2px solid #e0e0e0; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; color: #333; font-size: 14px; outline: none; transition: all 0.3s ease;">
                 <option value="">All Locations</option>
             </select>
@@ -192,9 +194,15 @@
                         ` : ''}
                         ${res.status === 'accepted' ? `
                             <button onclick="updateStatus(${res.id}, 'in_progress')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">Start Service</button>
+                            <button onclick="updateStatus(${res.id}, 'cancelled')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Cancel</button>
                         ` : ''}
                         ${res.status === 'in_progress' ? `
                             <button onclick="updateStatus(${res.id}, 'completed')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">Mark Complete</button>
+                            <button onclick="updateStatus(${res.id}, 'delayed')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #f0932b 0%, #e67e22 100%);">Delay</button>
+                        ` : ''}
+                        ${res.status === 'delayed' ? `
+                            <button onclick="updateStatus(${res.id}, 'in_progress')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">Resume</button>
+                            <button onclick="updateStatus(${res.id}, 'cancelled')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Cancel</button>
                         ` : ''}
                     </div>
                 </div>
@@ -207,7 +215,8 @@
                 accepted: '#d1ecf1; color: #0c5460',
                 in_progress: '#cce5ff; color: #004085',
                 completed: '#d4edda; color: #155724',
-                cancelled: '#f8d7da; color: #721c24'
+                cancelled: '#f8d7da; color: #721c24',
+                delayed: '#fff8e1; color: #f57c00'
             };
             return colors[status] || '#e0e0e0; color: #333';
         }

@@ -1,3 +1,12 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { firebaseConfig } from "./firebase-config.js";
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const email = document.getElementById('email').value;
@@ -5,6 +14,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     
     try {
         const response = await API.auth.login(email, password);
+        
         setToken(response.access_token);
         localStorage.setItem('userEmail', email);
         localStorage.setItem('isDemo', response.is_demo);
@@ -14,30 +24,58 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         const permissions = response.permissions || [];
         const isClient = permissions.includes('manage_cart') && !permissions.includes('manage_users');
         window.location.href = isClient ? '/shop.html' : '/dashboard.html';
+
     } catch (error) {
         alert('Login failed: ' + error.message);
     }
 });
 
+// Add Google Login Handler
+document.getElementById('googleLoginBtn').addEventListener('click', async function() {
+    try {
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+        const idToken = await user.getIdToken();
+        
+        // Pass the Firebase ID token to the backend
+        const response = await API.auth.firebaseLogin(idToken, user.email, user.displayName);
+        handleLoginSuccess(response, user.email);
+        
+    } catch (error) {
+        console.error("Google Auth error:", error);
+        alert('Google Login failed: ' + error.message);
+    }
+});
+
+function handleLoginSuccess(response, email) {
+    setToken(response.access_token);
+    localStorage.setItem('userEmail', email);
+    localStorage.setItem('isDemo', response.is_demo);
+    localStorage.setItem('user_permissions', JSON.stringify(response.permissions || []));
+    
+    // Redirect based on permissions
+    const permissions = response.permissions || [];
+    const isClient = permissions.includes('manage_cart') && !permissions.includes('manage_users');
+    window.location.href = isClient ? '/shop.html' : '/dashboard.html';
+}
+
 let currentIndex = 0;
 let cards;
 const totalCards = 3;
 
-window.addEventListener('DOMContentLoaded', () => {
-    cards = document.querySelectorAll('.demo-card');
-    
-    cards.forEach(card => {
-        card.addEventListener('click', (e) => {
-            const index = parseInt(card.getAttribute('data-index'));
-            if (index === 0) {
-                const type = card.getAttribute('data-type');
-                quickLogin(type);
-            } else if (index === 1) {
-                rotateCarousel(-1);
-            } else if (index === 2) {
-                rotateCarousel(1);
-            }
-        });
+cards = document.querySelectorAll('.demo-card');
+
+cards.forEach(card => {
+    card.addEventListener('click', (e) => {
+        const index = parseInt(card.getAttribute('data-index'));
+        if (index === 0) {
+            const type = card.getAttribute('data-type');
+            quickLogin(type);
+        } else if (index === 1) {
+            rotateCarousel(-1);
+        } else if (index === 2) {
+            rotateCarousel(1);
+        }
     });
 });
 

@@ -1,8 +1,8 @@
 # System Updates, Data & History Logs
 
-> **Last Updated:** November 23, 2025  
-> **Version:** 2.0.0  
-> **Branch:** update/dynamicdashboardupdate11232025
+> **Last Updated:** March 29, 2026  
+> **Version:** 3.0.0  
+> **Branch:** main
 
 ---
 
@@ -18,9 +18,138 @@
 
 ---
 
-## Latest Updates (Nov 23, 2025)
+## Latest Updates (March 30, 2026)
 
-### 🎨 Dynamic Dashboard Customization
+### 🔥 Firebase Authentication Migration
+**Status:** ✅ Completed
+
+#### Features Added:
+- **Client-Side Firebase Integration:**
+  - Initialized Firebase web SDK pointing to personal project `carwash-mgmt-system-41402`.
+  - Added Firebase Google Sign-in alongside legacy local email/password authentication.
+  - Intercepted frontend login flow using `signInWithPopup` to return fresh ID tokens.
+- **Backend Admin SDK Token Verification:**
+  - Installed `firebase-admin` into the FastAPI backend Docker image.
+  - Added `clock_skew_seconds=60` tolerance to `verify_id_token` to fix intermittent clock desync errors during Google Login.
+  - Hardened backend against spoofed tokens powered by securely injected `firebase-credentials.json` Service Account.
+- **Bi-directional PostgreSQL Auto-Syncing & Schema Fixes:**
+  - Built `get_or_create_firebase_user` mapping function that instantly replicates validated Firebase Identities into native PostgreSQL rows via standard JWT exchanges.
+  - Expanded `app/database.py` with `DashboardSettings` and `DashboardModule` declarative models to resolve 500 errors when hybrid users load the dashboard.
+  - Modified `crud.get_user_profile` to gracefully build default user profiles on-the-fly, fixing 404 `/profile` errors on newly migrated or demo accounts.
+  - Updated `login.js` UI hooks by stripping deferred `DOMContentLoaded` listeners, allowing the demo login buttons to function seamlessly with ES Modules.
+
+#### Files Created/Modified:
+- ✅ `frontend/js/firebase-config.js`
+- ✅ `frontend/js/login.js`
+- ✅ `frontend/signup.html`
+- ✅ `app/firebase_auth.py`
+- ✅ `app/crud.py`
+- ✅ `app/database.py`
+- ✅ `app/routers/auth.py`
+- ✅ `app/firebase-credentials.json`
+
+---
+
+### 🔐 Password Reset & Email Integration
+**Status:** ✅ Completed
+
+#### Features Added:
+- **Forgot Password Flow:**
+  - Secure token generation and 15-minute expiration logic.
+  - Dedicated `/forgot-password.html` and `/reset-password.html` UI flows.
+  - Database table `password_reset_tokens` for token management.
+- **Gmail SMTP Integration:**
+  - Configurable SMTP environment variables (`SMTP_SERVER`, `SMTP_PORT`, etc.).
+  - Centralized `email_service.py` to handle HTML and plain text emails.
+  - Professional HTML email template for password reset.
+- **SMS Infrastructure (Prepared):**
+  - Database schema updated to include `phone_number` in users and new `user_preferences` table.
+  - CRUD operations and API endpoints (`/api/settings/profile`) created.
+  - Frontend profile UI updated to collect phone numbers and SMS opt-in status.
+  - *Note: Actual Twilio dispatch is currently commented out pending subscription.*
+
+#### Files Created/Modified:
+- ✅ `frontend/forgot-password.html`
+- ✅ `frontend/reset-password.html`
+- ✅ `app/email_service.py`
+- ✅ `app/sms_service.py`
+- ✅ `app/routers/auth.py`
+- ✅ `app/routers/settings.py`
+- ✅ `app/crud.py`
+- ✅ `app/schemas.py`
+
+---
+
+### 🔢 6-Digit OTP Password Reset
+**Status:** ✅ Completed  
+**Date:** March 29, 2026
+
+#### Features Added:
+- **OTP Generation & Validation:**
+  - 6-digit random numeric OTP generated alongside UUID reset token.
+  - `otp_code` column added to `password_reset_tokens` table with index.
+  - OTP verification endpoint: `POST /api/auth/verify-otp`.
+  - OTP expires after 15 minutes (same as token).
+- **Method Selection UI:**
+  - 3-step forgot-password flow: Email → Choose Method → Reset.
+  - Two selectable method cards: "Email Reset Link" (🔗) and "6-Digit Verification Code" (🔢).
+  - Only ONE email is sent based on the user's chosen method (no duplicate emails).
+  - Button text dynamically updates based on selection.
+- **OTP Entry UI:**
+  - 6 individual digit input boxes with auto-advance on input.
+  - Paste support (distribute pasted digits across all 6 boxes).
+  - Backspace navigation between boxes.
+  - 60-second resend cooldown timer.
+  - "← Use a different method" link to go back and choose another option.
+- **Styled OTP Email Template:**
+  - Professional HTML email with gradient header.
+  - Large, monospace OTP code displayed prominently.
+  - Expiry warning and security notice.
+
+#### API Changes:
+- `POST /api/auth/forgot-password` — now accepts `reset_method` parameter (`"link"` or `"otp"`).
+- `POST /api/auth/verify-otp` — new endpoint; validates OTP and returns reset token.
+
+#### Files Created/Modified:
+- ✅ `app/database.py` — added `otp_code` column to `PasswordResetToken` model
+- ✅ `app/crud.py` — OTP generation in `create_password_reset_token()`, new `validate_otp_code()`
+- ✅ `app/schemas.py` — added `reset_method` to `ForgotPasswordRequest`, new `VerifyOtpRequest`/`VerifyOtpResponse`
+- ✅ `app/routers/auth.py` — updated `forgot_password()` to branch by method, new `verify_otp()` endpoint
+- ✅ `app/email_service.py` — new `send_otp_email()` with styled HTML template
+- ✅ `frontend/forgot-password.html` — redesigned as 3-step flow with method selection cards
+- ✅ `frontend/js/api.js` — added `verifyOtp()` method, updated `forgotPassword()` to pass `reset_method`
+- ✅ `commands/database/upgrade_otp.py` — migration script for `otp_code` column
+
+#### Database Changes:
+```sql
+ALTER TABLE password_reset_tokens ADD COLUMN otp_code VARCHAR(6);
+CREATE INDEX ix_password_reset_tokens_otp_code ON password_reset_tokens (otp_code);
+```
+
+---
+
+### 📊 Database Seeding & Order Management Fixes
+**Status:** ✅ Completed  
+**Date:** March 14-29, 2026
+
+#### Features Added:
+- **Database Seeding Script** (`commands/fill_db_with_data.py`):
+  - Populates all tables: products, services, orders, invoices, queue reservations.
+  - Includes sample data across all order statuses.
+- **New Order/Queue Statuses:**
+  - Added `delayed` and `cancelled` statuses to orders and reservations.
+- **Superadmin Role Fix:**
+  - Fixed `superadmin` role not being included in global data visibility checks.
+  - Updated `orders.py` and `reservations.py` to allow `superadmin` role full access.
+
+#### Files Modified:
+- ✅ `app/routers/orders.py` — added `superadmin` to role checks
+- ✅ `app/routers/reservations.py` — added `superadmin` to role checks
+- ✅ `commands/fill_db_with_data.py` — comprehensive sample data seeder
+
+---
+
+## E-Commerce Features
 **Status:** ✅ Completed
 
 #### Features Added:
@@ -571,6 +700,30 @@ Content-Type: application/json
 ---
 
 ## Change Log
+
+### Version 3.0.0 (March 30, 2026)
+- ✅ **New Feature**: Role-Based dynamic Sidebar Navigation hiding via `RoleSidebarSetting` database schema
+- ✅ Created `sidebar-management.html` giving Adms/Owners power to toggle tab visibility per user role
+- ✅ Added `hidden_sidebar_tabs` payload to `/me/permissions` endpoint in `auth.py`
+- ✅ Upgraded `menu.js` to automatically parse and hide dynamically disabled sidebar links for the active user
+- ✅ **Frontend UI Rewrite**: Completely modernized the landing page (`index.html`) using a stunning glassmorphism design with `landing.css`. Added fade-in scroll animations via Javascript IntersectionObserver, CSS floating background orbs, fluid gradients, and integrated the modern `Outfit` Google Font.
+- ✅ **About Us Overhaul**: Fully redesigned `about.html` using the core Indigo/Pink theme, featuring a high-impact CEO spotlight and modern company history layout for **BuxTek Inc.**
+- ✅ Implemented Firebase Google Sign-In with robust backend validation (`verify_id_token`)
+- ✅ Fixed `Token used too early` Firebase errors by adding `clock_skew_seconds=60` tolerance
+- ✅ Added `DashboardSettings` & `DashboardModule` models to eliminate 500 errors on dashboard visits
+- ✅ Designed automatic `UserProfile` creation fallback logic in `crud.py` to prevent 404s
+- ✅ Fixed login.js ES Module rendering issues to restore demo account functionalities
+- ✅ Added 6-digit OTP password reset with method selection UI
+- ✅ Added styled OTP email template with gradient design
+- ✅ Added 3-step forgot-password flow (email → method choice → reset)
+- ✅ Added `POST /api/auth/verify-otp` endpoint
+- ✅ Added `reset_method` parameter to forgot-password API
+- ✅ Fixed superadmin global data visibility in orders and reservations
+- ✅ Added `delayed` and `cancelled` order/queue statuses
+- ✅ Created database seeding script (`fill_db_with_data.py`)
+- ✅ Created AI coding assistant workflow instructions (`.agents/workflows/instructions.md`)
+- ✅ Gmail SMTP password reset emails working end-to-end
+- ✅ Database migration for `otp_code` column
 
 ### Version 2.0.0 (November 23, 2025)
 - ✅ Added dynamic dashboard customization with 8 colors

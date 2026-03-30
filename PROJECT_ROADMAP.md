@@ -2,30 +2,38 @@
 
 ## 🎯 Priority Features (Next 2-4 weeks)
 
-### 1. Password Reset System
-- [ ] **Forgot Password API**
+### 1. Password Reset System ✅
+- [x] **Forgot Password API**
   - Password reset token generation
   - Secure token validation (expires in 15 minutes)
   - Password update endpoint
-- [ ] **Frontend Integration**
-  - Forgot password form on login page
+- [x] **6-Digit OTP Reset** ✅ *(Added March 29, 2026)*
+  - OTP generation alongside UUID token
+  - `POST /api/auth/verify-otp` endpoint
+  - Method selection UI (link vs OTP)
+  - Styled OTP email template
+  - 6-digit input with auto-advance & paste support
+  - 60-second resend cooldown
+- [x] **Frontend Integration**
+  - 3-step forgot password flow (email → method choice → reset)
   - Reset password page with token validation
   - Success/error notifications
-- [ ] **Database Changes**
+- [x] **Database Changes**
   - Add `password_reset_tokens` table
-  - Token cleanup job
+  - Add `otp_code` column with index
+  - Token cleanup job (tokens auto-invalidated on new request)
 
 ### 2. Gmail SMTP Integration
-- [ ] **Email Service Setup**
+- [x] **Email Service Setup**
   - Gmail SMTP configuration
   - Email templates (HTML + text)
   - Queue system for bulk emails
 - [ ] **Email Features**
   - Welcome emails for new users
-  - Password reset emails
+  - [x] Password reset emails
   - Order confirmation emails
   - Service completion notifications
-- [ ] **Environment Variables**
+- [x] **Environment Variables**
   ```
   SMTP_SERVER=smtp.gmail.com
   SMTP_PORT=587
@@ -50,6 +58,17 @@
 ## 🔧 Technical Improvements (Next 4-6 weeks)
 
 ### 4. Enhanced Authentication
+- [x] **OTP-Based Password Reset** ✅
+  - Email-based 6-digit OTP verification
+  - User choice between reset link and OTP
+- [x] **Hybrid Firebase Authentication (Google Sign-In)** ✅ *(Added March 2026)*
+  - Preserved standard local DB email/password architecture
+  - Leveraged Firebase strictly as an Identity Provider for Google Sign-In
+  - Configured Python Firebase Admin SDK with `clock_skew_seconds=60` tolerance for robust token verification (`verify_id_token`)
+  - Automatic `get_or_create_firebase_user` mapping bridging Firebase to local PostgreSQL databases
+  - Implemented lazy `UserProfile` schema generation to gracefully handle missing profiles on new or demo accounts
+  - Automatic injection of default Roles (`client`)
+  - Backwards-compatible fallback routes mimicking JWT issuing for both sign-in paths
 - [ ] **Multi-Factor Authentication (MFA)**
   - SMS-based 2FA
   - Email-based 2FA
@@ -180,10 +199,14 @@
 
 ## 📋 Implementation Priority
 
-### Phase 1 (Immediate - 2 weeks)
-1. Gmail SMTP integration
-2. Forgot password system
-3. Basic SMS notifications
+### Phase 1 (Immediate - 2 weeks) ✅ COMPLETED
+1. ✅ Gmail SMTP integration
+2. ✅ Forgot password system (link + OTP)
+3. ✅ Database seeding script
+4. ✅ Superadmin role fix for global data visibility
+5. ✅ Hybrid Firebase Google Sign-in configuration
+6. ✅ Missing Dashboard & Profile DB fixes
+7. ⏸️ Basic SMS notifications *(paused — pending Twilio subscription)*
 
 ### Phase 2 (Short-term - 4 weeks)
 1. Enhanced authentication

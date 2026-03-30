@@ -35,15 +35,51 @@ async function apiRequest(endpoint, options = {}) {
     return response.json();
 }
 
+// Public API request (no auth redirect, proper error handling for non-authenticated endpoints)
+async function apiRequestPublic(endpoint, options = {}) {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers: { 'Content-Type': 'application/json' }
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+        throw new Error(data.detail || 'Something went wrong');
+    }
+    
+    return data;
+}
+
 const API = {
     auth: {
         login: (email, password) => 
-            apiRequest('/auth/login', {
+            apiRequestPublic('/auth/login', {
                 method: 'POST',
                 body: JSON.stringify({ email, password })
             }),
+        firebaseLogin: (id_token, email, display_name) =>
+            apiRequestPublic('/auth/firebase-login', {
+                method: 'POST',
+                body: JSON.stringify({ id_token, email, display_name })
+            }),
         demoLogin: () => 
-            apiRequest('/auth/demo-login', { method: 'POST' })
+            apiRequest('/auth/demo-login', { method: 'POST' }),
+        forgotPassword: (email, reset_method = 'link') =>
+            apiRequestPublic('/auth/forgot-password', {
+                method: 'POST',
+                body: JSON.stringify({ email, reset_method })
+            }),
+        resetPassword: (token, new_password) =>
+            apiRequestPublic('/auth/reset-password', {
+                method: 'POST',
+                body: JSON.stringify({ token, new_password })
+            }),
+        verifyOtp: (email, otp_code) =>
+            apiRequestPublic('/auth/verify-otp', {
+                method: 'POST',
+                body: JSON.stringify({ email, otp_code })
+            })
     },
     
     locations: {

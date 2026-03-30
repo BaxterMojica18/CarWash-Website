@@ -20,7 +20,7 @@ def create_order(order_data: schemas.OrderCreate, db: Session = Depends(database
 @router.get("/", response_model=List[schemas.OrderResponse])
 def get_orders(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     role_names = [role.name for role in current_user.roles]
-    if "admin" in role_names or "owner" in role_names:
+    if "admin" in role_names or "owner" in role_names or "superadmin" in role_names:
         return crud.get_orders(db)
     return crud.get_orders(db, current_user.id)
 
@@ -31,7 +31,7 @@ def get_order(order_id: int, db: Session = Depends(database.get_db), current_use
         raise HTTPException(status_code=404, detail="Order not found")
     
     role_names = [role.name for role in current_user.roles]
-    if order.client_id != current_user.id and "admin" not in role_names and "owner" not in role_names:
+    if order.client_id != current_user.id and "admin" not in role_names and "owner" not in role_names and "superadmin" not in role_names:
         raise HTTPException(status_code=403, detail="Access denied")
     
     return order

@@ -59,6 +59,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)
     is_demo = Column(Boolean, default=False)
+    phone_number = Column(String, nullable=True)
     invoices = relationship("Invoice", back_populates="creator")
     roles = relationship("Role", secondary=user_roles)
 
@@ -69,6 +70,12 @@ class UserProfile(Base):
     name = Column(String)
     role = Column(String)
     photo = Column(String, nullable=True)
+
+class UserPreference(Base):
+    __tablename__ = "user_preferences"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    sms_opt_in = Column(Boolean, default=True)
 
 class Location(Base):
     __tablename__ = "locations"
@@ -250,6 +257,52 @@ class PaymentMethod(Base):
     account_number = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    token = Column(String, unique=True, index=True, nullable=False)
+    otp_code = Column(String(6), nullable=True, index=True)
+    expires_at = Column(DateTime, nullable=False)
+    used = Column(Boolean, default=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+class DashboardSettings(Base):
+    __tablename__ = "dashboard_settings"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    website_name = Column(String)
+    primary_color = Column(String)
+    background_color = Column(String)
+    sidebar_color = Column(String)
+    layout_type = Column(String)
+    button_color = Column(String)
+    text_color = Column(String)
+    sidebar_active_color = Column(String)
+    card_color = Column(String)
+    card_text_color = Column(String)
+    updated_at = Column(DateTime, server_default=func.now())
+
+class DashboardModule(Base):
+    __tablename__ = "dashboard_modules"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    module_name = Column(String)
+    module_type = Column(String)
+    title = Column(String)
+    position = Column(Integer)
+    width = Column(String)
+    is_visible = Column(Boolean, default=True)
+    config = Column(String, nullable=True)
+    updated_at = Column(DateTime, server_default=func.now())
+
+class RoleSidebarSetting(Base):
+    __tablename__ = "role_sidebar_settings"
+    id = Column(Integer, primary_key=True, index=True)
+    role_id = Column(Integer, ForeignKey("roles.id"))
+    page_name = Column(String)
+    is_visible = Column(Boolean, default=True)
 
 def create_tables():
     try:

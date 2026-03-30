@@ -40,10 +40,16 @@ Thumbs.db
 
 # Logs
 *.log
+logs.txt
+web_logs.txt
+docker_logs.txt
 
 # Database
 *.db
 *.sqlite3
+
+# Firebase credentials
+app/firebase-credentials.json
 
 # Test files
 test_*.py

@@ -2,6 +2,46 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional, List, Dict
 
+class FirebaseLoginRequest(BaseModel):
+    id_token: str
+    email: EmailStr
+    display_name: Optional[str] = None
+
+# Password Reset Schemas
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+    reset_method: Optional[str] = "link"  # "link" or "otp"
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class ForgotPasswordResponse(BaseModel):
+    message: str
+    reset_token: Optional[str] = None  # Temporary: shown until email service is set up
+
+class VerifyOtpRequest(BaseModel):
+    email: EmailStr
+    otp_code: str
+
+class VerifyOtpResponse(BaseModel):
+    message: str
+    token: Optional[str] = None
+
+
+# User Preference & SMS Schemas
+class UserPreferenceUpdate(BaseModel):
+    sms_opt_in: bool
+
+class UserPreferenceResponse(UserPreferenceUpdate):
+    id: int
+    user_id: int
+    class Config:
+        from_attributes = True
+
+class UserPhoneUpdate(BaseModel):
+    phone_number: str
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
@@ -141,6 +181,10 @@ class UserPermissions(BaseModel):
     email: str
     roles: List[str]
     permissions: List[str]
+    hidden_sidebar_tabs: Optional[List[str]] = []
+
+class UpdateSidebarSettings(BaseModel):
+    settings: Dict[str, bool]
 
 class UpdateUserRoles(BaseModel):
     user_id: int
