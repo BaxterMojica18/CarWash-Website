@@ -638,6 +638,40 @@ checkSuperadminAccess();
 loadBays();
 loadPresets();
 loadPaymentMethods();
+loadMyProfile();
+
+// Profile and Settings loading
+async function loadMyProfile() {
+    try {
+        const phoneData = await API.profile.getPhone();
+        if (phoneData && phoneData.phone_number) {
+            document.getElementById('userPhone').value = phoneData.phone_number;
+        }
+        
+        const prefData = await API.profile.getPreferences();
+        if (prefData && prefData.sms_opt_in !== undefined) {
+            document.getElementById('smsOptIn').checked = prefData.sms_opt_in;
+        }
+    } catch (error) {
+        console.error('Failed to load profile details:', error);
+    }
+}
+
+document.getElementById('profileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const phone = document.getElementById('userPhone').value;
+    const smsOptIn = document.getElementById('smsOptIn').checked;
+    
+    try {
+        if (phone) {
+            await API.profile.savePhone({ phone_number: phone });
+        }
+        await API.profile.savePreferences({ sms_opt_in: smsOptIn });
+        showToast('Profile settings saved successfully!', 'success');
+    } catch (error) {
+        showToast('Failed to save profile settings', 'error');
+    }
+});
 
 async function checkSuperadminAccess() {
     try {

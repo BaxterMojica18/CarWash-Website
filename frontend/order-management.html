@@ -54,6 +54,8 @@
             <button onclick="filterOrders('accepted')" class="filter-btn" data-filter="accepted" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Accepted</button>
             <button onclick="filterOrders('processing')" class="filter-btn" data-filter="processing" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Processing</button>
             <button onclick="filterOrders('completed')" class="filter-btn" data-filter="completed" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Completed</button>
+            <button onclick="filterOrders('delayed')" class="filter-btn" data-filter="delayed" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Delayed</button>
+            <button onclick="filterOrders('cancelled')" class="filter-btn" data-filter="cancelled" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Cancelled</button>
             <select id="location-filter" class="filter-select" onchange="filterByLocation()" style="padding: 12px 20px; border: 2px solid #e0e0e0; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; color: #333; font-size: 14px; outline: none; transition: all 0.3s ease;">
                 <option value="all">All Locations</option>
             </select>
@@ -202,9 +204,15 @@
                         ` : ''}
                         ${order.status === 'accepted' ? `
                             <button onclick="updateStatus(${order.id}, 'processing')" class="action-btn process-btn">Start Processing</button>
+                            <button onclick="updateStatus(${order.id}, 'cancelled')" class="action-btn reject-btn">Cancel</button>
                         ` : ''}
                         ${order.status === 'processing' ? `
                             <button onclick="updateStatus(${order.id}, 'completed')" class="action-btn complete-btn">Mark Complete</button>
+                            <button onclick="updateStatus(${order.id}, 'delayed')" class="action-btn" style="background: linear-gradient(135deg, #f0932b 0%, #e67e22 100%);">Delay</button>
+                        ` : ''}
+                        ${order.status === 'delayed' ? `
+                            <button onclick="updateStatus(${order.id}, 'processing')" class="action-btn process-btn">Resume</button>
+                            <button onclick="updateStatus(${order.id}, 'cancelled')" class="action-btn reject-btn">Cancel</button>
                         ` : ''}
                     </div>
                 </div>
@@ -287,6 +295,7 @@
         .status-processing { background: #cce5ff; color: #004085; }
         .status-completed { background: #d4edda; color: #155724; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-delayed { background: #fff8e1; color: #f57c00; }
         .card-body {
             padding: 25px;
         }

@@ -142,6 +142,24 @@ def get_profile(db: Session = Depends(database.get_db), current_user = Depends(g
 def save_profile(profile: schemas.UserProfileCreate, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     return crud.save_user_profile(db, current_user.id, profile)
 
+@router.get("/preferences", response_model=schemas.UserPreferenceResponse)
+def get_preferences(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    return crud.get_user_preferences(db, current_user.id)
+
+@router.post("/preferences", response_model=schemas.UserPreferenceResponse)
+def update_preferences(pref: schemas.UserPreferenceUpdate, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    return crud.update_user_preferences(db, current_user.id, pref)
+
+@router.get("/phone")
+def get_phone(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    user = db.query(database.User).filter(database.User.id == current_user.id).first()
+    return {"phone_number": user.phone_number if user else None}
+
+@router.post("/phone")
+def update_phone(phone_data: schemas.UserPhoneUpdate, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    crud.update_user_phone(db, current_user.id, phone_data.phone_number)
+    return {"message": "Phone number updated successfully"}
+
 @router.get("/payment-methods", response_model=List[PaymentMethodResponse])
 def get_payment_methods(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     return crud.get_payment_methods(db)

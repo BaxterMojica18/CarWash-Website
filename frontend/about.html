@@ -6,67 +6,113 @@
     <title>About Us - CarWash Management System</title>
     <link rel="stylesheet" href="/css/landing.css">
     <style>
+        /* About Page specific additions using existing theme variables */
         .about-hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4f46e5 0%, #ec4899 100%);
             color: white;
-            padding: 80px 20px;
+            padding: 120px 20px 80px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
+
+        .about-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -10%;
+            width: 120%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
         .about-section {
-            padding: 60px 20px;
+            padding: 100px 20px;
             max-width: 1200px;
             margin: 0 auto;
         }
-        .about-section h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 2em;
-        }
-        .about-section p {
-            color: #666;
-            line-height: 1.8;
-            font-size: 1.1em;
-        }
-        .ceo-section {
-            background: #f8f9fa;
-            padding: 60px 20px;
-        }
-        .ceo-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            gap: 40px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .ceo-info {
-            flex: 1;
-            min-width: 300px;
-        }
-        .values-grid {
+
+        .about-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
         }
-        .value-card {
+
+        .about-content h2 {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 24px;
+            line-height: 1.2;
+        }
+
+        .about-content p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .ceo-section {
+            background: #f8fafc;
+            padding: 100px 20px;
+        }
+
+        .ceo-card {
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 32px;
+            padding: 60px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.04);
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 50px;
+            max-width: 1100px;
+            margin: 0 auto;
+            border: 1px solid rgba(0,0,0,0.02);
         }
-        .value-card h3 {
-            color: #667eea;
-            margin-bottom: 15px;
+
+        .ceo-image {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #e2e8f0;
+            border-radius: 24px;
+            overflow: hidden;
+            background: url('https://via.placeholder.com/400x400/4f46e5/ffffff?text=John+Michael') center/cover;
+            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.15);
+        }
+
+        .ceo-quote {
+            font-size: 24px;
+            font-style: italic;
+            color: var(--dark);
+            border-left: 4px solid var(--primary);
+            padding-left: 30px;
+            margin-top: 30px;
+            line-height: 1.5;
+        }
+
+        .values-grid {
+            margin-top: 60px;
+        }
+
+        @media (max-width: 992px) {
+            .about-grid, .ceo-card {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            .ceo-card { padding: 40px; }
+            .ceo-image { max-width: 300px; margin: 0 auto; }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- Standard Navigation (Matching Index) -->
     <nav class="navbar">
         <div class="container">
             <div class="nav-brand">
-                <span class="brand-name">CarWash Management System</span>
+                <span>🚗 CarWash</span>
             </div>
             <ul class="nav-menu">
                 <li><a href="/#features">Features</a></li>
@@ -82,60 +128,91 @@
     <!-- Hero Section -->
     <section class="about-hero">
         <div class="container">
-            <h1>About BuxTek Inc.</h1>
-            <p>Innovating Car Wash Management Since 2025</p>
+            <h1 style="font-size: 56px; font-weight: 800; margin-bottom: 15px;">Revolutionizing the Industry</h1>
+            <p style="font-size: 20px; opacity: 0.9;">Empowering car wash business owners with 21st-century technology.</p>
         </div>
     </section>
 
-    <!-- About Section -->
+    <!-- Mission Section -->
     <section class="about-section">
-        <h2>Who We Are</h2>
-        <p>BuxTek Inc. is a technology company founded in 2025 with a mission to revolutionize the car wash industry through innovative software solutions. We understand the challenges faced by car wash businesses and have developed a comprehensive management system that streamlines operations, increases efficiency, and drives growth.</p>
-    </section>
-
-    <!-- History Section -->
-    <section class="about-section" style="background: #f8f9fa;">
-        <h2>Our History</h2>
-        <p>Founded in early 2025, BuxTek Inc. emerged from a simple observation: car wash businesses needed better tools to manage their operations. Our founders, with backgrounds in software development and business management, came together to create a solution that would empower car wash owners to focus on what they do best—providing excellent service to their customers.</p>
-    </section>
-
-    <!-- Mission & Vision -->
-    <section class="about-section">
-        <div class="values-grid">
-            <div class="value-card">
-                <h3>🎯 Our Mission</h3>
-                <p>To empower car wash businesses with cutting-edge technology that simplifies operations, enhances customer experience, and drives sustainable growth.</p>
+        <div class="about-grid">
+            <div class="about-content animate-hidden">
+                <h2>Who is BuxTek Inc.?</h2>
+                <p>Founded in 2025, BuxTek Inc. emerged from a simple observation: car wash businesses needed better tools to manage their operations effectively. Our founders, with roots in high-scale software development, saw a gap that was begging to be filled.</p>
+                <p>We're not just building a dashboard; we're building a growth engine for your business. From independent single-bay washes to major multi-location franchises, we provide the intelligence you need to scale.</p>
             </div>
-            <div class="value-card">
-                <h3>🔭 Our Vision</h3>
-                <p>To become the leading provider of car wash management solutions globally, setting the standard for innovation and excellence in the industry.</p>
-            </div>
-            <div class="value-card">
-                <h3>💎 Our Values</h3>
-                <p>Innovation, Customer Success, Integrity, Excellence, and Continuous Improvement guide everything we do.</p>
+            <div class="feature-card animate-hidden" style="background: linear-gradient(135deg, #f0f7ff, #ffffff); border: 1px solid rgba(79, 70, 229, 0.1);">
+                <div class="feature-icon" style="background: var(--primary); color: white;">🚀</div>
+                <h3>Our Vision</h3>
+                <p>To be the global operating system for automotive services, setting the gold standard for management efficiency and customer satisfaction.</p>
             </div>
         </div>
     </section>
 
     <!-- CEO Section -->
     <section class="ceo-section">
-        <div class="ceo-content">
-            <div class="ceo-info">
-                <h2>Meet Our CEO</h2>
-                <h3 style="color: #667eea; margin-top: 20px;">John Michael Santos</h3>
-                <p style="color: #888; margin-bottom: 20px;">Founder & Chief Executive Officer</p>
-                <p>John Michael Santos is a visionary entrepreneur and technology innovator who founded BuxTek Inc. in 2025. With over a decade of experience in software development and business management, John identified the need for a comprehensive car wash management solution that could help businesses thrive in an increasingly competitive market.</p>
-                <p style="margin-top: 15px;">Under his leadership, BuxTek Inc. has quickly established itself as a trusted partner for car wash businesses across the Philippines. John's commitment to innovation, customer success, and operational excellence continues to drive the company's growth and success.</p>
-                <p style="margin-top: 15px; font-style: italic; color: #667eea;">"Our goal is simple: to provide car wash businesses with the tools they need to succeed in the digital age. Every feature we build, every decision we make, is guided by our commitment to our customers' success."</p>
+        <div class="container">
+            <div class="ceo-card animate-hidden">
+                <div class="ceo-image"></div>
+                <div class="ceo-info">
+                    <span style="color: var(--secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">Founder & CEO</span>
+                    <h2 style="font-size: 36px; margin-top: 10px; color: var(--dark);">John Michael Santos</h2>
+                    <p style="margin-top: 20px; color: var(--text-secondary);">John Michael Santos is a visionary entrepreneur and technologist dedicated to modernizing legacy industries. Under his leadership, BuxTek has pioneered cloud-sync solutions that are now used across the Philippines.</p>
+                    <div class="ceo-quote">
+                        "Technology should be invisible—it should just work. Our goal is to let you focus on your customers while we handle the complexity of your data."
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- Core Values Section -->
+    <section class="about-section">
+        <h2 style="text-align: center; margin-bottom: 60px; font-size: 42px; font-weight: 800;">Our Foundation</h2>
+        <div class="features-grid">
+            <div class="feature-card animate-hidden">
+                <div class="feature-icon">🎯</div>
+                <h3>Execution</h3>
+                <p>We value results over promises. Every feature we release is tested to ensure it adds real-world value to your bottom line.</p>
+            </div>
+            <div class="feature-card animate-hidden">
+                <div class="feature-icon">💎</div>
+                <h3>Transparency</h3>
+                <p>Integrity is at the heart of our platform. Your data is secure, your billing is clear, and our support is always honest.</p>
+            </div>
+            <div class="feature-card animate-hidden">
+                <div class="feature-icon">🌊</div>
+                <h3>Innovation</h3>
+                <p>The tech landscape is always moving, and so are we. We continuously update our system to leverage the latest in cloud computing.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 CarWash Management System. All rights reserved. | Philippines</p>
+            <p>&copy; 2025 BuxTek Inc. | Made with ❤️ in the Philippines</p>
         </div>
     </footer>
+
+    <script>
+        // Matching Index.html logic for animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+            const animElements = document.querySelectorAll('.animate-hidden, .feature-card, .ceo-card');
+            animElements.forEach((el, index) => {
+                el.classList.add('animate-hidden');
+                el.style.transitionDelay = `${(index % 3) * 0.1}s`;
+                observer.observe(el);
+            });
+        });
+    </script>
 </body>
 </html>

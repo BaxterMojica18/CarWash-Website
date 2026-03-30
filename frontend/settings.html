@@ -29,6 +29,22 @@
         <header>
             <h1>Settings</h1>
         </header>
+        
+        <div class="settings-section" id="myProfileSection">
+            <h2>My Profile & Notifications</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Phone Number for SMS</label>
+                    <input type="tel" id="userPhone" placeholder="(555) 123-4567">
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <label style="margin: 0;">Enable SMS Queue Updates</label>
+                    <input type="checkbox" id="smsOptIn" style="width: 20px; height: 20px;">
+                </div>
+                <button type="submit" class="btn-primary" style="margin-top: 15px;">Save Profile Settings</button>
+            </form>
+        </div>
+        
         <div class="settings-section" id="userManagementSection" style="display: none;">
             <div class="section-header">
                 <h2>User Management</h2>

@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from app import database, schemas
-from datetime import datetime
+from datetime import datetime, timedelta
+import uuid
+import random
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -234,7 +236,20 @@ def save_invoice_customization(db: Session, user_id: int, custom: schemas.Invoic
     return db_custom
 
 def get_user_profile(db: Session, user_id: int):
-    return db.query(database.UserProfile).filter(database.UserProfile.user_id == user_id).first()
+    profile = db.query(database.UserProfile).filter(database.UserProfile.user_id == user_id).first()
+    if not profile:
+        user = db.query(database.User).filter(database.User.id == user_id).first()
+        if user:
+            role = user.roles[0].name if user.roles else "user"
+            profile = database.UserProfile(
+                user_id=user_id,
+                name=user.email.split("@")[0].capitalize(),
+                role=role.capitalize()
+            )
+            db.add(profile)
+            db.commit()
+            db.refresh(profile)
+    return profile
 
 def save_user_profile(db: Session, user_id: int, profile: schemas.UserProfileCreate):
     db_profile = get_user_profile(db, user_id)
@@ -247,6 +262,32 @@ def save_user_profile(db: Session, user_id: int, profile: schemas.UserProfileCre
     db.commit()
     db.refresh(db_profile)
     return db_profile
+
+# User Preferences and Phone
+def get_user_preferences(db: Session, user_id: int):
+    pref = db.query(database.UserPreference).filter(database.UserPreference.user_id == user_id).first()
+    # Create default preference if it doesn't exist
+    if not pref:
+        pref = database.UserPreference(user_id=user_id, sms_opt_in=True)
+        db.add(pref)
+        db.commit()
+        db.refresh(pref)
+    return pref
+
+def update_user_preferences(db: Session, user_id: int, pref_update: schemas.UserPreferenceUpdate):
+    pref = get_user_preferences(db, user_id)
+    pref.sms_opt_in = pref_update.sms_opt_in
+    db.commit()
+    db.refresh(pref)
+    return pref
+
+def update_user_phone(db: Session, user_id: int, phone_number: str):
+    user = db.query(database.User).filter(database.User.id == user_id).first()
+    if user:
+        user.phone_number = phone_number
+        db.commit()
+        db.refresh(user)
+    return user
 
 # Cart CRUD
 def get_cart_items(db: Session, client_id: int):
@@ -476,3 +517,107 @@ def delete_payment_method(db: Session, pm_id: int):
         db.delete(pm)
         db.commit()
     return pm
+
+# Password Reset CRUD
+def create_password_reset_token(db: Session, user_id: int) -> dict:
+    # Invalidate any existing unused tokens for this user
+    db.query(database.PasswordResetToken).filter(
+        database.PasswordResetToken.user_id == user_id,
+        database.PasswordResetToken.used == False
+    ).update({"used": True})
+    
+    token = str(uuid.uuid4())
+    otp_code = str(random.randint(100000, 999999))
+    reset_token = database.PasswordResetToken(
+        user_id=user_id,
+        token=token,
+        otp_code=otp_code,
+        expires_at=datetime.utcnow() + timedelta(minutes=15)
+    )
+    db.add(reset_token)
+    db.commit()
+    return {"token": token, "otp_code": otp_code}
+
+def validate_password_reset_token(db: Session, token: str):
+    reset_token = db.query(database.PasswordResetToken).filter(
+        database.PasswordResetToken.token == token,
+        database.PasswordResetToken.used == False
+    ).first()
+    
+    if not reset_token:
+        return None
+    
+    if reset_token.expires_at < datetime.utcnow():
+        return None
+    
+    user = db.query(database.User).filter(database.User.id == reset_token.user_id).first()
+    return user
+
+def reset_password(db: Session, user_id: int, new_password: str):
+    user = db.query(database.User).filter(database.User.id == user_id).first()
+    if user:
+        user.password_hash = get_password_hash(new_password)
+        db.commit()
+        db.refresh(user)
+    return user
+
+def invalidate_reset_token(db: Session, token: str):
+    reset_token = db.query(database.PasswordResetToken).filter(
+        database.PasswordResetToken.token == token
+    ).first()
+    if reset_token:
+        reset_token.used = True
+        db.commit()
+
+def validate_otp_code(db: Session, email: str, otp_code: str):
+    """Validate a 6-digit OTP code for a given email. Returns the reset token string if valid."""
+    user = get_user_by_email(db, email)
+    if not user:
+        return None
+    
+    reset_entry = db.query(database.PasswordResetToken).filter(
+        database.PasswordResetToken.user_id == user.id,
+        database.PasswordResetToken.otp_code == otp_code,
+        database.PasswordResetToken.used == False
+    ).first()
+    
+    if not reset_entry:
+        return None
+    
+    if reset_entry.expires_at < datetime.utcnow():
+        return None
+    
+    return reset_entry.token
+
+def get_or_create_firebase_user(db: Session, email: str, name: str = None):
+    """
+    Finds an existing user by email or creates a new one 
+    if they authenticated via Firebase for the first time.
+    """
+    user = get_user_by_email(db, email)
+    
+    if not user:
+        # Generate a random strong password for the local DB wrapper
+        random_password = str(uuid.uuid4())
+        user = create_user(db, email=email, password=random_password, is_demo=False)
+        
+        # Assign 'client' role by default
+        client_role = db.query(database.Role).filter(database.Role.name == "client").first()
+        if client_role:
+            user.roles.append(client_role)
+            db.commit()
+            
+        # Always create a profile to prevent 404 Errors on /profile endpoint
+        # The schema uses 'name' and 'role' fields
+        profile_name = name if name else f"User {email.split('@')[0].capitalize()}"
+            
+        profile = database.UserProfile(
+            user_id=user.id,
+            name=profile_name,
+            role="client"
+        )
+        db.add(profile)
+        db.commit()
+        db.refresh(user)
+            
+    return user

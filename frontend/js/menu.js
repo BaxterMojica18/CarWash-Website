@@ -107,3 +107,54 @@ function loadBranding() {
 }
 
 loadBranding();
+
+async function applySidebarSettings() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+        const response = await fetch(`http://localhost:8000/api/auth/me/permissions`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        if (data.hidden_sidebar_tabs && data.hidden_sidebar_tabs.length > 0) {
+            const sidebarLinks = document.querySelectorAll('.sidebar ul li a');
+            sidebarLinks.forEach(link => {
+                const textContext = link.textContent.trim().toLowerCase();
+                const tabMatch = data.hidden_sidebar_tabs.find(
+                    hidden => textContext.includes(hidden.toLowerCase())
+                );
+                if (tabMatch) {
+                    link.parentElement.style.display = 'none';
+                }
+            });
+        }
+        
+        // Dynamically inject Sidebar Tabs for admins/owners
+        if (data.roles && (data.roles.includes('superadmin') || data.roles.includes('admin') || data.roles.includes('owner'))) {
+            const sidebarUl = document.querySelector('.sidebar ul');
+            if (sidebarUl) {
+                // Check if it already exists to prevent duplicates
+                const exists = Array.from(document.querySelectorAll('.sidebar ul li a')).some(
+                    a => a.textContent.includes('Sidebar Tabs')
+                );
+                
+                if (!exists) {
+                    const logoutLi = sidebarUl.querySelector('li a[onclick="logout()"]')?.parentElement;
+                    const newLi = document.createElement('li');
+                    newLi.innerHTML = `<a href="sidebar-management.html"><span class="icon">🗂️</span> Sidebar Tabs</a>`;
+                    if (logoutLi) {
+                        sidebarUl.insertBefore(newLi, logoutLi);
+                    } else {
+                        sidebarUl.appendChild(newLi);
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Failed to load sidebar settings", e);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', applySidebarSettings);
