@@ -8,6 +8,7 @@ from app.permissions import has_permission
 from datetime import datetime, timedelta
 from typing import Optional
 from fastapi.responses import StreamingResponse
+from app.crud import get_business_user_ids
 import io
 import csv
 
@@ -29,8 +30,8 @@ def get_sales_report(
     current_user: dict = Depends(has_permission("view_reports"))
 ):
     from app.database import InvoiceItem, ProductService
-    user_id = current_user.id
-    query = db.query(Invoice).filter(Invoice.user_id == user_id)
+    biz_ids = get_business_user_ids(db, current_user)
+    query = db.query(Invoice).filter(Invoice.user_id.in_(biz_ids))
     
     # Range filters
     if period == "day_range" and start_date and end_date:
@@ -104,7 +105,7 @@ def get_sales_report(
     
     # Cache report
     cache = ReportCache(
-        user_id=user_id,
+        user_id=current_user.id,
         report_type="sales",
         filter_period=period,
         filter_value=f"{date or ''}{month or ''}{year or ''}{start_date or ''}{end_date or ''}",
@@ -134,8 +135,8 @@ def download_sales_csv(
 ):
     from app.database import InvoiceItem, ProductService
     
-    user_id = current_user.id
-    query = db.query(Invoice).filter(Invoice.user_id == user_id)
+    biz_ids = get_business_user_ids(db, current_user)
+    query = db.query(Invoice).filter(Invoice.user_id.in_(biz_ids))
     
     if period == "day_range" and start_date and end_date:
         start = datetime.strptime(start_date, "%Y-%m-%d")
@@ -250,8 +251,8 @@ def download_sales_pdf(
     from reportlab.pdfbase.ttfonts import TTFont
     from app.database import InvoiceItem, ProductService
     
-    user_id = current_user.id
-    query = db.query(Invoice).filter(Invoice.user_id == user_id)
+    biz_ids = get_business_user_ids(db, current_user)
+    query = db.query(Invoice).filter(Invoice.user_id.in_(biz_ids))
     
     if period == "day_range" and start_date and end_date:
         start = datetime.strptime(start_date, "%Y-%m-%d")

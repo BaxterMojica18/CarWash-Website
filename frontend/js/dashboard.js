@@ -323,10 +323,8 @@ async function applyDashboardSettings() {
         
         document.documentElement.style.setProperty('--primary-color', settings.primary_color);
         document.documentElement.style.setProperty('--bg-color', settings.background_color);
-        document.querySelector('.sidebar').style.background = settings.sidebar_color;
+        if (settings.sidebar_color) document.documentElement.style.setProperty('--sidebar-color', settings.sidebar_color);
         document.querySelector('.content').style.color = settings.text_color || '#333333';
-        document.getElementById('sidebarName').textContent = settings.website_name;
-        document.getElementById('sidebarLogo').textContent = '🚗';
         
         const buttonColor = settings.button_color || settings.primary_color;
         const sidebarActive = settings.sidebar_active_color || '#34495e';
@@ -338,7 +336,7 @@ async function applyDashboardSettings() {
         const cardColor = settings.card_color || '#ffffff';
         const cardTextColor = settings.card_text_color || '#333333';
         style.textContent = `
-            .btn-primary, button { background: ${buttonColor} !important; }
+            .btn-primary { background: ${buttonColor} !important; }
             .stat-card { 
                 background: ${cardColor} !important;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;

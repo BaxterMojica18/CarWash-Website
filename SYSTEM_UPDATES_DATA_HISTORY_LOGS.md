@@ -1,7 +1,7 @@
 # System Updates, Data & History Logs
 
-> **Last Updated:** March 29, 2026  
-> **Version:** 3.0.0  
+> **Last Updated:** April 4, 2026  
+> **Version:** 4.0.0  
 > **Branch:** main
 
 ---
@@ -15,6 +15,91 @@
 6. [Superadmin Role](#superadmin-role)
 7. [Setup Instructions](#setup-instructions)
 8. [API Documentation](#api-documentation)
+
+---
+
+## Latest Updates (April 4, 2026)
+
+### 🔒 Multi-Tenant Data Isolation & Deployment Configuration
+**Status:** ✅ Completed
+
+#### Features Added:
+- **Multi-Tenant Data Isolation (Business Number Scoping):**
+  - Added `get_business_user_ids()` helper that finds all users sharing the same `business_number`.
+  - Added `get_business_owner_id()` helper that resolves the owner for shared settings (themes, business info).
+  - **Locations**: Only returns locations created by users in the same business.
+  - **Products/Services**: Only returns products/services created by users in the same business.
+  - **Invoices**: Only returns invoices created by users in the same business.
+  - **Orders**: Admin/owner views now scoped to orders from clients in the same business.
+  - **Reservations**: Admin/owner views now scoped to reservations from clients in the same business.
+  - **Reports**: Sales reports filtered to business-scoped invoices.
+  - **Dashboard**: Settings and modules resolved via the business owner, so all staff see consistent dashboard.
+  - **Themes/Business Info**: Looked up via the business owner, shared across all business members.
+  - **User Listing**: Admins only see users with the same `business_number`.
+
+- **Staff Sidebar Permissions Fix:**
+  - Removed "Settings" from `STAFF_TABS` array in `menu.js`.
+  - Settings tab now dynamically added only for `admin`, `owner`, and `superadmin` roles.
+  - Staff (role=user) will no longer see the Settings link in the sidebar.
+
+- **Production Deployment Configuration:**
+  - Created `vercel.json` for deploying to Vercel (routes API to backend, serves static frontend).
+  - Created `render.yaml` for deploying to Render (Docker + managed PostgreSQL).
+  - Updated `frontend/js/api.js` with dynamic `API_BASE` detection (localhost vs production origin).
+  - Dashboard management endpoints relaxed from `is_superadmin` to `is_admin_or_owner` for broader access.
+
+#### Files Created/Modified:
+- ✅ `app/crud.py` — Added `get_business_user_ids()`, `get_business_owner_id()`, scoped all read queries
+- ✅ `app/routers/settings.py` — Business-scoped locations, products, themes, business info
+- ✅ `app/routers/invoices.py` — Business-scoped invoice listing and dashboard stats
+- ✅ `app/routers/orders.py` — Business-scoped order listing for admins
+- ✅ `app/routers/reservations.py` — Business-scoped reservation listing for admins
+- ✅ `app/routers/reports.py` — Business-scoped sales reports
+- ✅ `app/routers/dashboard.py` — Owner-resolved dashboard settings/modules
+- ✅ `app/routers/auth.py` — Business-scoped user listing
+- ✅ `frontend/js/menu.js` — Staff sidebar: Settings removed, role-guarded
+- ✅ `frontend/js/api.js` — Dynamic API_BASE for production
+- ✅ `vercel.json` — Vercel deployment config (NEW)
+- ✅ `render.yaml` — Render deployment config (NEW)
+
+---
+
+## Latest Updates (April 1, 2026)
+
+### 🏎️ Advanced Sidebar & Registration Flow
+**Status:** ✅ Completed
+
+#### Features Added:
+- **Premium Sidebar UX:**
+  - **Mini-Sidebar Mode**: Implemented a responsive "icon-only" state for desktop.
+  - **Dynamic Visibility**: Labels and Logos are hidden in mini-mode, showing only centered SVG icons.
+  - **Invisible Toggle**: The sidebar is now clickable anywhere on its strip to expand from mini-mode.
+  - **Minimal Navigation**: Replaced "X" and Hamburger buttons with a sleek, semi-transparent left-arrow chevron that disappears when collapsed.
+  - **Normalization**: Created a global Icon Normalizer that converts all legacy icons to a consistent, high-performance SVG set.
+- **Enhanced Registration Flow:**
+  - **Account Triage**: New `account-type.html` selection page (Client vs Owner vs Admin).
+  - **Role-Based Provisioning**: 
+    - **Owners**: Automatically assigned "owner" role and prompted for a Business Number.
+    - **Admins**: Assigned "admin" role (restricted creation).
+    - **Clients**: Standard user onboarding.
+  - **Validation**: Added `account_type` and `business_number` columns to the PostgreSQL User model with automatic database migration.
+- **Environment & Dev Productivity:**
+  - **VENV Automation**: Created `setup.ps1` and `start.ps1` for one-click environment management.
+  - **Auto-Migrations**: The backend now automatically checks for and applies database migrations (`add_signup_columns.py`) on startup.
+- **Reactive Branding & UI Reliability (Latest):**
+  - **Storage-First Rendering**: Implemented `localStorage` caching for both Business Branding (Name/Logo) and Sidebar Tabs/Permissions. This eliminates the 0.5s "network flash" on page transitions.
+  - **Real-time Sync**: Sidebar branding now updates instantly across all open tabs when changes are saved in the Settings panel.
+  - **"No Logo" Support**: Introduced `none` logo type to allow users to completely remove their business logo via settings without fallback icons reappearing.
+  - **Template Hygiene**: Scrubbed hardcoded list items and placeholders from over 10+ HTML files to ensure a single source of truth (JS-driven).
+
+#### Files Created/Modified:
+- ✅ `frontend/js/menu.js` (Major Sidebar Overhaul)
+- ✅ `frontend/css/style.css` (Fluid Transitions & Mini-Mode)
+- ✅ `frontend/account-type.html` (New Triage Page)
+- ✅ `frontend/signup.html` (Dynamic Role Forms)
+- ✅ `app/database.py` & `app/schemas.py` (Extended User Model)
+- ✅ `commands/database/add_signup_columns.py` (Schema Migration)
+- ✅ `setup.ps1` / `start.ps1` (Dev Environment)
 
 ---
 
@@ -700,6 +785,16 @@ Content-Type: application/json
 ---
 
 ## Change Log
+
+### Version 4.0.0 (April 4, 2026)
+- ✅ **Multi-Tenant Data Isolation**: All data queries (locations, products, invoices, orders, reservations, reports, dashboard) now scoped by `business_number`
+- ✅ Added `get_business_user_ids()` and `get_business_owner_id()` helpers to `crud.py`
+- ✅ **Staff Sidebar Fix**: Settings tab hidden from staff, visible only to admin/owner/superadmin
+- ✅ **Vercel Deployment**: Created `vercel.json` for production deployment
+- ✅ **Render Deployment**: Created `render.yaml` with Docker + managed PostgreSQL blueprint
+- ✅ **Dynamic API_BASE**: Frontend auto-detects production vs local environment
+- ✅ Dashboard settings/modules endpoints relaxed from superadmin-only to admin/owner access
+- ✅ User listing scoped to same business (admins can't see users from other businesses)
 
 ### Version 3.0.0 (March 30, 2026)
 - ✅ **New Feature**: Role-Based dynamic Sidebar Navigation hiding via `RoleSidebarSetting` database schema

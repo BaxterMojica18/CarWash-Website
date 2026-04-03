@@ -38,6 +38,14 @@ def get_current_user_optional_query(token: Optional[str] = Query(None), db: Sess
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
+@router.post("/register")
+def register(reg_data: schemas.UserRegister, db: Session = Depends(database.get_db)):
+    try:
+        user = crud.register_user(db, reg_data)
+        return {"message": "Success", "user_id": user.id, "business_number": user.business_number}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @router.post("/login", response_model=schemas.Token)
 def login(credentials: schemas.UserLogin, db: Session = Depends(database.get_db)):
     user = crud.get_user_by_email(db, credentials.email)
@@ -109,7 +117,14 @@ def get_my_permissions(current_user: database.User = Depends(get_current_user), 
 
 @router.get("/users", response_model=List[schemas.UserPermissions])
 def list_users(db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
-    users = db.query(database.User).all()
+    # Scope users to the same business
+    if current_user.business_number:
+        users = db.query(database.User).filter(
+            database.User.business_number == current_user.business_number
+        ).all()
+    else:
+        users = db.query(database.User).all()
+    
     current_user_roles = [role.name for role in current_user.roles]
     is_superadmin_user = "superadmin" in current_user_roles
     

@@ -5,6 +5,7 @@ from app import schemas, crud, database
 from app.dependencies import get_current_user
 from app.permissions import has_permission, is_admin_or_owner
 from app.demo_limits import DemoLimits
+from app.crud import get_business_user_ids
 
 router = APIRouter()
 
@@ -21,7 +22,12 @@ def create_order(order_data: schemas.OrderCreate, db: Session = Depends(database
 def get_orders(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     role_names = [role.name for role in current_user.roles]
     if "admin" in role_names or "owner" in role_names or "superadmin" in role_names:
-        return crud.get_orders(db)
+        # Scope to business: only show orders from users in the same business
+        biz_ids = get_business_user_ids(db, current_user)
+        orders = db.query(database.Order).filter(
+            database.Order.client_id.in_(biz_ids)
+        ).order_by(database.Order.created_at.desc()).all()
+        return orders
     return crud.get_orders(db, current_user.id)
 
 @router.get("/{order_id}", response_model=schemas.OrderResponse)

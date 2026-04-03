@@ -5,6 +5,7 @@ from app import schemas, crud, database
 from app.dependencies import get_current_user
 from app.permissions import is_admin_or_owner
 from app.demo_limits import DemoLimits
+from app.crud import get_business_user_ids
 # from app.sms_service import send_queue_update_sms
 
 router = APIRouter()
@@ -28,7 +29,16 @@ def create_reservation(reservation_data: schemas.ReservationCreate, db: Session 
 def get_reservations(location_id: int = None, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     role_names = [role.name for role in current_user.roles]
     if "admin" in role_names or "owner" in role_names or "superadmin" in role_names:
-        return crud.get_reservations(db, location_id=location_id)
+        # Scope to business: only show reservations from users in the same business
+        biz_ids = get_business_user_ids(db, current_user)
+        from sqlalchemy.orm import joinedload
+        query = db.query(database.Reservation).options(
+            joinedload(database.Reservation.service),
+            joinedload(database.Reservation.location)
+        ).filter(database.Reservation.client_id.in_(biz_ids))
+        if location_id:
+            query = query.filter(database.Reservation.location_id == location_id)
+        return query.order_by(database.Reservation.created_at.desc()).all()
     return crud.get_reservations(db, current_user.id)
 
 @router.get("/queue", response_model=List[schemas.ReservationResponse])

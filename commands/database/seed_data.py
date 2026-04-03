@@ -86,10 +86,21 @@ if not demo_user:
     demo_user = crud.create_user(db, "demo@carwash.com", "demo123", is_demo=True)
     print("[OK] Demo user created")
 
-if admin_role and admin_role not in demo_user.roles:
-    demo_user.roles.append(admin_role)
+if staff_role and staff_role not in demo_user.roles:
+    demo_user.roles.append(staff_role)
     db.commit()
-    print("[OK] Demo user assigned admin role")
+    print("[OK] Demo user assigned staff role")
+
+# Create client demo user
+client_user = crud.get_user_by_email(db, "client@carwash.com")
+if not client_user:
+    client_user = crud.create_user(db, "client@carwash.com", "client123", is_demo=True)
+    print("[OK] Client demo user created")
+
+if client_role and client_role not in client_user.roles:
+    client_user.roles.append(client_role)
+    db.commit()
+    print("[OK] Client demo user assigned client role")
 
 # Create admin user
 admin_user = crud.get_user_by_email(db, "admin@carwash.com")
@@ -171,9 +182,12 @@ if db.query(database.Invoice).count() == 0:
     print("[OK] Sample invoices created")
 
 print("\n[OK] Database seeded successfully!")
-print("\nDemo Login:")
+print("\nDemo Login (Staff):")
 print("  Email: demo@carwash.com")
 print("  Password: demo123")
+print("\nClient/Customer Login:")
+print("  Email: client@carwash.com")
+print("  Password: client123")
 print("\nAdmin Login:")
 print("  Email: admin@carwash.com")
 print("  Password: admin123")

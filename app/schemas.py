@@ -132,11 +132,13 @@ class CustomThemeCreate(BaseModel):
     dropdown_brightness: int = 100
     delete_button_brightness: int = 100
     delete_button_saturation: int = 100
+    for_client: bool = False
 
 class CustomTheme(CustomThemeCreate):
     id: int
     user_id: int
     is_active: bool
+    for_client: bool = False
     class Config:
         from_attributes = True
 
@@ -194,6 +196,15 @@ class CreateUser(BaseModel):
     name: str
     email: EmailStr
     role: str
+
+class UserRegister(BaseModel):
+    fullName: str
+    email: EmailStr
+    password: str
+    phone: str
+    plan: str
+    account_type: str  # admin, staff, client, owner
+    business_number: Optional[str] = None
 
 class UpdateUserPermissions(BaseModel):
     user_id: int

@@ -30,9 +30,13 @@ services:
     volumes:
       - ./frontend:/app/frontend
       - ./app:/app/app
+      - ./commands:/app/commands
     command: >
       sh -c "sleep 10 && 
              python commands/database/migrate_db.py && 
+             python commands/database/add_signup_columns.py && 
+             python -c \"from sqlalchemy import text; from app.database import engine; c=engine.connect(); c.execute(text('ALTER TABLE settings_theme_selection ADD COLUMN IF NOT EXISTS for_client BOOLEAN DEFAULT FALSE')); c.commit(); c.close(); print('Migration: for_client column OK')\" && 
+             python commands/users/setup_demo_accounts.py && 
              uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
 volumes:

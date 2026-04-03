@@ -157,11 +157,14 @@
   - API key management
   - Request validation
   - SQL injection prevention
-- [ ] **Data Protection**
-  - GDPR compliance
-  - Data encryption at rest
-  - Audit logging
-  - Backup automation
+- [x] **Data Protection — Multi-Tenant Isolation** ✅ *(Added April 4, 2026)*
+  - Business-scoped data queries via `business_number`
+  - Admins can't see other businesses' data
+  - Staff sidebar restricted (Settings hidden)
+- [ ] GDPR compliance
+- [ ] Data encryption at rest
+- [x] Audit logging *(partial — via report cache)*
+- [ ] Backup automation
 
 ### 12. Performance Optimization
 - [ ] **Database Optimization**
@@ -206,12 +209,18 @@
 4. ✅ Superadmin role fix for global data visibility
 5. ✅ Hybrid Firebase Google Sign-in configuration
 6. ✅ Missing Dashboard & Profile DB fixes
-7. ⏸️ Basic SMS notifications *(paused — pending Twilio subscription)*
+7. ✅ **Advanced Registration Flow Upgrade** (Owner/Admin/Client triage)
+8. ✅ **Sidebar UX Modernization** (Mini-mode, SVG icons, Click-to-Expand)
+9. ✅ **DevOps Automation** (setup.ps1, auto-migrations)
 
-### Phase 2 (Short-term - 4 weeks)
-1. Enhanced authentication
-2. Payment gateway integration
-3. Real-time features
+### Phase 2 (Short-term - 1-2 weeks)
+1. ✅ **Production Deployment**: Created `vercel.json` and `render.yaml` configs for Vercel/Render with managed Postgres. *(April 4, 2026)*
+2. ✅ **Multi-Tenant Data Isolation**: All data scoped by `business_number` — admins can't see other businesses' data. *(April 4, 2026)*
+3. ✅ **Staff Sidebar Permissions**: Settings hidden from staff, only visible to admin/owner/superadmin. *(April 4, 2026)*
+4. 📧 **Dynamic Client Notifications**: Automatic email/SMS notifications to clients when their service status (Queue) or order (Product) is updated.
+5. **Dynamic Business Dashboards**: Tailor modules based on account_type (Owner vs Client).
+6. Payment gateway integration
+7. Real-time features (WebSockets for Queue)
 
 ### Phase 3 (Medium-term - 8 weeks)
 1. PWA implementation

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Type - CarWash Management System</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .account-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .account-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .account-box {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .account-box h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .account-box > p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .role-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .role-card {
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .role-card:hover {
+            border-color: #667eea;
+            background: #f8faff;
+        }
+
+        .role-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .role-card i {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .role-card span {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .business-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .business-section.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-complete {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-complete:hover {
+            background: #5a6fd6;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .role-desc {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .error-banner {
+            background: #fff0f0;
+            border: 1px solid #f5c6c6;
+            border-left: 4px solid #e53e3e;
+            color: #c53030;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-banner {
+            background: #f0fff4;
+            border: 1px solid #c6f6d5;
+            border-left: 4px solid #38a169;
+            color: #276749;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .business-number-display {
+            background: #eef2ff;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .business-number-display .bn-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .business-number-display .bn-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #667eea;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body class="account-page">
+    <div class="account-container">
+        <div class="account-box">
+            <h1>Account Type</h1>
+            <p>Select your role in the system</p>
+            
+            <form id="accountForm">
+                <div class="role-cards">
+                    <div class="role-card" data-role="owner">
+                        <span>Owner</span>
+                        <p class="role-desc">Full business access</p>
+                    </div>
+                    <div class="role-card" data-role="admin">
+                        <span>Admin</span>
+                        <p class="role-desc">Manage operations</p>
+                    </div>
+                    <div class="role-card" data-role="staff">
+                        <span>Staff</span>
+                        <p class="role-desc">Daily wash tasks</p>
+                    </div>
+                    <div class="role-card" data-role="client">
+                        <span>Client</span>
+                        <p class="role-desc">Book your washes</p>
+                    </div>
+                </div>
+
+                <div id="businessSection" class="business-section">
+                    <div class="form-group">
+                        <label for="businessNumber">Business Number *</label>
+                        <input type="text" id="businessNumber" placeholder="Enter BN-XXXXXX">
+                        <small style="color: #888;">Ask your employer for the business code.</small>
+                    </div>
+                </div>
+
+                <div id="ownerInfo" class="business-section" style="background: #eef2ff; border-left: 4px solid #667eea;">
+                    <p style="margin: 0; color: #444; font-size: 14px;">
+                        <strong>Note:</strong> As an Owner, a unique <strong>Business Number</strong> will be generated for your company. You can share this with your team for them to join.
+                    </p>
+                </div>
+
+                <div id="errorBanner" class="error-banner"></div>
+                <div id="successBanner" class="success-banner"></div>
+                <div id="bnDisplay" class="business-number-display">
+                    <div class="bn-label">Your Business Number</div>
+                    <div class="bn-value" id="bnValue"></div>
+                    <small style="color:#666; display:block; margin-top:8px;">Share this code with your team so they can join your business.</small>
+                </div>
+
+                <button type="submit" class="btn-complete" id="submitBtn" disabled>Complete Registration</button>
+            </form>
+
+            <div class="back-link">
+                <a href="/register.html">← Back to Plans</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        const registrationData = JSON.parse(localStorage.getItem('registrationData'));
+        if (!registrationData) {
+            window.location.href = '/signup.html';
+        }
+
+        let selectedRole = '';
+        const roleCards = document.querySelectorAll('.role-card');
+        const businessSection = document.getElementById('businessSection');
+        const ownerInfo = document.getElementById('ownerInfo');
+        const submitBtn = document.getElementById('submitBtn');
+        const businessNumberInput = document.getElementById('businessNumber');
+
+        roleCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove selection from all
+                roleCards.forEach(c => c.classList.remove('selected'));
+                
+                // Add selection to clicked
+                card.classList.add('selected');
+                selectedRole = card.getAttribute('data-role');
+                
+                // Handle sections visibility
+                if (selectedRole === 'owner') {
+                    businessSection.classList.remove('show');
+                    ownerInfo.classList.add('show');
+                    businessNumberInput.required = false;
+                } else {
+                    businessSection.classList.add('show');
+                    ownerInfo.classList.remove('show');
+                    businessNumberInput.required = true;
+                }
+                
+                submitBtn.disabled = false;
+            });
+        });
+
+        const errorBanner = document.getElementById('errorBanner');
+        const successBanner = document.getElementById('successBanner');
+        const bnDisplay = document.getElementById('bnDisplay');
+        const bnValue = document.getElementById('bnValue');
+
+        function showError(msg) {
+            errorBanner.textContent = msg;
+            errorBanner.style.display = 'block';
+            successBanner.style.display = 'none';
+        }
+
+        function showSuccess(msg) {
+            successBanner.textContent = msg;
+            successBanner.style.display = 'block';
+            errorBanner.style.display = 'none';
+        }
+
+        document.getElementById('accountForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            errorBanner.style.display = 'none';
+            successBanner.style.display = 'none';
+            bnDisplay.style.display = 'none';
+
+            const finalData = {
+                fullName: registrationData.fullName,
+                email: registrationData.email,
+                password: registrationData.password,
+                phone: registrationData.phone,
+                plan: registrationData.plan,
+                account_type: selectedRole,
+                business_number: selectedRole === 'owner' ? null : (businessNumberInput.value || null)
+            };
+
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating Account...';
+
+                const response = await API.auth.register(finalData);
+
+                if (response.business_number && selectedRole === 'owner') {
+                    bnValue.textContent = response.business_number;
+                    bnDisplay.style.display = 'block';
+                    showSuccess('Account created! Save your business number above, then proceed to login.');
+                    submitBtn.textContent = 'Go to Login';
+                    submitBtn.disabled = false;
+                    submitBtn.onclick = () => {
+                        localStorage.removeItem('registrationData');
+                        window.location.href = '/login.html';
+                    };
+                } else {
+                    showSuccess('Registration successful! Redirecting to login...');
+                    localStorage.removeItem('registrationData');
+                    setTimeout(() => window.location.href = '/login.html', 1500);
+                }
+            } catch (error) {
+                showError(error.message || 'Registration failed. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Complete Registration';
+            }
+        });
+    </script>
+</body>
+</html>

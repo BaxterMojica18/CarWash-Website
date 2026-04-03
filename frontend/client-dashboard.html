@@ -6,19 +6,19 @@
     <title>My Dashboard - Car Wash</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-    <div class="sidebar">
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav class="sidebar" id="sidebar">
         <div class="logo">
-            <h2 id="welcomeMessage" style="font-size: 18px; line-height: 1.4;">Welcome back!</h2>
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
+        </div>
+        <div class="welcome-section" style="padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px;">
+            <h2 id="welcomeMessage" style="font-size: 16px; line-height: 1.4; color: rgba(255,255,255,0.9); margin: 0;">Welcome back!</h2>
         </div>
         <ul>
-            <li><a href="/client-dashboard.html" class="active">Dashboard</a></li>
-            <li><a href="/shop.html">Shop</a></li>
-            <li><a href="/cart.html">Cart</a></li>
-            <li><a href="/reserve.html">Reserve Service</a></li>
-            <li><a href="#" onclick="logout()">Logout</a></li>
+            <!-- Tabs are dynamically generated in menu.js -->
         </ul>
-    </div>
+    </nav>
 
     <div class="content">
         <header>

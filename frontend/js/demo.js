@@ -3,9 +3,9 @@ let cards;
 const totalCards = 3;
 
 const credentials = {
-    staff: { email: 'demo@carwash.com', password: 'demo123', title: '👨💼 Staff Login' },
-    admin: { email: 'admin@carwash.com', password: 'admin123', title: '🔑 Admin Login' },
-    client: { email: 'client@carwash.com', password: 'client123', title: '🛒 Client Login' }
+    staff: { email: 'staff@carwash.com', password: 'staff123', title: '👷 Staff Login' },
+    admin: { email: 'admin@carwash.com', password: 'admin123', title: '🔧 Admin Login' },
+    client: { email: 'demo-client@carwash.com', password: 'demo123', title: '🛒 Client Login' }
 };
 
 window.addEventListener('DOMContentLoaded', () => {

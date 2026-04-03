@@ -4,6 +4,29 @@ from app import database, schemas
 from datetime import datetime, timedelta
 import uuid
 import random
+from typing import List as TypingList
+
+def get_business_user_ids(db: Session, user: database.User) -> TypingList[int]:
+    """Get all user IDs that belong to the same business (share same business_number).
+    This is the core of multi-tenant data isolation."""
+    if not user.business_number:
+        return [user.id]
+    
+    users = db.query(database.User.id).filter(
+        database.User.business_number == user.business_number
+    ).all()
+    return [u[0] for u in users] if users else [user.id]
+
+def get_business_owner_id(db: Session, user: database.User) -> int:
+    """Get the owner's user_id for this business. Settings are stored under the owner."""
+    if not user.business_number:
+        return user.id
+    
+    owner = db.query(database.User).filter(
+        database.User.business_number == user.business_number,
+        database.User.account_type == 'owner'
+    ).first()
+    return owner.id if owner else user.id
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -24,10 +47,76 @@ def create_user(db: Session, email: str, password: str, is_demo: bool = False):
     db.refresh(user)
     return user
 
-def get_locations(db: Session, user_id: int):
-    return db.query(database.Location).filter(
-        database.Location.status == "A"
-    ).all()
+def register_user(db: Session, reg_data: schemas.UserRegister):
+    # Check if user already exists
+    if get_user_by_email(db, reg_data.email):
+        raise Exception("User already exists")
+    
+    hashed_password = get_password_hash(reg_data.password)
+    
+    business_number = reg_data.business_number
+    if reg_data.account_type == 'owner':
+        # Generate a unique business number
+        # For simplicity, we just generate one and check if it exists
+        while True:
+            business_number = f"BN-{random.randint(100000, 999999)}"
+            existing = db.query(database.User).filter(database.User.business_number == business_number, database.User.account_type == 'owner').first()
+            if not existing:
+                break
+    elif business_number:
+        # Check if the business number exists and belongs to an owner
+        owner = db.query(database.User).filter(database.User.business_number == business_number, database.User.account_type == 'owner').first()
+        if not owner:
+            # If not found among owners, maybe just check if it exists at all? 
+            # User said "admins, staffs, and clients can put in... so they can be considered as part of the same business"
+            # This implies they need a valid business number from an owner.
+            raise Exception("Invalid business number. Please ask your business owner for the correct code.")
+    
+    user = database.User(
+        email=reg_data.email, 
+        password_hash=hashed_password, 
+        phone_number=reg_data.phone,
+        account_type=reg_data.account_type,
+        business_number=business_number
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    
+    # Assign roles based on account_type
+    role_name = reg_data.account_type
+    # Mapping for permissions
+    db_role = db.query(database.Role).filter(database.Role.name == role_name).first()
+    if db_role:
+        user.roles.append(db_role)
+    
+    # Create profile
+    profile = database.UserProfile(
+        user_id=user.id,
+        name=reg_data.fullName,
+        role=role_name
+    )
+    db.add(profile)
+    
+    # If owner, create business info
+    if reg_data.account_type == 'owner':
+        business_info = database.BusinessInfo(
+            user_id=user.id,
+            business_name=f"{reg_data.fullName}'s Car Wash"
+        )
+        db.add(business_info)
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+def get_locations(db: Session, user_id: int, business_user_ids: TypingList[int] = None):
+    query = db.query(database.Location).filter(database.Location.status == "A")
+    if business_user_ids:
+        query = query.filter(database.Location.user_id.in_(business_user_ids))
+    else:
+        query = query.filter(database.Location.user_id == user_id)
+    return query.all()
 
 def create_location(db: Session, location: schemas.LocationCreate, user_id: int):
     db_location = database.Location(**location.dict(), user_id=user_id)
@@ -60,10 +149,13 @@ def delete_location(db: Session, location_id: int, user_id: int):
         db.refresh(db_location)
     return db_location
 
-def get_products_services(db: Session, user_id: int):
-    return db.query(database.ProductService).filter(
-        database.ProductService.status == "A"
-    ).all()
+def get_products_services(db: Session, user_id: int, business_user_ids: TypingList[int] = None):
+    query = db.query(database.ProductService).filter(database.ProductService.status == "A")
+    if business_user_ids:
+        query = query.filter(database.ProductService.user_id.in_(business_user_ids))
+    else:
+        query = query.filter(database.ProductService.user_id == user_id)
+    return query.all()
 
 def create_product_service(db: Session, product: schemas.ProductServiceCreate, user_id: int):
     db_product = database.ProductService(**product.dict(), user_id=user_id)
@@ -141,8 +233,11 @@ def create_invoice(db: Session, invoice: schemas.InvoiceCreate, user_id: int):
 def get_invoice(db: Session, invoice_id: int):
     return db.query(database.Invoice).filter(database.Invoice.id == invoice_id).first()
 
-def get_invoices(db: Session):
-    return db.query(database.Invoice).filter(database.Invoice.status == "A").all()
+def get_invoices(db: Session, business_user_ids: TypingList[int] = None):
+    query = db.query(database.Invoice).filter(database.Invoice.status == "A")
+    if business_user_ids:
+        query = query.filter(database.Invoice.user_id.in_(business_user_ids))
+    return query.all()
 
 def delete_invoice(db: Session, invoice_id: int, user_id: int):
     db_invoice = db.query(database.Invoice).filter(
@@ -156,14 +251,21 @@ def delete_invoice(db: Session, invoice_id: int, user_id: int):
         db.refresh(db_invoice)
     return db_invoice
 
-def get_dashboard_stats(db: Session):
-    total_revenue = db.query(database.Invoice).with_entities(
+def get_dashboard_stats(db: Session, business_user_ids: TypingList[int] = None):
+    inv_query = db.query(database.Invoice)
+    loc_query = db.query(database.Location)
+    
+    if business_user_ids:
+        inv_query = inv_query.filter(database.Invoice.user_id.in_(business_user_ids))
+        loc_query = loc_query.filter(database.Location.user_id.in_(business_user_ids))
+    
+    total_revenue = inv_query.with_entities(
         database.Invoice.total_amount
     ).all()
     total_revenue = sum([r[0] for r in total_revenue]) if total_revenue else 0
     
-    total_invoices = db.query(database.Invoice).count()
-    active_locations = db.query(database.Location).count()
+    total_invoices = inv_query.count()
+    active_locations = loc_query.filter(database.Location.status == "A").count()
     
     return {
         "total_revenue": total_revenue,
@@ -172,17 +274,26 @@ def get_dashboard_stats(db: Session):
         "active_locations": active_locations
     }
 
-def get_active_theme(db: Session, user_id: int):
+def get_active_theme(db: Session, user_id: int, for_client: bool = False):
     return db.query(database.CustomTheme).filter(
         database.CustomTheme.user_id == user_id,
-        database.CustomTheme.is_active == True
+        database.CustomTheme.is_active == True,
+        database.CustomTheme.for_client == for_client
     ).first()
 
-def get_all_themes(db: Session, user_id: int):
-    return db.query(database.CustomTheme).filter(database.CustomTheme.user_id == user_id).all()
+def get_all_themes(db: Session, user_id: int, for_client: bool = None):
+    query = db.query(database.CustomTheme).filter(database.CustomTheme.user_id == user_id)
+    if for_client is not None:
+        query = query.filter(database.CustomTheme.for_client == for_client)
+    return query.all()
 
 def save_custom_theme(db: Session, user_id: int, theme: schemas.CustomThemeCreate):
-    db.query(database.CustomTheme).filter(database.CustomTheme.user_id == user_id).update({"is_active": False})
+    for_client = getattr(theme, 'for_client', False)
+    # Deactivate only themes of the same type (staff or client)
+    db.query(database.CustomTheme).filter(
+        database.CustomTheme.user_id == user_id,
+        database.CustomTheme.for_client == for_client
+    ).update({"is_active": False})
     db_theme = database.CustomTheme(**theme.dict(), user_id=user_id, is_active=True)
     db.add(db_theme)
     db.commit()
@@ -190,9 +301,13 @@ def save_custom_theme(db: Session, user_id: int, theme: schemas.CustomThemeCreat
     return db_theme
 
 def activate_theme(db: Session, user_id: int, theme_id: int):
-    db.query(database.CustomTheme).filter(database.CustomTheme.user_id == user_id).update({"is_active": False})
     theme = db.query(database.CustomTheme).filter(database.CustomTheme.id == theme_id).first()
     if theme:
+        # Deactivate only themes of the same type (staff or client)
+        db.query(database.CustomTheme).filter(
+            database.CustomTheme.user_id == user_id,
+            database.CustomTheme.for_client == theme.for_client
+        ).update({"is_active": False})
         theme.is_active = True
         db.commit()
         db.refresh(theme)
@@ -205,8 +320,10 @@ def delete_theme(db: Session, theme_id: int):
         db.commit()
     return theme
 
-def get_business_info(db: Session, user_id: int):
-    return db.query(database.BusinessInfo).filter(database.BusinessInfo.user_id == user_id).first()
+def get_business_info(db: Session, user_id: int, owner_id: int = None):
+    """Get business info. Uses owner_id if provided (for staff/admin looking up their business owner's info)."""
+    lookup_id = owner_id if owner_id else user_id
+    return db.query(database.BusinessInfo).filter(database.BusinessInfo.user_id == lookup_id).first()
 
 def save_business_info(db: Session, user_id: int, info: schemas.BusinessInfoCreate):
     db_info = get_business_info(db, user_id)

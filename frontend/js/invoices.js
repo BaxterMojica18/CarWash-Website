@@ -146,7 +146,7 @@ document.getElementById('invoiceForm').addEventListener('submit', async function
 
 function downloadPDF(id, invoiceNumber) {
     const token = localStorage.getItem('token');
-    const url = `http://localhost:8000/api/invoices/${id}/pdf`;
+    const url = `${API_BASE}/invoices/${id}/pdf`;
     
     fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -173,7 +173,7 @@ function downloadPDF(id, invoiceNumber) {
 
 async function downloadJPG(id, invoiceNumber) {
     const token = localStorage.getItem('token');
-    const url = `http://localhost:8000/api/invoices/${id}/jpg?token=${token}`;
+    const url = `${API_BASE}/invoices/${id}/jpg?token=${token}`;
     
     fetch(url)
     .then(response => {

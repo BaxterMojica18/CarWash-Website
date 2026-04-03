@@ -15,18 +15,31 @@ if admin_user and admin_role:
 else:
     print("[ERROR] Admin user or role not found")
 
-# Assign user role to demo user
+# Assign staff role to demo user
 demo_user = db.query(User).filter(User.email == "demo@carwash.com").first()
-user_role = db.query(Role).filter(Role.name == "user").first()
+staff_role = db.query(Role).filter(Role.name == "staff").first()
 
-if demo_user and user_role:
-    if user_role not in demo_user.roles:
-        demo_user.roles.append(user_role)
-        print(f"[OK] Assigned 'user' role to {demo_user.email}")
+if demo_user and staff_role:
+    if staff_role not in demo_user.roles:
+        demo_user.roles.append(staff_role)
+        print(f"[OK] Assigned 'staff' role to {demo_user.email}")
     else:
-        print(f"[INFO] {demo_user.email} already has 'user' role")
+        print(f"[INFO] {demo_user.email} already has 'staff' role")
 else:
-    print("[ERROR] Demo user or role not found")
+    print("[ERROR] Demo user or 'staff' role not found")
+
+# Assign client role to client demo user
+client_user = db.query(User).filter(User.email == "client@carwash.com").first()
+client_role = db.query(Role).filter(Role.name == "client").first()
+
+if client_user and client_role:
+    if client_role not in client_user.roles:
+        client_user.roles.append(client_role)
+        print(f"[OK] Assigned 'client' role to {client_user.email}")
+    else:
+        print(f"[INFO] {client_user.email} already has 'client' role")
+else:
+    print("[ERROR] Client user or role not found")
 
 db.commit()
 db.close()

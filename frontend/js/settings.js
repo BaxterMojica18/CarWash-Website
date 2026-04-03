@@ -133,6 +133,7 @@ function previewTheme() {
 
 document.getElementById('themeForm').addEventListener('submit', async function(e) {
     e.preventDefault();
+    const forClientCheckbox = document.getElementById('forClient');
     const data = {
         preset_name: document.getElementById('presetName').value,
         text_color: document.getElementById('textColor').value,
@@ -148,13 +149,16 @@ document.getElementById('themeForm').addEventListener('submit', async function(e
         sidebar_active_color: document.getElementById('sidebarActiveColor').value,
         bg_color: document.getElementById('bgColor').value,
         delete_button_brightness: parseInt(document.getElementById('deleteBrightness').value),
-        delete_button_saturation: parseInt(document.getElementById('deleteSaturation').value)
+        delete_button_saturation: parseInt(document.getElementById('deleteSaturation').value),
+        for_client: forClientCheckbox ? forClientCheckbox.checked : false
     };
     
     try {
         await API.settings.saveTheme(data);
-        showToast('Theme preset saved!', 'success');
+        const label = data.for_client ? 'Client theme' : 'Theme';
+        showToast(`${label} preset saved!`, 'success');
         loadPresets();
+        loadClientPresets();
     } catch (error) {
         showToast('Failed to save theme', 'error');
     }
@@ -189,6 +193,38 @@ async function loadPreset() {
     }
 }
 
+async function loadClientPresets() {
+    const select = document.getElementById('clientPresetSelect');
+    if (!select) return; // Element might not exist if not admin
+    try {
+        const response = await fetch(`${API_BASE}/settings/theme/client/all`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const themes = await response.json();
+        if (Array.isArray(themes) && themes.length > 0) {
+            select.innerHTML = '<option value="">-- Select Client Preset --</option>' +
+                themes.map(t => `<option value="${t.id}">${t.preset_name}${t.is_active ? ' ✓' : ''}</option>`).join('');
+        } else {
+            select.innerHTML = '<option value="">-- No Client Presets --</option>';
+        }
+    } catch (error) {
+        console.error('Failed to load client presets:', error);
+        select.innerHTML = '<option value="">-- Error Loading --</option>';
+    }
+}
+
+async function loadClientPreset() {
+    const id = document.getElementById('clientPresetSelect').value;
+    if (!id) return;
+    try {
+        await API.settings.activateTheme(id);
+        showToast('Client theme activated!', 'success');
+        loadClientPresets();
+    } catch (error) {
+        showToast('Failed to activate client theme', 'error');
+    }
+}
+
 function applyThemeFromData(theme) {
     document.getElementById('presetName').value = theme.preset_name;
     document.getElementById('textColor').value = theme.text_color;
@@ -220,11 +256,15 @@ function selectPredefinedLogo() {
     if (emoji === 'none') {
         document.getElementById('currentLogo').textContent = '';
         localStorage.removeItem('logo');
-        localStorage.removeItem('logoType');
+        localStorage.setItem('logoType', 'none');
     } else {
         document.getElementById('currentLogo').textContent = emoji;
         localStorage.setItem('logo', emoji);
         localStorage.setItem('logoType', 'emoji');
+    }
+    // Refresh sidebar if menu.js functions are available
+    if (typeof applyBrandingFromStorage === 'function') {
+        applyBrandingFromStorage();
     }
 }
 
@@ -237,6 +277,10 @@ function previewLogo() {
                 `<img src="${e.target.result}" style="width:40px;height:40px;object-fit:contain;">`;
             localStorage.setItem('logo', e.target.result);
             localStorage.setItem('logoType', 'image');
+            // Refresh sidebar if menu.js functions are available
+            if (typeof applyBrandingFromStorage === 'function') {
+                applyBrandingFromStorage();
+            }
         };
         reader.readAsDataURL(file);
     }
@@ -248,12 +292,17 @@ document.getElementById('businessForm').addEventListener('submit', async functio
         business_name: document.getElementById('businessName').value,
         logo: localStorage.getItem('logo'),
         logo_type: localStorage.getItem('logoType'),
-        address: document.querySelector('#businessForm input[type="text"]:nth-of-type(2)').value,
-        phone: document.querySelector('#businessForm input[type="tel"]').value
+        address: document.getElementById('businessAddress').value,
+        phone: document.getElementById('businessPhone').value
     };
     
     try {
         await API.settings.saveBusiness(data);
+        localStorage.setItem('businessName', data.business_name);
+        // Refresh sidebar branding if menu.js functions are available
+        if (typeof applyBrandingFromStorage === 'function') {
+            applyBrandingFromStorage();
+        }
         showToast('Business information saved!', 'success');
     } catch (error) {
         showToast('Failed to save business info', 'error');
@@ -637,6 +686,7 @@ checkUserPermissions();
 checkSuperadminAccess();
 loadBays();
 loadPresets();
+loadClientPresets();
 loadPaymentMethods();
 loadMyProfile();
 

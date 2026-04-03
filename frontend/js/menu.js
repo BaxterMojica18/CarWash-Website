@@ -1,23 +1,48 @@
-function toggleMenu() {
+function toggleMenu(event) {
+    if (event) event.stopPropagation();
     const sidebar = document.getElementById('sidebar');
     const content = document.querySelector('.content');
-    const toggle = document.querySelector('.menu-toggle');
-    sidebar.classList.toggle('active');
-    sidebar.classList.remove('collapsed');
-    if (content) content.classList.remove('sidebar-collapsed');
-    if (toggle) toggle.style.display = 'none';
-    localStorage.removeItem('sidebarCollapsed');
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+        sidebar.classList.toggle('active');
+        sidebar.classList.remove('collapsed');
+    } else {
+        sidebar.classList.toggle('collapsed');
+        if (content) content.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed') ? '1' : '');
+    }
+    updateToggleButton();
+}
+
+function updateToggleButton() {
+    const sidebar = document.getElementById('sidebar');
+    const btn = document.querySelector('.sidebar-close');
+    if (!btn) return;
+    
+    const isCollapsed = sidebar.classList.contains('collapsed');
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        btn.innerHTML = '✕';
+    } else {
+        btn.innerHTML = isCollapsed ? '' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 14px; height: 14px;"><path d="M15 18l-6-6 6-6"/></svg>';
+    }
 }
 
 function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const content = document.querySelector('.content');
-    const toggle = document.querySelector('.menu-toggle');
-    sidebar.classList.add('collapsed');
-    sidebar.classList.remove('active');
-    if (content) content.classList.add('sidebar-collapsed');
-    if (toggle) toggle.style.display = 'block';
-    localStorage.setItem('sidebarCollapsed', '1');
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+        sidebar.classList.remove('active');
+    } else {
+        sidebar.classList.add('collapsed');
+        if (content) content.classList.add('sidebar-collapsed');
+        localStorage.setItem('sidebarCollapsed', '1');
+    }
+    updateToggleButton();
 }
 
 // Inject close button into sidebar
@@ -30,19 +55,79 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sidebar) sidebar.classList.add('collapsed');
         const content = document.querySelector('.content');
         if (content) content.classList.add('sidebar-collapsed');
-        if (toggle) toggle.style.display = 'block';
-    } else {
-        if (toggle) toggle.style.display = 'none';
     }
 
     if (sidebar) {
         const closeBtn = document.createElement('button');
         closeBtn.className = 'sidebar-close';
-        closeBtn.innerHTML = '✕';
-        closeBtn.onclick = closeSidebar;
+        closeBtn.onclick = toggleMenu;
         sidebar.insertBefore(closeBtn, sidebar.firstChild);
+        updateToggleButton();
+        
+        // Use sidebar click to expand if collapsed
+        sidebar.onclick = (e) => {
+            if (sidebar.classList.contains('collapsed')) {
+                toggleMenu(e);
+            }
+        };
+
+        // Add smooth transition listener to handle layout shift
+        sidebar.addEventListener('transitionend', () => {
+             window.dispatchEvent(new Event('resize'));
+        });
     }
+    
+    // Normalize all icons to premium SVGs
+    normalizeSidebarIcons();
 });
+
+function normalizeSidebarIcons() {
+    const icons = {
+        'dashboard': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>',
+        'invoices': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>',
+        'orders': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+        'queue': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+        'products': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+        'services': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+        'reports': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>',
+        'settings': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
+        'logout': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+        'tabs': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>'
+    };
+
+    const links = document.querySelectorAll('.sidebar ul li a');
+    links.forEach(link => {
+        const textNode = Array.from(link.childNodes).find(node => node.nodeType === 3);
+        const originalText = textNode ? textNode.textContent.trim() : '';
+        const lowerText = originalText.toLowerCase();
+        
+        let key = '';
+        if (lowerText.includes('dashboard')) key = 'dashboard';
+        else if (lowerText.includes('invoice')) key = 'invoices';
+        else if (lowerText.includes('order')) key = 'orders';
+        else if (lowerText.includes('queue')) key = 'queue';
+        else if (lowerText.includes('product')) key = 'products';
+        else if (lowerText.includes('service')) key = 'services';
+        else if (lowerText.includes('report')) key = 'reports';
+        else if (lowerText.includes('settings')) key = 'settings';
+        else if (lowerText.includes('logout')) key = 'logout';
+        else if (lowerText.includes('sidebar tabs')) key = 'tabs';
+
+        if (key && icons[key]) {
+            const iconSpan = link.querySelector('.icon');
+            if (iconSpan) {
+                iconSpan.innerHTML = icons[key];
+            }
+            if (textNode) {
+                const newSpan = document.createElement('span');
+                newSpan.className = 'nav-text';
+                newSpan.textContent = originalText;
+                textNode.remove();
+                link.appendChild(newSpan);
+            }
+        }
+    });
+}
 
 // Close menu when clicking outside on mobile
 document.addEventListener('click', function(event) {
@@ -70,91 +155,221 @@ const themes = {
     slate: { bgColor: '#eceff1', textColor: '#263238', primaryColor: '#546e7a', sidebarColor: '#37474f', cardBg: '#ffffff', cardText: '#263238' }
 };
 
-// Load business branding
-function loadBranding() {
-    const businessName = localStorage.getItem('businessName');
-    const logo = localStorage.getItem('logo');
-    const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+// Pre-apply from storage for performance (prevents white flash)
+applyBrandingFromStorage();
+
+// Load business branding and sync with server
+async function loadBranding() {
+    // 1. Initial load from localStorage (instant)
+    applyBrandingFromStorage();
     
-    if (businessName) {
-        const nameElement = document.getElementById('sidebarName');
-        if (nameElement) nameElement.textContent = businessName;
-    }
-    
-    const logoType = localStorage.getItem('logoType');
-    const logoElement = document.getElementById('sidebarLogo');
-    if (logoElement) {
-        if (!logo || !logoType) {
-            logoElement.style.display = 'none';
-        } else {
-            logoElement.style.display = 'block';
-            if (logoType === 'emoji') {
-                logoElement.textContent = logo;
-                logoElement.style.fontSize = '32px';
-            } else if (logoType === 'image') {
-                logoElement.innerHTML = `<img src="${logo}" alt="Logo" style="width: 40px; height: 40px; border-radius: 5px; object-fit: contain;">`;
+    // 2. Fetch latest from API (dynamic sync)
+    if (localStorage.getItem('token')) {
+        try {
+            // Use the API object defined in api.js
+            const business = await API.settings.getBusiness();
+            if (business) {
+                // Sync storage
+                localStorage.setItem('businessName', business.business_name || '');
+                localStorage.setItem('logo', business.logo || '');
+                localStorage.setItem('logoType', business.logo_type || '');
+                
+                // Real-time update UI
+                const nameElement = document.getElementById('sidebarName');
+                if (nameElement) nameElement.textContent = business.business_name;
+                
+                const logoElement = document.getElementById('sidebarLogo');
+                if (logoElement) {
+                    updateSidebarLogo(logoElement, business.logo, business.logo_type);
+                }
             }
+
+            const activeTheme = await API.settings.getActiveTheme();
+            if (activeTheme) {
+                applyThemeColors(activeTheme);
+            }
+        } catch (e) {
+            console.warn("Branding sync failed", e);
         }
     }
-    
-    const theme = themes[savedTheme];
-    document.documentElement.style.setProperty('--bg-color', theme.bgColor);
-    document.documentElement.style.setProperty('--text-color', theme.textColor);
-    document.documentElement.style.setProperty('--primary-color', theme.primaryColor);
-    document.documentElement.style.setProperty('--sidebar-color', theme.sidebarColor);
-    document.documentElement.style.setProperty('--card-bg', theme.cardBg);
-    document.documentElement.style.setProperty('--card-text', theme.cardText);
 }
+
+function applyBrandingFromStorage() {
+    const businessName = localStorage.getItem('businessName');
+    const logo = localStorage.getItem('logo');
+    const logoType = localStorage.getItem('logoType');
+    const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+    
+    const nameElement = document.getElementById('sidebarName');
+    if (nameElement && businessName) {
+        nameElement.textContent = businessName;
+    }
+    
+    const logoElement = document.getElementById('sidebarLogo');
+    if (logoElement) {
+        updateSidebarLogo(logoElement, logo, logoType);
+    }
+
+    if (themes[savedTheme]) {
+        const theme = themes[savedTheme];
+        document.documentElement.style.setProperty('--bg-color', theme.bgColor);
+        document.documentElement.style.setProperty('--text-color', theme.textColor);
+        document.documentElement.style.setProperty('--primary-color', theme.primaryColor);
+        document.documentElement.style.setProperty('--sidebar-color', theme.sidebarColor);
+        document.documentElement.style.setProperty('--card-bg', theme.cardBg);
+        document.documentElement.style.setProperty('--card-text', theme.cardText);
+    }
+}
+
+function updateSidebarLogo(el, logo, logoType) {
+    if (logoType === 'none') {
+        el.innerHTML = '';
+        return;
+    }
+    
+    if (!logo || !logoType) {
+        // Default car SVG logo for fresh users
+        el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 32px; height: 32px; transition: transform 0.3s ease;"><path d="M14 16H9m10 0h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11M5 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>`;
+    } else {
+        if (logoType === 'emoji') {
+            el.textContent = logo;
+            el.style.fontSize = '32px';
+        } else if (logoType === 'image') {
+            el.innerHTML = `<img src="${logo}" alt="Logo" style="width: 40px; height: 40px; border-radius: 5px; object-fit: contain; transition: transform 0.3s ease;">`;
+        }
+    }
+    el.style.display = 'block';
+}
+
+function applyThemeColors(theme) {
+    document.documentElement.style.setProperty('--bg-color', theme.bg_color);
+    document.documentElement.style.setProperty('--text-color', theme.text_color);
+    document.documentElement.style.setProperty('--primary-color', theme.button_color);
+    document.documentElement.style.setProperty('--sidebar-color', theme.sidebar_color);
+    document.documentElement.style.setProperty('--card-bg', theme.card_color);
+    document.documentElement.style.setProperty('--card-text', theme.text_color);
+    if (theme.sidebar_active_color) {
+        document.documentElement.style.setProperty('--sidebar-active-color', theme.sidebar_active_color);
+    }
+}
+
+// Initial sync call
+loadBranding();
+
+const DEFAULT_TABS = [
+    { name: 'Dashboard', href: 'dashboard.html', icon: 'dashboard' },
+    { name: 'Invoices', href: 'invoices.html', icon: 'invoices' },
+    { name: 'Orders', href: 'order-management.html', icon: 'orders' },
+    { name: 'Queue', href: 'queue-management.html', icon: 'queue' },
+    { name: 'Products', href: 'products.html', icon: 'products' },
+    { name: 'Services', href: 'services.html', icon: 'services' },
+    { name: 'Reports', href: 'reports.html', icon: 'reports' },
+    { name: 'Settings', href: 'settings.html', icon: 'settings' }
+];
 
 loadBranding();
 
+const STAFF_TABS = [
+    { name: 'Dashboard', href: 'dashboard.html', icon: 'dashboard' },
+    { name: 'Invoices', href: 'invoices.html', icon: 'invoices' },
+    { name: 'Orders', href: 'order-management.html', icon: 'orders' },
+    { name: 'Queue', href: 'queue-management.html', icon: 'queue' },
+    { name: 'Products', href: 'products.html', icon: 'products' },
+    { name: 'Services', href: 'services.html', icon: 'services' },
+    { name: 'Reports', href: 'reports.html', icon: 'reports' }
+];
+
+const CLIENT_TABS = [
+    { name: 'Dashboard', href: 'client-dashboard.html', icon: 'dashboard' },
+    { name: 'Shop', href: 'shop.html', icon: 'products' },
+    { name: 'Cart', href: 'cart.html', icon: 'orders' },
+    { name: 'Reserve', href: 'reserve.html', icon: 'queue' }
+];
+
 async function applySidebarSettings() {
     const token = localStorage.getItem('token');
+    const sidebarUl = document.querySelector('.sidebar ul');
+    if (!sidebarUl) return;
+
+    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    const normalizedPath = currentPath.startsWith('/') ? currentPath : `/${currentPath}`;
+
+    // 1. Initial render from localStorage (Instant)
+    const cachedData = localStorage.getItem('user_sidebar_data');
+    if (cachedData) {
+        try {
+            renderTabs(sidebarUl, JSON.parse(cachedData), currentPath, normalizedPath);
+        } catch (e) { console.error("Cached sidebar error", e); }
+    }
+
     if (!token) return;
+
+    // 2. Fetch fresh permissions/tabs (Background Sync)
     try {
-        const response = await fetch(`http://localhost:8000/api/auth/me/permissions`, {
+        const response = await fetch(`${API_BASE}/auth/me/permissions`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) return;
         const data = await response.json();
         
-        if (data.hidden_sidebar_tabs && data.hidden_sidebar_tabs.length > 0) {
-            const sidebarLinks = document.querySelectorAll('.sidebar ul li a');
-            sidebarLinks.forEach(link => {
-                const textContext = link.textContent.trim().toLowerCase();
-                const tabMatch = data.hidden_sidebar_tabs.find(
-                    hidden => textContext.includes(hidden.toLowerCase())
-                );
-                if (tabMatch) {
-                    link.parentElement.style.display = 'none';
-                }
-            });
-        }
-        
-        // Dynamically inject Sidebar Tabs for admins/owners
-        if (data.roles && (data.roles.includes('superadmin') || data.roles.includes('admin') || data.roles.includes('owner'))) {
-            const sidebarUl = document.querySelector('.sidebar ul');
-            if (sidebarUl) {
-                // Check if it already exists to prevent duplicates
-                const exists = Array.from(document.querySelectorAll('.sidebar ul li a')).some(
-                    a => a.textContent.includes('Sidebar Tabs')
-                );
-                
-                if (!exists) {
-                    const logoutLi = sidebarUl.querySelector('li a[onclick="logout()"]')?.parentElement;
-                    const newLi = document.createElement('li');
-                    newLi.innerHTML = `<a href="sidebar-management.html"><span class="icon">🗂️</span> Sidebar Tabs</a>`;
-                    if (logoutLi) {
-                        sidebarUl.insertBefore(newLi, logoutLi);
-                    } else {
-                        sidebarUl.appendChild(newLi);
-                    }
-                }
-            }
-        }
+        // Update storage and re-render if needed
+        localStorage.setItem('user_sidebar_data', JSON.stringify(data));
+        renderTabs(sidebarUl, data, currentPath, normalizedPath);
+
     } catch (e) {
         console.error("Failed to load sidebar settings", e);
     }
+}
+
+function renderTabs(sidebarUl, data, currentPath, normalizedPath) {
+    sidebarUl.innerHTML = ''; // Clear for fresh render
+
+    const hiddenTabs = (data.hidden_sidebar_tabs || []).map(t => t.toLowerCase());
+    const roles = data.roles || [];
+    const isClient = roles.includes('client') && !roles.includes('admin') && !roles.includes('staff') && !roles.includes('superadmin') && !roles.includes('owner');
+    const isAdminOrOwner = roles.includes('admin') || roles.includes('owner') || roles.includes('superadmin');
+
+    let tabsToRender = isClient ? CLIENT_TABS : STAFF_TABS;
+    
+    // If the user is admin/owner/superadmin, add Settings to their tabs
+    if (!isClient && isAdminOrOwner) {
+        tabsToRender = [...tabsToRender, { name: 'Settings', href: 'settings.html', icon: 'settings' }];
+    }
+
+    // 1. Add Role-specific Tabs
+    tabsToRender.forEach(tab => {
+        if (!hiddenTabs.includes(tab.name.toLowerCase())) {
+            const li = document.createElement('li');
+            const isActive = (currentPath === tab.href || normalizedPath === `/${tab.href}`) ? 'class="active"' : '';
+            li.innerHTML = `<a href="${tab.href}" ${isActive}><span class="icon"></span> ${tab.name}</a>`;
+            sidebarUl.appendChild(li);
+        }
+    });
+
+    // 2. Add Admin/Owner specific modules
+    if (!isClient) {
+        if (roles.includes('superadmin')) {
+            const li = document.createElement('li');
+            const isActive = (currentPath === 'permissions-management.html' || normalizedPath === '/permissions-management.html') ? 'class="active"' : '';
+            li.innerHTML = `<a href="permissions-management.html" ${isActive}><span class="icon"></span> Permissions</a>`;
+            sidebarUl.appendChild(li);
+        }
+
+        if (roles.includes('superadmin') || roles.includes('admin') || roles.includes('owner')) {
+            const li = document.createElement('li');
+            const isActive = (currentPath === 'sidebar-management.html' || normalizedPath === '/sidebar-management.html') ? 'class="active"' : '';
+            li.innerHTML = `<a href="sidebar-management.html" ${isActive}><span class="icon"></span> Sidebar Tabs</a>`;
+            sidebarUl.appendChild(li);
+        }
+    }
+
+    // 3. Add Logout (Always last)
+    const logoutLi = document.createElement('li');
+    logoutLi.innerHTML = `<a href="login.html" onclick="logout()"><span class="icon"></span> Logout</a>`;
+    sidebarUl.appendChild(logoutLi);
+
+    // Finalize icons
+    normalizeSidebarIcons();
 }
 
 document.addEventListener('DOMContentLoaded', applySidebarSettings);

@@ -22,18 +22,28 @@ body {
 }
 
 .menu-toggle {
-    display: block;
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1001;
-    background: var(--sidebar-color);
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 20px;
+    display: none; /* Hide by default on desktop */
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1002;
+        background: white;
+        color: var(--sidebar-color);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 20px;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
 }
 
 .login-page {
@@ -74,7 +84,10 @@ body.login-page .login-container:has(.carousel-container) {
     min-height: 100vh;
     padding: 20px;
     position: relative;
-    transition: transform 0.3s ease;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
 }
 
 .sidebar-close {
@@ -102,14 +115,80 @@ body.login-page .login-container:has(.carousel-container) {
 }
 
 .sidebar.collapsed {
-    width: 0;
-    padding: 0;
+    width: 76px;
+    padding-left: 10px;
+    padding-right: 10px;
     overflow: hidden;
+    transform: none; /* Keep visible on desktop */
+}
+
+/* On mobile, we still want to hide it completely */
+@media (max-width: 768px) {
+    .sidebar.collapsed {
+        width: 0;
+        padding: 0;
+        transform: translateX(-100%);
+    }
+}
+
+.content {
+    flex: 1;
+    padding: 30px;
+    width: 100%;
+    overflow-x: hidden;
+    transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .content.sidebar-collapsed {
     margin-left: 0;
-    padding-left: 80px;
+}
+
+.sidebar.collapsed .logo,
+.sidebar.collapsed .nav-text {
+    display: none !important;
+}
+
+.sidebar.collapsed {
+    cursor: pointer;
+}
+
+.sidebar.collapsed .logo {
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.sidebar.collapsed ul li a {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.sidebar-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 20px;
+    right: 15px;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.2s ease;
+    z-index: 1001;
+    opacity: 0.7;
+}
+
+.sidebar-close:hover {
+    background: rgba(255,255,255,0.25);
+    opacity: 1;
+}
+
+.sidebar.collapsed .sidebar-close {
+    display: none !important;
 }
 
 .sidebar .logo {
@@ -163,13 +242,22 @@ body.login-page .login-container:has(.carousel-container) {
 }
 
 .sidebar a .icon {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    opacity: 0.9;
+    transition: all 0.3s ease;
+}
+
+.sidebar a:hover .icon {
+    transform: scale(1.1);
+}
+
+.sidebar a .icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: currentColor;
 }
 
 .sidebar a:hover, .sidebar a.active {

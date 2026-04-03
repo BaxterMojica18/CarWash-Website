@@ -1,4 +1,8 @@
-const API_BASE = 'http://localhost:8000/api';
+// Auto-detect API base URL: production (Render) vs local development
+const PRODUCTION_API_URL = 'https://your-app-name.onrender.com/api'; // 🔁 Replace with your Render URL
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8000/api'
+    : PRODUCTION_API_URL;
 
 function getToken() {
     return localStorage.getItem('token');
@@ -57,6 +61,11 @@ const API = {
             apiRequestPublic('/auth/login', {
                 method: 'POST',
                 body: JSON.stringify({ email, password })
+            }),
+        register: (data) =>
+            apiRequestPublic('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify(data)
             }),
         firebaseLogin: (id_token, email, display_name) =>
             apiRequestPublic('/auth/firebase-login', {

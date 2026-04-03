@@ -5,7 +5,8 @@ from typing import List, Optional
 from pydantic import BaseModel
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.permissions import is_superadmin
+from app.permissions import is_superadmin, is_admin_or_owner
+from app.crud import get_business_owner_id
 
 router = APIRouter()
 
@@ -35,11 +36,12 @@ class DashboardModuleResponse(DashboardModule):
 
 @router.get("/settings")
 def get_dashboard_settings(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    owner_id = get_business_owner_id(db, current_user)
     result = db.execute(
         text("""SELECT website_name, primary_color, background_color, sidebar_color, 
                 layout_type, button_color, text_color, sidebar_active_color, card_color, card_text_color 
                 FROM dashboard_settings WHERE user_id = :uid ORDER BY id DESC LIMIT 1"""),
-        {"uid": current_user.id}
+        {"uid": owner_id}
     ).fetchone()
     
     if not result:
@@ -70,7 +72,7 @@ def get_dashboard_settings(db: Session = Depends(get_db), current_user = Depends
     }
 
 @router.post("/settings")
-def save_dashboard_settings(settings: DashboardSettings, db: Session = Depends(get_db), current_user = Depends(is_superadmin)):
+def save_dashboard_settings(settings: DashboardSettings, db: Session = Depends(get_db), current_user = Depends(is_admin_or_owner)):
     existing = db.execute(
         text("SELECT id FROM dashboard_settings WHERE user_id = :uid"),
         {"uid": current_user.id}
@@ -122,9 +124,10 @@ def save_dashboard_settings(settings: DashboardSettings, db: Session = Depends(g
 
 @router.get("/modules", response_model=List[DashboardModuleResponse])
 def get_dashboard_modules(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    owner_id = get_business_owner_id(db, current_user)
     result = db.execute(
         text("SELECT * FROM dashboard_modules WHERE user_id = :uid ORDER BY position"),
-        {"uid": current_user.id}
+        {"uid": owner_id}
     ).fetchall()
     
     modules = []
@@ -143,7 +146,7 @@ def get_dashboard_modules(db: Session = Depends(get_db), current_user = Depends(
     return modules
 
 @router.post("/modules")
-def create_dashboard_module(module: DashboardModule, db: Session = Depends(get_db), current_user = Depends(is_superadmin)):
+def create_dashboard_module(module: DashboardModule, db: Session = Depends(get_db), current_user = Depends(is_admin_or_owner)):
     import json
     result = db.execute(text("""
         INSERT INTO dashboard_modules 
@@ -166,7 +169,7 @@ def create_dashboard_module(module: DashboardModule, db: Session = Depends(get_d
     return {"id": module_id, "message": "Module created successfully"}
 
 @router.put("/modules/{module_id}")
-def update_dashboard_module(module_id: int, module: DashboardModule, db: Session = Depends(get_db), current_user = Depends(is_superadmin)):
+def update_dashboard_module(module_id: int, module: DashboardModule, db: Session = Depends(get_db), current_user = Depends(is_admin_or_owner)):
     import json
     db.execute(text("""
         UPDATE dashboard_modules 
@@ -190,7 +193,7 @@ def update_dashboard_module(module_id: int, module: DashboardModule, db: Session
     return {"message": "Module updated successfully"}
 
 @router.delete("/modules/{module_id}")
-def delete_dashboard_module(module_id: int, db: Session = Depends(get_db), current_user = Depends(is_superadmin)):
+def delete_dashboard_module(module_id: int, db: Session = Depends(get_db), current_user = Depends(is_admin_or_owner)):
     db.execute(
         text("DELETE FROM dashboard_modules WHERE id = :id AND user_id = :uid"),
         {"id": module_id, "uid": current_user.id}

@@ -60,6 +60,8 @@ class User(Base):
     password_hash = Column(String)
     is_demo = Column(Boolean, default=False)
     phone_number = Column(String, nullable=True)
+    account_type = Column(String, nullable=True)  # admin, staff, client, owner
+    business_number = Column(String, index=True, nullable=True)
     invoices = relationship("Invoice", back_populates="creator")
     roles = relationship("Role", secondary=user_roles)
 
@@ -133,6 +135,7 @@ class CustomTheme(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     preset_name = Column(String)
     is_active = Column(Boolean, default=False)
+    for_client = Column(Boolean, default=False)  # True = client-facing theme, False = staff/admin theme
     
     # Text colors: black, dark-grey, white
     text_color = Column(String, default="black")

@@ -6,6 +6,7 @@ from app import schemas, crud, database
 from app.dependencies import get_current_user
 from app.routers.auth import get_current_user_optional_query
 from app.permissions import has_permission
+from app.crud import get_business_user_ids
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.units import inch
@@ -27,7 +28,8 @@ def get_invoices(db: Session = Depends(database.get_db), current_user = Depends(
     perms = get_user_permissions(current_user)
     if 'view_invoices' not in perms and 'manage_invoices' not in perms:
         raise HTTPException(status_code=403, detail="Permission denied")
-    return crud.get_invoices(db)
+    biz_ids = get_business_user_ids(db, current_user)
+    return crud.get_invoices(db, business_user_ids=biz_ids)
 
 @router.get("/{invoice_id}", response_model=schemas.Invoice)
 def get_invoice(invoice_id: int, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
@@ -182,4 +184,5 @@ def download_invoice_jpg(invoice_id: int, db: Session = Depends(database.get_db)
 
 @router.get("/dashboard/stats", response_model=schemas.DashboardStats)
 def get_dashboard_stats(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
-    return crud.get_dashboard_stats(db)
+    biz_ids = get_business_user_ids(db, current_user)
+    return crud.get_dashboard_stats(db, business_user_ids=biz_ids)
