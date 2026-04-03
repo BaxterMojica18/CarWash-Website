@@ -1,5 +1,5 @@
 // Auto-detect API base URL: production (Render) vs local development
-const PRODUCTION_API_URL = 'https://your-app-name.onrender.com/api'; // 🔁 Replace with your Render URL
+const PRODUCTION_API_URL = 'https://carwash-website-jzr2.onrender.com/api';
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:8000/api'
     : PRODUCTION_API_URL;
