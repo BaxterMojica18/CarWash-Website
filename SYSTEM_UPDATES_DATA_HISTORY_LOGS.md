@@ -1,0 +1,907 @@
+# System Updates, Data & History Logs
+
+> **Last Updated:** April 4, 2026  
+> **Version:** 4.0.0  
+> **Branch:** main
+
+---
+
+## 📋 Table of Contents
+1. [Latest Updates (Nov 23, 2025)](#latest-updates-nov-23-2025)
+2. [Dashboard Customization System](#dashboard-customization-system)
+3. [Permissions Management System](#permissions-management-system)
+4. [Demo Accounts System](#demo-accounts-system)
+5. [E-Commerce Features](#e-commerce-features)
+6. [Superadmin Role](#superadmin-role)
+7. [Setup Instructions](#setup-instructions)
+8. [API Documentation](#api-documentation)
+
+---
+
+## Latest Updates (April 4, 2026)
+
+### 🔒 Multi-Tenant Data Isolation & Deployment Configuration
+**Status:** ✅ Completed
+
+#### Features Added:
+- **Multi-Tenant Data Isolation (Business Number Scoping):**
+  - Added `get_business_user_ids()` helper that finds all users sharing the same `business_number`.
+  - Added `get_business_owner_id()` helper that resolves the owner for shared settings (themes, business info).
+  - **Locations**: Only returns locations created by users in the same business.
+  - **Products/Services**: Only returns products/services created by users in the same business.
+  - **Invoices**: Only returns invoices created by users in the same business.
+  - **Orders**: Admin/owner views now scoped to orders from clients in the same business.
+  - **Reservations**: Admin/owner views now scoped to reservations from clients in the same business.
+  - **Reports**: Sales reports filtered to business-scoped invoices.
+  - **Dashboard**: Settings and modules resolved via the business owner, so all staff see consistent dashboard.
+  - **Themes/Business Info**: Looked up via the business owner, shared across all business members.
+  - **User Listing**: Admins only see users with the same `business_number`.
+
+- **Staff Sidebar Permissions Fix:**
+  - Removed "Settings" from `STAFF_TABS` array in `menu.js`.
+  - Settings tab now dynamically added only for `admin`, `owner`, and `superadmin` roles.
+  - Staff (role=user) will no longer see the Settings link in the sidebar.
+
+- **Production Deployment Configuration:**
+  - Created `vercel.json` for deploying to Vercel (routes API to backend, serves static frontend).
+  - Created `render.yaml` for deploying to Render (Docker + managed PostgreSQL).
+  - Updated `frontend/js/api.js` with dynamic `API_BASE` detection (localhost vs production origin).
+  - Dashboard management endpoints relaxed from `is_superadmin` to `is_admin_or_owner` for broader access.
+
+#### Files Created/Modified:
+- ✅ `app/crud.py` — Added `get_business_user_ids()`, `get_business_owner_id()`, scoped all read queries
+- ✅ `app/routers/settings.py` — Business-scoped locations, products, themes, business info
+- ✅ `app/routers/invoices.py` — Business-scoped invoice listing and dashboard stats
+- ✅ `app/routers/orders.py` — Business-scoped order listing for admins
+- ✅ `app/routers/reservations.py` — Business-scoped reservation listing for admins
+- ✅ `app/routers/reports.py` — Business-scoped sales reports
+- ✅ `app/routers/dashboard.py` — Owner-resolved dashboard settings/modules
+- ✅ `app/routers/auth.py` — Business-scoped user listing
+- ✅ `frontend/js/menu.js` — Staff sidebar: Settings removed, role-guarded
+- ✅ `frontend/js/api.js` — Dynamic API_BASE for production
+- ✅ `vercel.json` — Vercel deployment config (NEW)
+- ✅ `render.yaml` — Render deployment config (NEW)
+
+---
+
+## Latest Updates (April 1, 2026)
+
+### 🏎️ Advanced Sidebar & Registration Flow
+**Status:** ✅ Completed
+
+#### Features Added:
+- **Premium Sidebar UX:**
+  - **Mini-Sidebar Mode**: Implemented a responsive "icon-only" state for desktop.
+  - **Dynamic Visibility**: Labels and Logos are hidden in mini-mode, showing only centered SVG icons.
+  - **Invisible Toggle**: The sidebar is now clickable anywhere on its strip to expand from mini-mode.
+  - **Minimal Navigation**: Replaced "X" and Hamburger buttons with a sleek, semi-transparent left-arrow chevron that disappears when collapsed.
+  - **Normalization**: Created a global Icon Normalizer that converts all legacy icons to a consistent, high-performance SVG set.
+- **Enhanced Registration Flow:**
+  - **Account Triage**: New `account-type.html` selection page (Client vs Owner vs Admin).
+  - **Role-Based Provisioning**: 
+    - **Owners**: Automatically assigned "owner" role and prompted for a Business Number.
+    - **Admins**: Assigned "admin" role (restricted creation).
+    - **Clients**: Standard user onboarding.
+  - **Validation**: Added `account_type` and `business_number` columns to the PostgreSQL User model with automatic database migration.
+- **Environment & Dev Productivity:**
+  - **VENV Automation**: Created `setup.ps1` and `start.ps1` for one-click environment management.
+  - **Auto-Migrations**: The backend now automatically checks for and applies database migrations (`add_signup_columns.py`) on startup.
+- **Reactive Branding & UI Reliability (Latest):**
+  - **Storage-First Rendering**: Implemented `localStorage` caching for both Business Branding (Name/Logo) and Sidebar Tabs/Permissions. This eliminates the 0.5s "network flash" on page transitions.
+  - **Real-time Sync**: Sidebar branding now updates instantly across all open tabs when changes are saved in the Settings panel.
+  - **"No Logo" Support**: Introduced `none` logo type to allow users to completely remove their business logo via settings without fallback icons reappearing.
+  - **Template Hygiene**: Scrubbed hardcoded list items and placeholders from over 10+ HTML files to ensure a single source of truth (JS-driven).
+
+#### Files Created/Modified:
+- ✅ `frontend/js/menu.js` (Major Sidebar Overhaul)
+- ✅ `frontend/css/style.css` (Fluid Transitions & Mini-Mode)
+- ✅ `frontend/account-type.html` (New Triage Page)
+- ✅ `frontend/signup.html` (Dynamic Role Forms)
+- ✅ `app/database.py` & `app/schemas.py` (Extended User Model)
+- ✅ `commands/database/add_signup_columns.py` (Schema Migration)
+- ✅ `setup.ps1` / `start.ps1` (Dev Environment)
+
+---
+
+## Latest Updates (March 30, 2026)
+
+### 🔥 Firebase Authentication Migration
+**Status:** ✅ Completed
+
+#### Features Added:
+- **Client-Side Firebase Integration:**
+  - Initialized Firebase web SDK pointing to personal project `carwash-mgmt-system-41402`.
+  - Added Firebase Google Sign-in alongside legacy local email/password authentication.
+  - Intercepted frontend login flow using `signInWithPopup` to return fresh ID tokens.
+- **Backend Admin SDK Token Verification:**
+  - Installed `firebase-admin` into the FastAPI backend Docker image.
+  - Added `clock_skew_seconds=60` tolerance to `verify_id_token` to fix intermittent clock desync errors during Google Login.
+  - Hardened backend against spoofed tokens powered by securely injected `firebase-credentials.json` Service Account.
+- **Bi-directional PostgreSQL Auto-Syncing & Schema Fixes:**
+  - Built `get_or_create_firebase_user` mapping function that instantly replicates validated Firebase Identities into native PostgreSQL rows via standard JWT exchanges.
+  - Expanded `app/database.py` with `DashboardSettings` and `DashboardModule` declarative models to resolve 500 errors when hybrid users load the dashboard.
+  - Modified `crud.get_user_profile` to gracefully build default user profiles on-the-fly, fixing 404 `/profile` errors on newly migrated or demo accounts.
+  - Updated `login.js` UI hooks by stripping deferred `DOMContentLoaded` listeners, allowing the demo login buttons to function seamlessly with ES Modules.
+
+#### Files Created/Modified:
+- ✅ `frontend/js/firebase-config.js`
+- ✅ `frontend/js/login.js`
+- ✅ `frontend/signup.html`
+- ✅ `app/firebase_auth.py`
+- ✅ `app/crud.py`
+- ✅ `app/database.py`
+- ✅ `app/routers/auth.py`
+- ✅ `app/firebase-credentials.json`
+
+---
+
+### 🔐 Password Reset & Email Integration
+**Status:** ✅ Completed
+
+#### Features Added:
+- **Forgot Password Flow:**
+  - Secure token generation and 15-minute expiration logic.
+  - Dedicated `/forgot-password.html` and `/reset-password.html` UI flows.
+  - Database table `password_reset_tokens` for token management.
+- **Gmail SMTP Integration:**
+  - Configurable SMTP environment variables (`SMTP_SERVER`, `SMTP_PORT`, etc.).
+  - Centralized `email_service.py` to handle HTML and plain text emails.
+  - Professional HTML email template for password reset.
+- **SMS Infrastructure (Prepared):**
+  - Database schema updated to include `phone_number` in users and new `user_preferences` table.
+  - CRUD operations and API endpoints (`/api/settings/profile`) created.
+  - Frontend profile UI updated to collect phone numbers and SMS opt-in status.
+  - *Note: Actual Twilio dispatch is currently commented out pending subscription.*
+
+#### Files Created/Modified:
+- ✅ `frontend/forgot-password.html`
+- ✅ `frontend/reset-password.html`
+- ✅ `app/email_service.py`
+- ✅ `app/sms_service.py`
+- ✅ `app/routers/auth.py`
+- ✅ `app/routers/settings.py`
+- ✅ `app/crud.py`
+- ✅ `app/schemas.py`
+
+---
+
+### 🔢 6-Digit OTP Password Reset
+**Status:** ✅ Completed  
+**Date:** March 29, 2026
+
+#### Features Added:
+- **OTP Generation & Validation:**
+  - 6-digit random numeric OTP generated alongside UUID reset token.
+  - `otp_code` column added to `password_reset_tokens` table with index.
+  - OTP verification endpoint: `POST /api/auth/verify-otp`.
+  - OTP expires after 15 minutes (same as token).
+- **Method Selection UI:**
+  - 3-step forgot-password flow: Email → Choose Method → Reset.
+  - Two selectable method cards: "Email Reset Link" (🔗) and "6-Digit Verification Code" (🔢).
+  - Only ONE email is sent based on the user's chosen method (no duplicate emails).
+  - Button text dynamically updates based on selection.
+- **OTP Entry UI:**
+  - 6 individual digit input boxes with auto-advance on input.
+  - Paste support (distribute pasted digits across all 6 boxes).
+  - Backspace navigation between boxes.
+  - 60-second resend cooldown timer.
+  - "← Use a different method" link to go back and choose another option.
+- **Styled OTP Email Template:**
+  - Professional HTML email with gradient header.
+  - Large, monospace OTP code displayed prominently.
+  - Expiry warning and security notice.
+
+#### API Changes:
+- `POST /api/auth/forgot-password` — now accepts `reset_method` parameter (`"link"` or `"otp"`).
+- `POST /api/auth/verify-otp` — new endpoint; validates OTP and returns reset token.
+
+#### Files Created/Modified:
+- ✅ `app/database.py` — added `otp_code` column to `PasswordResetToken` model
+- ✅ `app/crud.py` — OTP generation in `create_password_reset_token()`, new `validate_otp_code()`
+- ✅ `app/schemas.py` — added `reset_method` to `ForgotPasswordRequest`, new `VerifyOtpRequest`/`VerifyOtpResponse`
+- ✅ `app/routers/auth.py` — updated `forgot_password()` to branch by method, new `verify_otp()` endpoint
+- ✅ `app/email_service.py` — new `send_otp_email()` with styled HTML template
+- ✅ `frontend/forgot-password.html` — redesigned as 3-step flow with method selection cards
+- ✅ `frontend/js/api.js` — added `verifyOtp()` method, updated `forgotPassword()` to pass `reset_method`
+- ✅ `commands/database/upgrade_otp.py` — migration script for `otp_code` column
+
+#### Database Changes:
+```sql
+ALTER TABLE password_reset_tokens ADD COLUMN otp_code VARCHAR(6);
+CREATE INDEX ix_password_reset_tokens_otp_code ON password_reset_tokens (otp_code);
+```
+
+---
+
+### 📊 Database Seeding & Order Management Fixes
+**Status:** ✅ Completed  
+**Date:** March 14-29, 2026
+
+#### Features Added:
+- **Database Seeding Script** (`commands/fill_db_with_data.py`):
+  - Populates all tables: products, services, orders, invoices, queue reservations.
+  - Includes sample data across all order statuses.
+- **New Order/Queue Statuses:**
+  - Added `delayed` and `cancelled` statuses to orders and reservations.
+- **Superadmin Role Fix:**
+  - Fixed `superadmin` role not being included in global data visibility checks.
+  - Updated `orders.py` and `reservations.py` to allow `superadmin` role full access.
+
+#### Files Modified:
+- ✅ `app/routers/orders.py` — added `superadmin` to role checks
+- ✅ `app/routers/reservations.py` — added `superadmin` to role checks
+- ✅ `commands/fill_db_with_data.py` — comprehensive sample data seeder
+
+---
+
+## E-Commerce Features
+**Status:** ✅ Completed
+
+#### Features Added:
+- **8 Customizable Colors:**
+  - Sidebar Color
+  - Background Color
+  - Primary Color
+  - Button Color
+  - Text Color
+  - Sidebar Active Color
+  - Card Color
+  - Card Text Color
+
+- **Interactive Dashboard Editor:**
+  - Drag-and-drop module reordering
+  - Resizable modules (Full, Half, Third, Quarter width)
+  - 17 predefined module templates
+  - Live preview of changes
+  - Collapsible customization panel with resize handle
+
+- **Module Templates:**
+  - Revenue (7 types): Total, Average, Weekly, Monthly, Bi-Monthly, Semi-Annual, Annual
+  - Invoices (2 types): Total, Average
+  - Services (2 types): Total, Popular
+  - Products (2 types): Total, Popular
+  - Recent Activity
+  - Custom Chart
+  - Custom Table
+
+- **UI Enhancements:**
+  - Floating edit button (bottom-right, superadmin only)
+  - 12-column grid system
+  - Clean card design with colored borders
+  - Responsive layout options (Grid, List, Compact)
+
+#### Files Created/Modified:
+- ✅ `frontend/edit-dashboard.html` - Visual dashboard editor
+- ✅ `frontend/dashboard.html` - Updated with floating button
+- ✅ `frontend/js/dashboard.js` - Dashboard rendering logic
+- ✅ `app/routers/dashboard.py` - Dashboard API endpoints
+- ✅ `create_dashboard_customization.py` - Database setup script
+- ✅ `add_color_columns.py` - Add color columns to database
+
+#### Database Changes:
+```sql
+-- New Tables
+CREATE TABLE dashboard_settings (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    website_name VARCHAR(255) DEFAULT 'CarWash',
+    primary_color VARCHAR(7) DEFAULT '#667eea',
+    background_color VARCHAR(7) DEFAULT '#f5f5f5',
+    sidebar_color VARCHAR(7) DEFAULT '#2c3e50',
+    button_color VARCHAR(7) DEFAULT '#667eea',
+    text_color VARCHAR(7) DEFAULT '#333333',
+    sidebar_active_color VARCHAR(7) DEFAULT '#34495e',
+    card_color VARCHAR(7) DEFAULT '#ffffff',
+    card_text_color VARCHAR(7) DEFAULT '#333333',
+    layout_type VARCHAR(50) DEFAULT 'grid',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE dashboard_modules (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    module_name VARCHAR(255) NOT NULL,
+    module_type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    position INTEGER DEFAULT 0,
+    width VARCHAR(50) DEFAULT 'full',
+    is_visible BOOLEAN DEFAULT TRUE,
+    config JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## Dashboard Customization System
+
+### Access
+**Superadmin Only:**
+- Login: `owner@carwash.com` / `owner123`
+- Click floating ✏️ button on dashboard
+- Or go to: `http://localhost:8000/edit-dashboard.html`
+
+### How to Use
+
+#### 1. Customize Colors
+```
+Right Panel → Colors Section
+- Pick any of 8 colors
+- Changes apply instantly to preview
+```
+
+#### 2. Add Modules
+```
+Right Panel → Add Module Section
+1. Select module type from dropdown
+2. Enter module title (auto-filled)
+3. Select width (Full/Half/Third/Quarter)
+4. Click "+ Add Module"
+```
+
+#### 3. Reorder Modules
+```
+Dashboard Preview Area
+1. Click and hold on any module
+2. Drag to new position
+3. Drop to place
+```
+
+#### 4. Resize Modules
+```
+Module Width Controls (bottom-left of each module)
+- Full: 12 columns (100%)
+- 1/2: 6 columns (50%)
+- 1/3: 4 columns (33%)
+- 1/4: 3 columns (25%)
+```
+
+#### 5. Delete Modules
+```
+Click ✕ button in top-right corner of module
+```
+
+#### 6. Save Changes
+```
+Right Panel → Bottom
+Click "💾 Save Changes"
+→ Redirects to dashboard with new settings
+```
+
+### API Endpoints
+```http
+GET  /api/dashboard/settings          - Get dashboard settings
+POST /api/dashboard/settings          - Save dashboard settings
+GET  /api/dashboard/modules           - Get dashboard modules
+POST /api/dashboard/modules           - Create module
+PUT  /api/dashboard/modules/{id}      - Update module
+DELETE /api/dashboard/modules/{id}    - Delete module
+```
+
+---
+
+## Permissions Management System
+
+### Overview
+Comprehensive role-based access control (RBAC) system with 8 granular permissions.
+
+### Available Permissions
+
+| Permission | Description | Default Roles |
+|------------|-------------|---------------|
+| `manage_products` | Add, edit, delete products | Superadmin, Admin |
+| `manage_locations` | Add, edit, delete washing bays | Superadmin, Admin |
+| `view_locations` | View washing bays (read-only) | Superadmin, Admin, User |
+| `manage_invoices` | Create, edit, delete invoices | Superadmin, Admin, User |
+| `view_invoices` | View invoices (read-only) | Superadmin, Admin, User |
+| `view_reports` | Access sales reports | Superadmin, Admin, User |
+| `manage_settings` | Modify theme and settings | Superadmin, Admin |
+| `manage_users` | Manage user permissions | Superadmin |
+
+### User Roles
+
+#### Role Hierarchy
+```
+superadmin (owner)
+    ↓
+admin
+    ↓
+user (staff)
+    ↓
+client
+```
+
+#### Role Permissions Matrix
+
+| Permission | Superadmin | Admin | User (Staff) | Client |
+|------------|-----------|-------|--------------|--------|
+| manage_products | ✅ | ✅ | ❌ | ❌ |
+| manage_locations | ✅ | ✅ | ❌ | ❌ |
+| view_locations | ✅ | ✅ | ✅ | ❌ |
+| manage_invoices | ✅ | ✅ | ✅ | ❌ |
+| view_invoices | ✅ | ✅ | ✅ | ❌ |
+| view_reports | ✅ | ✅ | ✅ | ❌ |
+| manage_settings | ✅ | ✅ | ❌ | ❌ |
+| manage_users | ✅ | ❌ | ❌ | ❌ |
+
+### Access Permissions Management
+
+**For Admin/Superadmin:**
+1. Login with admin/superadmin account
+2. Go to Settings → User Management
+3. Click "🔐 Manage Permissions"
+4. Or directly: `http://localhost:8000/permissions-management.html`
+
+### Features
+- 📊 Statistics dashboard (Total users, Admin users, Staff users)
+- 🔍 Search users by email
+- 🎯 Filter by role
+- 🎛️ Toggle switches for each permission
+- 💾 Auto-save on toggle
+- 🎨 Modern, responsive UI
+
+### API Endpoints
+```http
+GET  /api/auth/users                  - List all users with permissions
+GET  /api/auth/permissions/all        - Get all available permissions
+GET  /api/auth/roles/all              - Get all roles
+PUT  /api/auth/users/permissions      - Update user permissions
+PUT  /api/auth/users/roles            - Update user roles
+GET  /api/auth/me/permissions         - Get current user permissions
+```
+
+---
+
+## Demo Accounts System
+
+### Overview
+Three demo accounts with usage limits to prevent abuse while allowing full exploration.
+
+### Demo Account Credentials
+
+#### 1. Client Perspective
+```
+Email: demo-client@carwash.com
+Password: demo123
+Role: Client
+Limits: 10 orders, 10 reservations
+```
+
+**Features:**
+- Browse products and services
+- Add items to cart
+- Place orders
+- Make service reservations
+- View order history
+
+#### 2. Staff Perspective
+```
+Email: demo-staff@carwash.com
+Password: demo123
+Role: User (Staff)
+Limits: 10 invoices
+```
+
+**Features:**
+- Create invoices
+- View sales reports
+- View dashboard statistics
+- Limited admin features
+
+#### 3. Admin Perspective (Limited)
+```
+Email: demo-admin@carwash.com
+Password: demo123
+Role: Demo Admin
+Limits: 1 product, 1 service, 10 invoices
+```
+
+**Features:**
+- Create invoices
+- View reports
+- Limited product management
+- Cannot manage users
+
+### Usage Limits
+
+| Account | Products | Services | Orders | Reservations | Invoices |
+|---------|----------|----------|--------|--------------|----------|
+| demo-client | - | - | 10 | 10 | - |
+| demo-staff | - | - | - | - | 10 |
+| demo-admin | 1 | 1 | - | - | 10 |
+
+### Setup
+```bash
+# Create demo accounts
+python create_demo_users.py
+# or
+create_demo_users.bat
+```
+
+### Database Table
+```sql
+CREATE TABLE demo_usage_limits (
+    user_id INTEGER PRIMARY KEY,
+    products_created INTEGER DEFAULT 0,
+    services_created INTEGER DEFAULT 0,
+    orders_created INTEGER DEFAULT 0,
+    reservations_created INTEGER DEFAULT 0,
+    invoices_created INTEGER DEFAULT 0,
+    max_products INTEGER DEFAULT 1,
+    max_services INTEGER DEFAULT 1,
+    max_orders INTEGER DEFAULT 10,
+    max_reservations INTEGER DEFAULT 10,
+    max_invoices INTEGER DEFAULT 10
+);
+```
+
+---
+
+## E-Commerce Features
+
+### Overview
+Complete shopping cart, order management, and service reservation system with FIFO queue.
+
+### Features
+
+#### For Clients
+- 🛒 Shopping Cart - Add products and checkout
+- 📦 Order Management - Place orders and track status
+- 🚗 Service Reservations - Reserve car wash with queue position
+- 📊 Client Dashboard - View orders, reservations, and history
+
+#### For Owner/Admin
+- 📋 Order Management - Accept/reject orders, update status
+- 🎯 Queue Management - Manage service reservations and queue
+- 👥 Client Role - New role for customers
+
+### New Pages
+
+#### Client Pages
+- `/shop.html` - Browse products and services
+- `/cart.html` - Shopping cart
+- `/reserve.html` - Reserve car wash service
+- `/client-dashboard.html` - Client dashboard
+
+#### Owner/Admin Pages
+- `/order-management.html` - Manage customer orders
+- `/queue-management.html` - Manage service queue
+
+### API Endpoints
+
+#### Cart
+```http
+GET    /api/cart              - Get cart items
+POST   /api/cart              - Add to cart
+PATCH  /api/cart/{id}         - Update quantity
+DELETE /api/cart/{id}         - Remove item
+DELETE /api/cart/clear/all    - Clear cart
+```
+
+#### Orders
+```http
+POST   /api/orders            - Create order
+GET    /api/orders            - List orders
+GET    /api/orders/{id}       - Get order details
+PATCH  /api/orders/{id}/status - Update status
+```
+
+#### Reservations
+```http
+POST   /api/reservations      - Create reservation
+GET    /api/reservations      - List reservations
+GET    /api/reservations/queue - Get queue
+GET    /api/reservations/{id} - Get reservation details
+PATCH  /api/reservations/{id}/status - Update status
+```
+
+### Queue Management Logic
+
+#### How Queue Works
+1. Client creates reservation → Assigned next queue position
+2. Owner accepts → Stays in queue with same position
+3. Owner starts service → Status: "in_progress"
+4. Owner completes → Removed from queue, positions shift down
+5. Client cancels → Removed from queue, positions recalculated
+
+#### Status Flow
+```
+pending → accepted → in_progress → completed
+   ↓
+cancelled
+```
+
+### Database Tables
+```sql
+CREATE TABLE cart_items (
+    id SERIAL PRIMARY KEY,
+    client_id INTEGER REFERENCES users(id),
+    product_service_id INTEGER REFERENCES product_service(id),
+    quantity INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,
+    order_number VARCHAR UNIQUE,
+    client_id INTEGER REFERENCES users(id),
+    total_amount DECIMAL(10,2),
+    status VARCHAR DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE order_items (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER REFERENCES orders(id),
+    product_service_id INTEGER REFERENCES product_service(id),
+    quantity INTEGER,
+    unit_price DECIMAL(10,2),
+    subtotal DECIMAL(10,2)
+);
+
+CREATE TABLE reservations (
+    id SERIAL PRIMARY KEY,
+    reservation_number VARCHAR UNIQUE,
+    client_id INTEGER REFERENCES users(id),
+    service_id INTEGER REFERENCES product_service(id),
+    location_id INTEGER REFERENCES locations(id),
+    vehicle_plate VARCHAR,
+    queue_position INTEGER,
+    status VARCHAR DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## Superadmin Role
+
+### Overview
+Highest level of access with complete control over all users including admins.
+
+### Superadmin Account
+```
+Email: owner@carwash.com
+Password: owner123
+```
+
+### Setup
+```bash
+python create_superadmin.py
+# or
+create_superadmin.bat
+```
+
+### Key Features
+- ✅ Can see ALL users including admins
+- ✅ Can modify admin permissions
+- ✅ Can create/delete any user
+- ✅ Hidden from admin view
+- ✅ Complete system access
+
+### Differences from Admin
+
+| Feature | Superadmin | Admin |
+|---------|-----------|-------|
+| See all users | ✅ Yes | ⚠️ No (can't see superadmins) |
+| Manage admins | ✅ Yes | ❌ No |
+| Manage superadmins | ✅ Yes | ❌ No |
+| Full system access | ✅ Yes | ✅ Yes |
+| Hidden from lower roles | ✅ Yes | ❌ No |
+
+---
+
+## Setup Instructions
+
+### Complete Setup
+
+#### 1. Database Setup
+```bash
+# Create database
+python create_db.py
+
+# Seed data
+python seed_data.py
+```
+
+#### 2. Create Accounts
+```bash
+# Create superadmin
+python create_superadmin.py
+
+# Create demo accounts
+python create_demo_users.py
+```
+
+#### 3. Setup E-Commerce
+```bash
+# Create e-commerce tables
+python add_ecommerce_tables.py
+
+# Create client user
+python create_client_user.py
+```
+
+#### 4. Setup Dashboard Customization
+```bash
+# Create dashboard tables
+python create_dashboard_customization.py
+
+# Add color columns
+python add_color_columns.py
+```
+
+#### 5. Setup Permissions
+```bash
+# Add permissions
+python add_permissions.py
+
+# Add new permissions
+python add_new_permissions.py
+```
+
+#### 6. Start Server
+```bash
+start_server.bat
+```
+
+### Quick Setup (Automated)
+```bash
+# E-commerce setup
+setup_ecommerce.bat
+
+# Permissions setup
+RUN_PERMISSION_SETUP.bat
+```
+
+---
+
+## API Documentation
+
+### Access
+Once server is running:
+- **Swagger UI:** http://localhost:8000/docs
+- **ReDoc:** http://localhost:8000/redoc
+
+### Authentication
+All API endpoints require JWT token:
+```http
+Authorization: Bearer {token}
+```
+
+### Get Token
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+```
+
+---
+
+## Change Log
+
+### Version 4.0.0 (April 4, 2026)
+- ✅ **Multi-Tenant Data Isolation**: All data queries (locations, products, invoices, orders, reservations, reports, dashboard) now scoped by `business_number`
+- ✅ Added `get_business_user_ids()` and `get_business_owner_id()` helpers to `crud.py`
+- ✅ **Staff Sidebar Fix**: Settings tab hidden from staff, visible only to admin/owner/superadmin
+- ✅ **Vercel Deployment**: Created `vercel.json` for production deployment
+- ✅ **Render Deployment**: Created `render.yaml` with Docker + managed PostgreSQL blueprint
+- ✅ **Dynamic API_BASE**: Frontend auto-detects production vs local environment
+- ✅ Dashboard settings/modules endpoints relaxed from superadmin-only to admin/owner access
+- ✅ User listing scoped to same business (admins can't see users from other businesses)
+
+### Version 3.0.0 (March 30, 2026)
+- ✅ **New Feature**: Role-Based dynamic Sidebar Navigation hiding via `RoleSidebarSetting` database schema
+- ✅ Created `sidebar-management.html` giving Adms/Owners power to toggle tab visibility per user role
+- ✅ Added `hidden_sidebar_tabs` payload to `/me/permissions` endpoint in `auth.py`
+- ✅ Upgraded `menu.js` to automatically parse and hide dynamically disabled sidebar links for the active user
+- ✅ **Frontend UI Rewrite**: Completely modernized the landing page (`index.html`) using a stunning glassmorphism design with `landing.css`. Added fade-in scroll animations via Javascript IntersectionObserver, CSS floating background orbs, fluid gradients, and integrated the modern `Outfit` Google Font.
+- ✅ **About Us Overhaul**: Fully redesigned `about.html` using the core Indigo/Pink theme, featuring a high-impact CEO spotlight and modern company history layout for **BuxTek Inc.**
+- ✅ Implemented Firebase Google Sign-In with robust backend validation (`verify_id_token`)
+- ✅ Fixed `Token used too early` Firebase errors by adding `clock_skew_seconds=60` tolerance
+- ✅ Added `DashboardSettings` & `DashboardModule` models to eliminate 500 errors on dashboard visits
+- ✅ Designed automatic `UserProfile` creation fallback logic in `crud.py` to prevent 404s
+- ✅ Fixed login.js ES Module rendering issues to restore demo account functionalities
+- ✅ Added 6-digit OTP password reset with method selection UI
+- ✅ Added styled OTP email template with gradient design
+- ✅ Added 3-step forgot-password flow (email → method choice → reset)
+- ✅ Added `POST /api/auth/verify-otp` endpoint
+- ✅ Added `reset_method` parameter to forgot-password API
+- ✅ Fixed superadmin global data visibility in orders and reservations
+- ✅ Added `delayed` and `cancelled` order/queue statuses
+- ✅ Created database seeding script (`fill_db_with_data.py`)
+- ✅ Created AI coding assistant workflow instructions (`.agents/workflows/instructions.md`)
+- ✅ Gmail SMTP password reset emails working end-to-end
+- ✅ Database migration for `otp_code` column
+
+### Version 2.0.0 (November 23, 2025)
+- ✅ Added dynamic dashboard customization with 8 colors
+- ✅ Added interactive dashboard editor with drag-and-drop
+- ✅ Added 17 predefined module templates
+- ✅ Added floating edit button for superadmin
+- ✅ Added card text color customization
+- ✅ Improved dashboard module rendering
+- ✅ Fixed module persistence issues
+- ✅ Updated database schema for dashboard settings
+
+### Version 1.5.0 (November 2025)
+- ✅ Added permissions management system
+- ✅ Added 8 granular permissions
+- ✅ Added superadmin role
+- ✅ Added demo accounts with usage limits
+- ✅ Added view_locations and view_invoices permissions
+
+### Version 1.0.0 (November 2025)
+- ✅ Added e-commerce features
+- ✅ Added shopping cart system
+- ✅ Added order management
+- ✅ Added service reservations with queue
+- ✅ Added client dashboard
+- ✅ Added queue management for owner/admin
+
+---
+
+## Support & Troubleshooting
+
+### Common Issues
+
+#### Dashboard not loading custom modules
+```bash
+# Check if tables exist
+python create_dashboard_customization.py
+
+# Restart server
+start_server.bat
+```
+
+#### Permissions not working
+```bash
+# Initialize permissions
+python add_permissions.py
+
+# Restart server
+start_server.bat
+```
+
+#### Demo accounts not working
+```bash
+# Create demo accounts
+python create_demo_users.py
+
+# Restart server
+start_server.bat
+```
+
+### Contact
+For issues or questions:
+1. Check server logs
+2. Check browser console (F12)
+3. Review API documentation at `/docs`
+4. Verify database connection
+
+---
+
+## Future Enhancements
+
+### Planned Features
+- [ ] Real-time WebSocket updates for queue
+- [ ] Email notifications for orders
+- [ ] Payment gateway integration
+- [ ] Customer profiles with saved vehicles
+- [ ] Rating/review system
+- [ ] Loyalty points system
+- [ ] SMS notifications
+- [ ] Two-factor authentication
+- [ ] Audit log for permission changes
+- [ ] Role templates
+- [ ] Bulk permission updates
+
+---
+
+**End of System Updates, Data & History Logs**

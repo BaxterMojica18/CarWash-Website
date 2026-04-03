@@ -29,6 +29,12 @@ def get_user_permissions(user: User):
 
 def is_admin_or_owner(current_user: User = Depends(get_current_user)):
     role_names = [role.name for role in current_user.roles]
-    if "admin" not in role_names and "owner" not in role_names:
+    if "admin" not in role_names and "owner" not in role_names and "superadmin" not in role_names:
         raise HTTPException(status_code=403, detail="Admin or Owner access required")
+    return current_user
+
+def is_superadmin(current_user: User = Depends(get_current_user)):
+    role_names = [role.name for role in current_user.roles]
+    if "superadmin" not in role_names:
+        raise HTTPException(status_code=403, detail="Superadmin access required")
     return current_user

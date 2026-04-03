@@ -83,6 +83,17 @@
                 </div>
 
                 <button type="submit" class="btn-primary" style="width: 100%;">Continue to Plan Selection</button>
+                
+                <div style="display: flex; align-items: center; margin: 20px 0;">
+                    <hr style="flex: 1; border: none; border-top: 1px solid #ddd;">
+                    <span style="padding: 0 10px; color: #888; font-size: 14px;">OR</span>
+                    <hr style="flex: 1; border: none; border-top: 1px solid #ddd;">
+                </div>
+                
+                <button type="button" id="googleSignupBtn" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: white; color: #333; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 20px; height: 20px;">
+                    Sign up with Google
+                </button>
             </form>
 
             <div class="back-link">
@@ -92,7 +103,17 @@
         </div>
     </div>
 
-    <script>
+    <script src="js/api.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { firebaseConfig } from "./js/firebase-config.js";
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+
         document.getElementById('signupForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -104,18 +125,47 @@
                 return;
             }
 
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+
             const userData = {
-                fullName: document.getElementById('fullName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                password: password
+                fullName: fullName,
+                email: email,
+                phone: phone,
+                password: password // Keep local password for pure local signup
             };
 
-            // Store user data temporarily
+            // Store user data temporarily to continue to plan selection
             localStorage.setItem('signupData', JSON.stringify(userData));
-            
-            // Redirect to plan selection (register.html)
             window.location.href = '/register.html';
+        });
+
+        // Add Google Signup Handler
+        document.getElementById('googleSignupBtn').addEventListener('click', async function() {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
+                const idToken = await user.getIdToken();
+                
+                // Pass the Firebase ID token to the backend
+                // This creates the user gracefully in Postgres if they don't exist
+                const response = await API.auth.firebaseLogin(idToken, user.email, user.displayName);
+                
+                // Use the global setToken from api.js
+                window.setToken(response.access_token);
+                
+                localStorage.setItem('userEmail', user.email);
+                localStorage.setItem('isDemo', response.is_demo);
+                localStorage.setItem('user_permissions', JSON.stringify(response.permissions || []));
+                
+                // Redirect Google-authenticated user directly to shop
+                window.location.href = '/shop.html';
+                
+            } catch (error) {
+                console.error("Google Auth error:", error);
+                alert('Google Signup failed: ' + error.message);
+            }
         });
     </script>
 </body>

@@ -161,12 +161,11 @@
                 plan: document.getElementById('plan').value
             };
 
-            // Store complete registration data
+            // Store registration data and proceed to account type selection
             localStorage.setItem('registrationData', JSON.stringify(registrationData));
             localStorage.removeItem('signupData');
             
-            alert('Registration completed! We will contact you shortly to activate your account.');
-            window.location.href = '/login.html';
+            window.location.href = '/account-type.html';
         });
     </script>
 </body>

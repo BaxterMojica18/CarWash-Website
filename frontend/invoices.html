@@ -11,28 +11,44 @@
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
-            <span id="sidebarLogo">🚗</span>
-            <h2 id="sidebarName">CarWash</h2>
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
         </div>
         <ul>
-            <li><a href="dashboard.html">Dashboard</a></li>
-            <li><a href="invoices.html" class="active">Invoices</a></li>
-            <li><a href="products.html">Products</a></li>
-            <li><a href="services.html">Services</a></li>
-            <li><a href="reports.html">Reports</a></li>
-            <li><a href="settings.html">Settings</a></li>
-            <li><a href="login.html" onclick="logout()">Logout</a></li>
+            <!-- Tabs are dynamically generated in menu.js -->
         </ul>
     </nav>
     <main class="content">
         <header>
             <h1>Invoices</h1>
-            <button class="btn-primary" onclick="showCreateInvoice()">+ Create Invoice</button>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <button class="btn-primary" onclick="showCreateInvoice()">+ Create Invoice</button>
+                <div class="profile-dropdown">
+                    <div class="profile-icon" onclick="toggleProfileMenu()">
+                        <img id="profilePhoto" src="" alt="Profile">
+                    </div>
+                    <div class="profile-menu" id="profileMenu" style="display: none;">
+                        <div class="profile-info">
+                            <img id="menuProfilePhoto" src="" alt="Profile" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #667eea;">
+                            <div>
+                                <strong id="profileName">User</strong>
+                                <p id="profileRole" style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Role</p>
+                            </div>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
+                        <a href="#" onclick="showEditProfile(); return false;">✏️ Edit Profile</a>
+                        <a href="settings.html">⚙️ Settings</a>
+                        <a href="login.html" onclick="logout()">🚪 Logout</a>
+                    </div>
+                </div>
+            </div>
         </header>
         <div class="table-container">
-            <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
-                <input type="text" id="searchInvoice" placeholder="Search by invoice number, customer name..." onkeyup="searchInvoices()" style="max-width: 400px;">
-                <select id="invoiceFilter" onchange="filterInvoices()" style="padding: 8px;">
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+                <div style="position: relative; flex: 1; max-width: 400px;">
+                    <input type="text" id="searchInvoice" placeholder="🔍 Search by invoice number, customer name..." onkeyup="searchInvoices()" style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                </div>
+                <select id="invoiceFilter" onchange="filterInvoices()" style="padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: white; cursor: pointer; transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'">
                     <option value="all">All Time</option>
                     <option value="weekly">This Week</option>
                     <option value="monthly">This Month</option>
@@ -106,8 +122,35 @@
             </div>
         </div>
     </main>
+    
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditProfile()">&times;</span>
+            <h2>Edit Profile</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="editName" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <input type="text" id="editRole" required>
+                </div>
+                <div class="form-group">
+                    <label>Profile Photo</label>
+                    <input type="file" id="editPhoto" accept="image/*">
+                    <div style="margin-top: 10px;">
+                        <img id="photoPreview" src="" alt="Preview" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: none; background: #667eea;">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">Save Profile</button>
+            </form>
+        </div>
+    </div>
+    
     <script src="js/api.js"></script>
     <script src="js/menu.js"></script>
     <script src="js/invoices.js"></script>
+    <script src="js/profile.js"></script>
 </body>
 </html>

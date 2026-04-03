@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Management - Car Wash</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo">🚗</span>
+            <h2 id="sidebarName">CarWash</h2>
+        </div>
+        <ul>
+            <!-- Tabs are dynamically generated in menu.js -->
+        </ul>
+    </nav>
+    <main class="content">
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Service Queue Management</h1>
+            <div class="profile-dropdown">
+                <div class="profile-icon" onclick="toggleProfileMenu()">
+                    <img id="profilePhoto" src="" alt="Profile">
+                </div>
+                <div class="profile-menu" id="profileMenu" style="display: none;">
+                    <div class="profile-info">
+                        <img id="menuProfilePhoto" src="" alt="Profile" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #667eea;">
+                        <div>
+                            <strong id="profileName">User</strong>
+                            <p id="profileRole" style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Role</p>
+                        </div>
+                    </div>
+                    <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
+                    <a href="#" onclick="showEditProfile(); return false;">✏️ Edit Profile</a>
+                    <a href="settings.html">⚙️ Settings</a>
+                    <a href="login.html" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
+        </header>
+        
+        <div class="filters" style="display: flex; gap: 10px; margin-bottom: 30px; padding: 15px; border-radius: 15px; flex-wrap: wrap; background: white; border: 1px solid #e0e0e0; justify-content: center;">
+            <button onclick="filterReservations('all')" class="filter-btn active" data-filter="all" style="padding: 12px 20px; border: 2px solid #667eea; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: #667eea; color: white; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">All Reservations</button>
+            <button onclick="filterReservations('pending')" class="filter-btn" data-filter="pending" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Pending</button>
+            <button onclick="filterReservations('accepted')" class="filter-btn" data-filter="accepted" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Accepted</button>
+            <button onclick="filterReservations('in_progress')" class="filter-btn" data-filter="in_progress" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">In Progress</button>
+            <button onclick="filterReservations('completed')" class="filter-btn" data-filter="completed" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Completed</button>
+            <button onclick="filterReservations('delayed')" class="filter-btn" data-filter="delayed" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Delayed</button>
+            <button onclick="filterReservations('cancelled')" class="filter-btn" data-filter="cancelled" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Cancelled</button>
+            <select id="location-select" onchange="loadQueue()" style="padding: 12px 20px; border: 2px solid #e0e0e0; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; color: #333; font-size: 14px; outline: none; transition: all 0.3s ease;">
+                <option value="">All Locations</option>
+            </select>
+        </div>
+
+        <div id="reservations-list"></div>
+    </main>
+    
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditProfile()">&times;</span>
+            <h2>Edit Profile</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="editName" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <input type="text" id="editRole" required>
+                </div>
+                <div class="form-group">
+                    <label>Profile Photo</label>
+                    <input type="file" id="editPhoto" accept="image/*">
+                    <div style="margin-top: 10px;">
+                        <img id="photoPreview" src="" alt="Preview" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: none; background: #667eea;">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">Save Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/profile.js"></script>
+    <script>
+        let allReservations = [];
+        let currentFilter = 'all';
+        let locations = [];
+
+        async function loadLocations() {
+            try {
+                const token = getToken();
+                const response = await fetch('http://localhost:8000/api/settings/locations', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                locations = await response.json();
+                const select = document.getElementById('location-select');
+                select.innerHTML = '<option value="">All Locations</option>' +
+                    locations.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load locations:', error);
+            }
+        }
+
+        async function loadQueue() {
+            const locationId = document.getElementById('location-select').value;
+            
+            try {
+                const token = getToken();
+                const url = locationId 
+                    ? `http://localhost:8000/api/reservations/?location_id=${locationId}`
+                    : 'http://localhost:8000/api/reservations/';
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                allReservations = await response.json();
+                renderReservations();
+            } catch (error) {
+                console.error('Failed to load reservations:', error);
+                showToast('Failed to load reservations', 'error');
+            }
+        }
+
+        function filterReservations(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === status) {
+                    btn.style.background = '#667eea';
+                    btn.style.color = 'white';
+                    btn.style.border = '2px solid #667eea';
+                    btn.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.3)';
+                } else {
+                    btn.style.background = 'white';
+                    btn.style.color = '#333';
+                    btn.style.border = '2px solid #e0e0e0';
+                    btn.style.boxShadow = 'none';
+                }
+            });
+            renderReservations();
+        }
+
+        function renderReservations() {
+            const container = document.getElementById('reservations-list');
+            let filtered = currentFilter === 'all' 
+                ? allReservations 
+                : allReservations.filter(r => r.status === currentFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; font-size: 1.5rem; padding: 60px 20px; display: flex; justify-content: center; align-items: center;">📭 No reservations found</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(res => `
+                <div style="background: white; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden; transition: all 0.3s ease;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <h3 style="color: white; margin: 0 0 8px 0; font-size: 1.3rem;">🧾 ${res.reservation_number}</h3>
+                            <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9rem;">📅 ${new Date(res.created_at).toLocaleString()}</p>
+                            ${res.queue_position ? `<p style="color: white; margin: 5px 0 0 0; font-weight: bold;">Queue Position: #${res.queue_position}</p>` : ''}
+                        </div>
+                        <span style="padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; background: ${getStatusColor(res.status)}">${res.status.replace('_', ' ').toUpperCase()}</span>
+                    </div>
+                    <div style="padding: 25px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
+                                <span style="font-weight: 600; color: #495057;">🔧 Service:</span>
+                                <span style="font-weight: bold; color: #667eea;">${res.service.name}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
+                                <span style="font-weight: 600; color: #495057;">📍 Location:</span>
+                                <span style="font-weight: bold; color: #667eea;">${res.location.name}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
+                                <span style="font-weight: 600; color: #495057;">🚗 Vehicle:</span>
+                                <span style="font-weight: bold; color: #667eea;">${res.vehicle_plate}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding: 20px; background: #f8f9fa; display: flex; gap: 10px; flex-wrap: wrap;">
+                        ${res.status === 'pending' ? `
+                            <button onclick="updateStatus(${res.id}, 'accepted')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">Accept</button>
+                            <button onclick="updateStatus(${res.id}, 'cancelled')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Reject</button>
+                        ` : ''}
+                        ${res.status === 'accepted' ? `
+                            <button onclick="updateStatus(${res.id}, 'in_progress')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">Start Service</button>
+                            <button onclick="updateStatus(${res.id}, 'cancelled')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Cancel</button>
+                        ` : ''}
+                        ${res.status === 'in_progress' ? `
+                            <button onclick="updateStatus(${res.id}, 'completed')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">Mark Complete</button>
+                            <button onclick="updateStatus(${res.id}, 'delayed')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #f0932b 0%, #e67e22 100%);">Delay</button>
+                        ` : ''}
+                        ${res.status === 'delayed' ? `
+                            <button onclick="updateStatus(${res.id}, 'in_progress')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">Resume</button>
+                            <button onclick="updateStatus(${res.id}, 'cancelled')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Cancel</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                pending: '#fff3cd; color: #856404',
+                accepted: '#d1ecf1; color: #0c5460',
+                in_progress: '#cce5ff; color: #004085',
+                completed: '#d4edda; color: #155724',
+                cancelled: '#f8d7da; color: #721c24',
+                delayed: '#fff8e1; color: #f57c00'
+            };
+            return colors[status] || '#e0e0e0; color: #333';
+        }
+
+        async function updateStatus(reservationId, status) {
+            try {
+                const token = getToken();
+                const response = await fetch(`http://localhost:8000/api/reservations/${reservationId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+                if (!response.ok) throw new Error('Failed to update');
+                showToast('Reservation status updated', 'success');
+                loadQueue();
+            } catch (error) {
+                showToast('Failed to update status', 'error');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        loadLocations().then(() => loadQueue());
+        setInterval(loadQueue, 30000);
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: white;
+            min-height: 100vh;
+        }
+        #location-select:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+        #location-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</body>
+</html>

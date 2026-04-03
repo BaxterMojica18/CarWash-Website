@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Methods - Car Wash Manager</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        .payment-card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .qr-preview { max-width: 200px; margin: 10px 0; }
+        .copy-btn { background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-left: 10px; }
+        .copy-btn:hover { background: #5568d3; }
+        input[type="file"] { margin: 10px 0; }
+        .save-btn { background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .save-btn:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Payment Methods Management</h1>
+        <div id="payment-methods"></div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login.html';
+
+        async function loadPaymentMethods() {
+            const res = await fetch('/api/payment-methods/', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const methods = await res.json();
+            
+            const container = document.getElementById('payment-methods');
+            container.innerHTML = methods.map(m => `
+                <div class="payment-card">
+                    <h3>${m.icon} ${m.name}</h3>
+                    ${m.name === 'E-Wallet' ? `
+                        <div>
+                            <label>Account Number/Phone:</label>
+                            <input type="text" id="account-${m.id}" value="${m.account_number || ''}" placeholder="09123456789">
+                            <button class="copy-btn" onclick="copyAccount(${m.id})">Copy</button>
+                        </div>
+                        <div>
+                            <label>QR Code Image:</label>
+                            <input type="file" id="qr-${m.id}" accept="image/*">
+                            ${m.qr_image ? `<img class="qr-preview" src="data:image/png;base64,${m.qr_image}">` : ''}
+                        </div>
+                        <button class="save-btn" onclick="updatePayment(${m.id})">Save</button>
+                    ` : `<p>Active payment method</p>`}
+                </div>
+            `).join('');
+        }
+
+        async function updatePayment(id) {
+            const formData = new FormData();
+            formData.append('name', 'E-Wallet');
+            formData.append('icon', '📱');
+            formData.append('account_number', document.getElementById(`account-${id}`).value);
+            formData.append('is_active', 'true');
+            
+            const fileInput = document.getElementById(`qr-${id}`);
+            if (fileInput.files[0]) {
+                formData.append('qr_image', fileInput.files[0]);
+            }
+
+            const res = await fetch(`/api/payment-methods/${id}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            if (res.ok) {
+                alert('Payment method updated!');
+                loadPaymentMethods();
+            } else {
+                alert('Error updating payment method');
+            }
+        }
+
+        function copyAccount(id) {
+            const input = document.getElementById(`account-${id}`);
+            input.select();
+            document.execCommand('copy');
+            alert('Account number copied!');
+        }
+
+        loadPaymentMethods();
+    </script>
+</body>
+</html>

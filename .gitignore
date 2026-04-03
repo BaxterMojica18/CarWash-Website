@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 ENV/
 build/
 develop-eggs/
@@ -40,10 +41,18 @@ Thumbs.db
 
 # Logs
 *.log
+logs.txt
+web_logs.txt
+web_logs_full.txt
+web_logs_utf8.txt
+docker_logs.txt
 
 # Database
 *.db
 *.sqlite3
+
+# Firebase credentials
+app/firebase-credentials.json
 
 # Test files
 test_*.py

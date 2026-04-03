@@ -13,11 +13,10 @@
     <link rel="stylesheet" href="/css/landing.css">
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
             <div class="nav-brand">
-                <span class="brand-name">CarWash Management System</span>
+                <span>🚗 CarWash</span>
             </div>
             <ul class="nav-menu">
                 <li><a href="#features">Features</a></li>
@@ -37,7 +36,7 @@
                 <h1>Manage Your Car Wash Business with Ease</h1>
                 <p>All-in-one platform for car wash management. Track sales, manage inventory, create invoices, and grow your business.</p>
                 <div class="hero-buttons">
-                    <a href="/login.html" class="btn-primary">Try Demo</a>
+                    <a href="/demo.html" class="btn-primary">Try Demo</a>
                     <a href="/register.html" class="btn-secondary">Start Free Trial</a>
                 </div>
             </div>
@@ -181,11 +180,50 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <p>&copy; 2025 CarWash Management System. All rights reserved. | Philippines</p>
         </div>
     </footer>
+
+    <script>
+        // Init scroll animations for elements
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: "0px 0px -50px 0px"
+            });
+
+            // Target elements to animate
+            const animElements = document.querySelectorAll(
+                '.hero-content, .feature-card, .pricing-card, .contact-item'
+            );
+            
+            animElements.forEach((el, index) => {
+                el.classList.add('animate-hidden');
+                // Stagger elements slightly
+                el.style.transitionDelay = `${(index % 3) * 0.1}s`;
+                observer.observe(el);
+            });
+        });
+
+        // Add scrolled class to navbar for glassmorphism adjustment if wanted later
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                nav.style.background = 'rgba(15, 23, 42, 0.95)';
+                nav.style.boxShadow = '0 4px 30px rgba(0, 0, 0, 0.1)';
+            } else {
+                nav.style.background = 'rgba(15, 23, 42, 0.85)';
+                nav.style.boxShadow = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

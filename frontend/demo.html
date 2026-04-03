@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Login - Car Wash Management</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-box">
+            <h1>Car Wash Management</h1>
+            <p style="text-align: center; color: #666; margin-bottom: 30px;">Select a demo account</p>
+            
+            <div class="carousel-container">
+                <button class="carousel-nav left" onclick="rotateCarousel(-1)">‹</button>
+                <div class="carousel-wrapper">
+                    <div class="demo-card active" data-index="0" data-type="staff">
+                        <h4>👨💼 Staff Login</h4>
+                        <p>Limited permissions</p>
+                    </div>
+                    <div class="demo-card" data-index="1" data-type="admin">
+                        <h4>🔑 Admin Login</h4>
+                        <p>Full access</p>
+                    </div>
+                    <div class="demo-card" data-index="2" data-type="client">
+                        <h4>🛒 Client Login</h4>
+                        <p>Shop & reserve</p>
+                    </div>
+                </div>
+                <button class="carousel-nav right" onclick="rotateCarousel(1)">›</button>
+            </div>
+
+            <div id="loginSection" style="display: none; margin-top: 30px; padding-top: 30px; border-top: 2px solid #e5e7eb;">
+                <h3 id="loginTitle" style="text-align: center; color: #374151; margin-bottom: 20px;"></h3>
+                <form id="demoLoginForm">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="demoEmail" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="demoPassword" readonly>
+                    </div>
+                    <button type="submit" class="btn-primary">Login</button>
+                    <button type="button" class="btn-secondary" onclick="hideLoginForm()">Back</button>
+                </form>
+            </div>
+            
+            <p style="text-align: center; margin-top: 30px; color: #666;">Have an account? <a href="/login.html" style="color: #667eea; text-decoration: none; font-weight: 600;">Login</a></p>
+        </div>
+    </div>
+    <script src="js/api.js"></script>
+    <script src="js/demo.js"></script>
+</body>
+</html>

@@ -2,6 +2,46 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional, List, Dict
 
+class FirebaseLoginRequest(BaseModel):
+    id_token: str
+    email: EmailStr
+    display_name: Optional[str] = None
+
+# Password Reset Schemas
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+    reset_method: Optional[str] = "link"  # "link" or "otp"
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class ForgotPasswordResponse(BaseModel):
+    message: str
+    reset_token: Optional[str] = None  # Temporary: shown until email service is set up
+
+class VerifyOtpRequest(BaseModel):
+    email: EmailStr
+    otp_code: str
+
+class VerifyOtpResponse(BaseModel):
+    message: str
+    token: Optional[str] = None
+
+
+# User Preference & SMS Schemas
+class UserPreferenceUpdate(BaseModel):
+    sms_opt_in: bool
+
+class UserPreferenceResponse(UserPreferenceUpdate):
+    id: int
+    user_id: int
+    class Config:
+        from_attributes = True
+
+class UserPhoneUpdate(BaseModel):
+    phone_number: str
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
@@ -92,11 +132,13 @@ class CustomThemeCreate(BaseModel):
     dropdown_brightness: int = 100
     delete_button_brightness: int = 100
     delete_button_saturation: int = 100
+    for_client: bool = False
 
 class CustomTheme(CustomThemeCreate):
     id: int
     user_id: int
     is_active: bool
+    for_client: bool = False
     class Config:
         from_attributes = True
 
@@ -141,6 +183,10 @@ class UserPermissions(BaseModel):
     email: str
     roles: List[str]
     permissions: List[str]
+    hidden_sidebar_tabs: Optional[List[str]] = []
+
+class UpdateSidebarSettings(BaseModel):
+    settings: Dict[str, bool]
 
 class UpdateUserRoles(BaseModel):
     user_id: int
@@ -151,6 +197,89 @@ class CreateUser(BaseModel):
     email: EmailStr
     role: str
 
+class UserRegister(BaseModel):
+    fullName: str
+    email: EmailStr
+    password: str
+    phone: str
+    plan: str
+    account_type: str  # admin, staff, client, owner
+    business_number: Optional[str] = None
+
 class UpdateUserPermissions(BaseModel):
     user_id: int
     permissions: List[str]
+
+class CartItemCreate(BaseModel):
+    product_service_id: int
+    quantity: int
+
+class CartItemUpdate(BaseModel):
+    quantity: int
+
+class CartItemResponse(BaseModel):
+    id: int
+    product_service_id: int
+    quantity: int
+    price_at_add: float
+    product_service: ProductService
+    class Config:
+        from_attributes = True
+
+class OrderCreate(BaseModel):
+    payment_method: Optional[str] = None
+
+class OrderStatusUpdate(BaseModel):
+    status: str
+
+class OrderItemResponse(BaseModel):
+    id: int
+    product_service_id: int
+    quantity: int
+    unit_price: float
+    subtotal: float
+    product_service: ProductService
+    class Config:
+        from_attributes = True
+
+class OrderResponse(BaseModel):
+    id: int
+    order_number: str
+    client_id: int
+    status: str
+    total_amount: float
+    payment_method: Optional[str]
+    created_at: datetime
+    items: List[OrderItemResponse]
+    class Config:
+        from_attributes = True
+
+class ReservationCreate(BaseModel):
+    service_id: int
+    location_id: int
+    vehicle_plate: str
+
+class ReservationStatusUpdate(BaseModel):
+    status: str
+
+class ReservationResponse(BaseModel):
+    id: int
+    reservation_number: str
+    client_id: int
+    service_id: int
+    location_id: int
+    vehicle_plate: str
+    status: str
+    queue_position: Optional[int]
+    estimated_start_time: Optional[datetime]
+    created_at: datetime
+    service: ProductService
+    location: Location
+    class Config:
+        from_attributes = True
+
+class ClientDashboard(BaseModel):
+    active_orders: List[OrderResponse]
+    order_history: List[OrderResponse]
+    active_reservations: List[ReservationResponse]
+    reservation_history: List[ReservationResponse]

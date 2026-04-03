@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Float, ForeignKey, Table
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Float, ForeignKey, Table, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from dotenv import load_dotenv
@@ -59,6 +59,9 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)
     is_demo = Column(Boolean, default=False)
+    phone_number = Column(String, nullable=True)
+    account_type = Column(String, nullable=True)  # admin, staff, client, owner
+    business_number = Column(String, index=True, nullable=True)
     invoices = relationship("Invoice", back_populates="creator")
     roles = relationship("Role", secondary=user_roles)
 
@@ -69,6 +72,12 @@ class UserProfile(Base):
     name = Column(String)
     role = Column(String)
     photo = Column(String, nullable=True)
+
+class UserPreference(Base):
+    __tablename__ = "user_preferences"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    sms_opt_in = Column(Boolean, default=True)
 
 class Location(Base):
     __tablename__ = "locations"
@@ -126,6 +135,7 @@ class CustomTheme(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     preset_name = Column(String)
     is_active = Column(Boolean, default=False)
+    for_client = Column(Boolean, default=False)  # True = client-facing theme, False = staff/admin theme
     
     # Text colors: black, dark-grey, white
     text_color = Column(String, default="black")
@@ -188,6 +198,114 @@ class ReportCache(Base):
     generated_at = Column(DateTime)
     total_sales = Column(Float)
     total_invoices = Column(Integer)
+
+class CartItem(Base):
+    __tablename__ = "cart_items"
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("users.id"))
+    product_service_id = Column(Integer, ForeignKey("products_services.id"))
+    quantity = Column(Integer)
+    price_at_add = Column(Float)
+    created_at = Column(DateTime)
+    client = relationship("User")
+    product_service = relationship("ProductService")
+
+class Order(Base):
+    __tablename__ = "orders"
+    id = Column(Integer, primary_key=True, index=True)
+    order_number = Column(String, unique=True, index=True)
+    client_id = Column(Integer, ForeignKey("users.id"))
+    status = Column(String, default="pending")
+    total_amount = Column(Float)
+    payment_method = Column(String, nullable=True)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+    client = relationship("User")
+    items = relationship("OrderItem", back_populates="order")
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    product_service_id = Column(Integer, ForeignKey("products_services.id"))
+    quantity = Column(Integer)
+    unit_price = Column(Float)
+    subtotal = Column(Float)
+    order = relationship("Order", back_populates="items")
+    product_service = relationship("ProductService")
+
+class Reservation(Base):
+    __tablename__ = "reservations"
+    id = Column(Integer, primary_key=True, index=True)
+    reservation_number = Column(String, unique=True, index=True)
+    client_id = Column(Integer, ForeignKey("users.id"))
+    service_id = Column(Integer, ForeignKey("products_services.id"))
+    location_id = Column(Integer, ForeignKey("locations.id"))
+    vehicle_plate = Column(String)
+    status = Column(String, default="pending")
+    queue_position = Column(Integer, nullable=True)
+    estimated_start_time = Column(DateTime, nullable=True)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+    client = relationship("User")
+    service = relationship("ProductService")
+    location = relationship("Location")
+
+class PaymentMethod(Base):
+    __tablename__ = "payment_methods"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    icon = Column(String, nullable=True)
+    qr_image = Column(String, nullable=True)
+    account_number = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    token = Column(String, unique=True, index=True, nullable=False)
+    otp_code = Column(String(6), nullable=True, index=True)
+    expires_at = Column(DateTime, nullable=False)
+    used = Column(Boolean, default=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+class DashboardSettings(Base):
+    __tablename__ = "dashboard_settings"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    website_name = Column(String)
+    primary_color = Column(String)
+    background_color = Column(String)
+    sidebar_color = Column(String)
+    layout_type = Column(String)
+    button_color = Column(String)
+    text_color = Column(String)
+    sidebar_active_color = Column(String)
+    card_color = Column(String)
+    card_text_color = Column(String)
+    updated_at = Column(DateTime, server_default=func.now())
+
+class DashboardModule(Base):
+    __tablename__ = "dashboard_modules"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    module_name = Column(String)
+    module_type = Column(String)
+    title = Column(String)
+    position = Column(Integer)
+    width = Column(String)
+    is_visible = Column(Boolean, default=True)
+    config = Column(String, nullable=True)
+    updated_at = Column(DateTime, server_default=func.now())
+
+class RoleSidebarSetting(Base):
+    __tablename__ = "role_sidebar_settings"
+    id = Column(Integer, primary_key=True, index=True)
+    role_id = Column(Integer, ForeignKey("roles.id"))
+    page_name = Column(String)
+    is_visible = Column(Boolean, default=True)
 
 def create_tables():
     try:

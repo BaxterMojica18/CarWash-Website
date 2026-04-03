@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar Management - Car Wash</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .role-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .role-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            text-transform: capitalize;
+        }
+        .tab-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .tab-item:last-child {
+            border-bottom: none;
+        }
+        .tab-label {
+            font-size: 14px;
+            color: #555;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo">🚗</span>
+            <h2 id="sidebarName">CarWash</h2>
+        </div>
+        <ul>
+            <!-- Tabs are dynamically generated in menu.js -->
+        </ul>
+    </nav>
+    <main class="content">
+        <header>
+            <h1>🗂️ Sidebar Management</h1>
+            <p style="color: #666; margin-top: 5px;">Hide or show sidebar tabs per user role</p>
+        </header>
+
+        <div class="roles-grid" id="rolesGrid">
+            <div class="no-data">Loading roles...</div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/toast.js"></script>
+    <script>
+        const ALL_TABS = [
+            "Dashboard", "Invoices", "Orders", "Queue", 
+            "Products", "Services", "Reports", "Settings", 
+            "Permissions", "Sidebar Tabs"
+        ];
+        
+        async function loadRoles() {
+            try {
+                const meResponse = await fetch(`${API_BASE}/auth/me/permissions`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const meData = await meResponse.json();
+                const myRoles = meData.roles || [];
+                
+                if (!myRoles.includes('superadmin') && !myRoles.includes('owner') && !myRoles.includes('admin')) {
+                    document.getElementById('rolesGrid').innerHTML = '<div class="no-data">Access denied. Admin or Owner only.</div>';
+                    return;
+                }
+                
+                const response = await fetch(`${API_BASE}/auth/roles/all`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load roles');
+                const roles = await response.json();
+                
+                // Fetch sidebar settings for all roles
+                for (let role of roles) {
+                    const sbRes = await fetch(`${API_BASE}/auth/roles/${role.id}/sidebar`, {
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    });
+                    if (sbRes.ok) {
+                        role.sidebar_settings = await sbRes.json();
+                    } else {
+                        role.sidebar_settings = {};
+                    }
+                }
+                
+                renderRoles(roles);
+            } catch (error) {
+                console.error('Error loading roles:', error);
+                showToast('Failed to load roles', 'error');
+                document.getElementById('rolesGrid').innerHTML = '<div class="no-data">Failed to load roles. Please try again.</div>';
+            }
+        }
+
+        function renderRoles(roles) {
+            const grid = document.getElementById('rolesGrid');
+            
+            if (roles.length === 0) {
+                grid.innerHTML = '<div class="no-data">No roles found.</div>';
+                return;
+            }
+
+            grid.innerHTML = roles.map(role => {
+                return `
+                    <div class="role-card">
+                        <div class="role-header">
+                            Role: ${role.name}
+                        </div>
+                        <div class="tabs-list">
+                            ${ALL_TABS.map(tab => {
+                                // Default to visible if not explicitly set to false
+                                const isVisible = role.sidebar_settings[tab] !== false;
+                                return `
+                                <div class="tab-item">
+                                    <div class="tab-label">${tab}</div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" 
+                                            ${isVisible ? 'checked' : ''} 
+                                            onchange="toggleTabVisibility(${role.id}, '${tab}', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function toggleTabVisibility(roleId, tabName, isVisible) {
+            try {
+                const response = await fetch(`${API_BASE}/auth/roles/${roleId}/sidebar`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        settings: {
+                            [tabName]: isVisible
+                        }
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to update tab visibility');
+
+                showToast(`Tab visibility updated successfully`, 'success');
+            } catch (error) {
+                console.error('Error updating tab:', error);
+                showToast('Failed to update tab visibility', 'error');
+                setTimeout(() => loadRoles(), 1000); // revert visually if failed
+            }
+        }
+
+        loadRoles();
+    </script>
+</body>
+</html>

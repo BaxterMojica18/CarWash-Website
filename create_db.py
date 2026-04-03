@@ -1,45 +1,51 @@
 import psycopg2
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from dotenv import load_dotenv
-import os
-from urllib.parse import unquote
 
-load_dotenv()
-
-# Extract connection details from DATABASE_URL
-db_url = os.getenv("DATABASE_URL")
-# Format: postgresql://user:password@host:port/dbname
-
-parts = db_url.replace("postgresql://", "").split("@")
-user_pass = parts[0].split(":")
-host_port_db = parts[1].split("/")
-host_port = host_port_db[0].split(":")
-
-user = unquote(user_pass[0])
-password = unquote(user_pass[1]) if len(user_pass) > 1 else ""
-host = host_port[0]
-port = host_port[1]
-dbname = host_port_db[1]
-
+print("Testing connection to PostgreSQL...")
 try:
-    # Connect to PostgreSQL server (default postgres database)
+    # Connect to default postgres database first
     conn = psycopg2.connect(
-        user=user,
-        password=password,
-        host=host,
-        port=port,
+        user="postgres",
+        password="NewSecurePass2025!",
+        host="localhost",
+        port="5432",
         database="postgres"
     )
-    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    print("[OK] Connected to PostgreSQL server!")
+    
+    # Create carwash_db database
+    conn.autocommit = True
     cursor = conn.cursor()
     
-    # Create database
-    cursor.execute(f"CREATE DATABASE {dbname}")
-    print(f"Database '{dbname}' created successfully!")
+    # Check if database exists
+    cursor.execute("SELECT 1 FROM pg_database WHERE datname = 'carwash_db'")
+    exists = cursor.fetchone()
+    
+    if not exists:
+        print("Creating carwash_db database...")
+        cursor.execute("CREATE DATABASE carwash_db")
+        print("[OK] Database carwash_db created successfully!")
+    else:
+        print("[OK] Database carwash_db already exists")
     
     cursor.close()
     conn.close()
-except psycopg2.errors.DuplicateDatabase:
-    print(f"Database '{dbname}' already exists.")
+    
+    # Now test connection to carwash_db
+    print("\nTesting connection to carwash_db...")
+    conn = psycopg2.connect(
+        user="postgres",
+        password="NewSecurePass2025!",
+        host="localhost",
+        port="5432",
+        database="carwash_db"
+    )
+    print("[OK] Connected to carwash_db successfully!")
+    conn.close()
+    
 except Exception as e:
-    print(f"Error: {e}")
+    print(f"[ERROR] Connection failed: {e}")
+    print("\nTroubleshooting tips:")
+    print("1. Make sure PostgreSQL is installed and running")
+    print("2. Check if the password is correct")
+    print("3. Verify PostgreSQL is listening on port 5432")
+    print("4. Check Windows Services for PostgreSQL")

@@ -10,27 +10,40 @@
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
-            <span id="sidebarLogo">🚗</span>
-            <h2 id="sidebarName">CarWash</h2>
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
         </div>
         <ul>
-            <li><a href="dashboard.html">Dashboard</a></li>
-            <li><a href="invoices.html">Invoices</a></li>
-            <li><a href="products.html">Products</a></li>
-            <li><a href="services.html">Services</a></li>
-            <li><a href="reports.html">Reports</a></li>
-            <li><a href="settings.html" class="active">Settings</a></li>
-            <li><a href="login.html" onclick="logout()">Logout</a></li>
+            <!-- Tabs are dynamically generated in menu.js -->
         </ul>
     </nav>
     <main class="content">
         <header>
             <h1>Settings</h1>
         </header>
+        
+        <div class="settings-section" id="myProfileSection">
+            <h2>My Profile & Notifications</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Phone Number for SMS</label>
+                    <input type="tel" id="userPhone" placeholder="(555) 123-4567">
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <label style="margin: 0;">Enable SMS Queue Updates</label>
+                    <input type="checkbox" id="smsOptIn" style="width: 20px; height: 20px;">
+                </div>
+                <button type="submit" class="btn-primary" style="margin-top: 15px;">Save Profile Settings</button>
+            </form>
+        </div>
+        
         <div class="settings-section" id="userManagementSection" style="display: none;">
             <div class="section-header">
                 <h2>User Management</h2>
-                <button class="btn-primary" onclick="showAddUser()">+ Add User</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" onclick="window.location.href='permissions-management.html'">🔐 Manage Permissions</button>
+                    <button class="btn-primary" onclick="showAddUser()">+ Add User</button>
+                </div>
             </div>
             <div class="users-grid" id="usersGrid">
             </div>
@@ -38,7 +51,7 @@
         <div class="settings-section">
             <div class="section-header">
                 <h2>Washing Bays</h2>
-                <button class="btn-primary" onclick="showAddBay()">+ Add Bay</button>
+                <button class="btn-primary" id="addBayBtn" onclick="showAddBay()" style="display: none;">+ Add Bay</button>
             </div>
             <div class="bays-grid" id="baysGrid">
             </div>
@@ -129,9 +142,25 @@
                 </div>
                 <div style="margin-top: 20px;">
                 </div>
-                <button type="button" class="btn-primary" onclick="previewTheme()">Preview</button>
-                <button type="submit" class="btn-primary">Save as Preset</button>
+                <div class="form-group" style="display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 12px; background: linear-gradient(135deg, rgba(102,126,234,0.08), rgba(118,75,162,0.08)); border-radius: 8px; border: 1px solid rgba(102,126,234,0.15);">
+                    <input type="checkbox" id="forClient" style="width: 18px; height: 18px; accent-color: #667eea;">
+                    <label for="forClient" style="margin: 0; font-weight: 500; cursor: pointer;">🛒 Save for Client Only</label>
+                    <span style="font-size: 11px; color: #888; margin-left: auto;">When checked, this theme only applies to client-facing pages</span>
+                </div>
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button type="button" class="btn-primary" onclick="previewTheme()">Preview</button>
+                    <button type="submit" class="btn-primary">Save as Preset</button>
+                </div>
             </form>
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(102,126,234,0.15);">
+                <h3 style="margin-bottom: 12px;">🛒 Client Theme Presets</h3>
+                <p style="font-size: 13px; color: #888; margin-bottom: 12px;">These themes are only visible to client accounts. Create a different look for your customer-facing pages.</p>
+                <div class="form-group">
+                    <select id="clientPresetSelect" onchange="loadClientPreset()">
+                        <option value="">-- No Client Presets --</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="settings-section">
             <h2>Invoice Customization</h2>
@@ -152,6 +181,50 @@
             </form>
         </div>
         <div class="settings-section">
+            <div class="section-header">
+                <h2>Payment Methods</h2>
+                <button class="btn-primary" onclick="showAddPaymentMethod()">+ Add Payment Method</button>
+            </div>
+            <div class="bays-grid" id="paymentMethodsGrid">
+            </div>
+        </div>
+        <div class="settings-section" id="dashboardCustomSection" style="display: none;">
+            <h2>Dashboard Customization</h2>
+            <form id="dashboardCustomForm">
+                <div class="form-group">
+                    <label>Website Name</label>
+                    <input type="text" id="websiteName" placeholder="CarWash" required>
+                </div>
+                <div class="form-group">
+                    <label>Primary Color</label>
+                    <input type="color" id="primaryColor" value="#667eea">
+                </div>
+                <div class="form-group">
+                    <label>Background Color</label>
+                    <input type="color" id="backgroundColor" value="#f5f5f5">
+                </div>
+                <div class="form-group">
+                    <label>Sidebar Color</label>
+                    <input type="color" id="sidebarColorCustom" value="#2c3e50">
+                </div>
+                <div class="form-group">
+                    <label>Layout Type</label>
+                    <select id="layoutType">
+                        <option value="grid">Grid</option>
+                        <option value="list">List</option>
+                        <option value="compact">Compact</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Save Dashboard Settings</button>
+                <button type="button" class="btn-primary" onclick="window.location.href='edit-dashboard.html'" style="margin-left: 10px;">✏️ Edit Dashboard</button>
+            </form>
+            
+            <h3 style="margin-top: 30px;">Dashboard Modules</h3>
+            <button class="btn-primary" onclick="showAddModule()" style="margin-bottom: 15px;">+ Add Module</button>
+            <div id="modulesList"></div>
+        </div>
+        
+        <div class="settings-section">
             <h2>Business Information</h2>
             <form id="businessForm">
                 <div class="form-group">
@@ -167,6 +240,7 @@
                         <div class="form-group">
                             <label>Predefined Logos</label>
                             <select id="logoSelect" onchange="selectPredefinedLogo()">
+                                <option value="none">No Logo</option>
                                 <option value="🚗">🚗 Car</option>
                                 <option value="💧">💧 Water Drop</option>
                                 <option value="🫧">🫧 Bubbles</option>
@@ -181,11 +255,11 @@
                 </div>
                 <div class="form-group">
                     <label>Address</label>
-                    <input type="text" value="123 Main Street">
+                    <input type="text" id="businessAddress" value="123 Main Street">
                 </div>
                 <div class="form-group">
                     <label>Phone</label>
-                    <input type="tel" value="(555) 123-4567">
+                    <input type="tel" id="businessPhone" value="(555) 123-4567">
                 </div>
                 <button type="submit" class="btn-primary">Save Changes</button>
             </form>
@@ -259,6 +333,77 @@
                 </form>
             </div>
         </div>
+        <div id="addPaymentMethodModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closePaymentMethodModal()">&times;</span>
+                <h2 id="paymentMethodModalTitle">Add Payment Method</h2>
+                <form id="paymentMethodForm">
+                    <input type="hidden" id="editPaymentMethodId">
+                    <div class="form-group">
+                        <label>Payment Method Name</label>
+                        <input type="text" id="paymentMethodName" placeholder="e.g., Credit Card" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Icon (Emoji)</label>
+                        <input type="text" id="paymentMethodIcon" placeholder="💳" maxlength="2" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="paymentMethodStatus">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary" id="paymentMethodSubmitBtn">Add Payment Method</button>
+                </form>
+            </div>
+        </div>
+        <div id="addModuleModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModuleModal()">&times;</span>
+                <h2 id="moduleModalTitle">Add Dashboard Module</h2>
+                <form id="moduleForm">
+                    <input type="hidden" id="editModuleId">
+                    <div class="form-group">
+                        <label>Module Name</label>
+                        <input type="text" id="moduleName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Module Type</label>
+                        <select id="moduleType" required>
+                            <option value="stat">Statistic Card</option>
+                            <option value="chart">Chart</option>
+                            <option value="table">Table</option>
+                            <option value="list">List</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="moduleTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Width</label>
+                        <select id="moduleWidth">
+                            <option value="full">Full Width</option>
+                            <option value="half">Half Width</option>
+                            <option value="third">Third Width</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Position</label>
+                        <input type="number" id="modulePosition" value="0" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="moduleVisible" checked>
+                            Visible
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-primary" id="moduleSubmitBtn">Add Module</button>
+                </form>
+            </div>
+        </div>
+        
         <div id="addBayModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeBayModal()">&times;</span>
@@ -277,6 +422,30 @@
                         </select>
                     </div>
                     <button type="submit" class="btn-primary" id="baySubmitBtn">Add Bay</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- E-Wallet Modal -->
+        <div id="ewalletModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeEWalletModal()">&times;</span>
+                <h2>📱 E-Wallet Configuration</h2>
+                <form id="ewalletForm">
+                    <input type="hidden" id="ewalletId">
+                    <div class="form-group">
+                        <label>Account Number / Phone Number</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="ewalletAccount" placeholder="09123456789" style="flex: 1;">
+                            <button type="button" class="btn-primary" onclick="copyAccountNumber()">📋 Copy</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>QR Code Image</label>
+                        <input type="file" id="ewalletQR" accept="image/*">
+                        <div id="qrPreview" style="margin-top: 10px;"></div>
+                    </div>
+                    <button type="submit" class="btn-primary">💾 Save E-Wallet</button>
                 </form>
             </div>
         </div>

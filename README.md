@@ -2,6 +2,11 @@
 
 A full-stack web application for managing car wash operations with dashboard, invoicing, and settings management.
 
+## 📚 Documentation
+
+**For complete system updates, features, and change history, see:**
+- **[SYSTEM_UPDATES_DATA_HISTORY_LOGS.md](SYSTEM_UPDATES_DATA_HISTORY_LOGS.md)** - Comprehensive documentation of all features, updates, and changes
+
 ## Tech Stack
 
 - **Backend**: Python FastAPI
@@ -10,6 +15,7 @@ A full-stack web application for managing car wash operations with dashboard, in
 
 ## Features
 
+### Core Features
 - ✅ User Authentication (Demo & Admin accounts)
 - ✅ Dashboard with stats and reports
 - ✅ Invoice creation and PDF generation
@@ -18,6 +24,33 @@ A full-stack web application for managing car wash operations with dashboard, in
 - ✅ Sales reports with filtering (day/month/year)
 - ✅ Export reports as PDF or CSV
 - ✅ Demo account for testing
+
+### E-Commerce Features (NEW!)
+- ✅ Shopping cart for products
+- ✅ Order management system
+- ✅ Service reservation with queue
+- ✅ Client dashboard
+- ✅ Queue management for owner/admin
+- ✅ Order status tracking
+- ✅ FIFO queue system for car wash services
+
+### Permissions Management (NEW!)
+- ✅ Role-based access control (RBAC)
+- ✅ 6 granular permissions (products, locations, invoices, reports, settings, users)
+- ✅ Visual permissions management UI
+- ✅ Real-time permission toggling
+- ✅ Search and filter users
+- ✅ Admin/Owner dashboard for user management
+
+## Security Best Practices
+
+**Before deploying to production:**
+1. Change all default passwords in the database
+2. Generate a strong `SECRET_KEY` in your `.env` file
+3. Use environment variables for all sensitive data
+4. Never commit `.env` files to version control
+5. Enable HTTPS/SSL for production deployments
+6. Use strong, unique passwords for database access
 
 ## Setup Instructions
 
@@ -77,13 +110,27 @@ python test_api.py
 
 ## Login Credentials
 
-### Demo Account
+> **⚠️ SECURITY NOTE:** These are demo/test credentials for development only. 
+> Never use these passwords in production. Change all default passwords before deploying.
+
+### Demo Account (Development Only)
 - Email: `demo@carwash.com`
 - Password: `demo123`
 
-### Admin Account
+### Superadmin Account (Development Only)
+- Email: `owner@carwash.com`
+- Password: `owner123`
+- Note: Run `python create_superadmin.py` to create this account
+
+### Admin Account (Development Only)
 - Email: `admin@carwash.com`
 - Password: `admin123`
+
+### Demo Accounts (For Testing)
+- **Client:** `demo-client@carwash.com` / `demo123` (10 orders, 10 reservations max)
+- **Staff:** `demo-staff@carwash.com` / `demo123` (10 invoices max)
+- **Admin:** `demo-admin@carwash.com` / `demo123` (1 product, 1 service, 10 invoices max)
+- Note: Run `python create_demo_users.py` to create these accounts
 
 ## API Endpoints
 
@@ -136,10 +183,45 @@ Once the server is running, visit:
 ### InvoiceItem
 - id, invoice_id, product_service_id, quantity, unit_price, subtotal
 
+## E-Commerce Setup
+
+To enable the new e-commerce features:
+
+```bash
+# 1. Create new database tables
+python add_ecommerce_tables.py
+
+# 2. Update roles and permissions
+python seed_data.py
+
+# 3. Create test client user
+python create_client_user.py
+
+# 4. Start the server
+start_server.bat
+```
+
+See [ECOMMERCE_SETUP.md](ECOMMERCE_SETUP.md) for detailed documentation.
+
+## New Pages
+
+### Client Pages
+- `/shop.html` - Browse and shop products/services
+- `/cart.html` - Shopping cart
+- `/reserve.html` - Reserve car wash service
+- `/client-dashboard.html` - View orders and reservations
+
+### Owner/Admin Pages
+- `/order-management.html` - Manage customer orders
+- `/queue-management.html` - Manage service queue
+- `/permissions-management.html` - Manage user permissions (Admin/Owner only)
+
 ## Next Steps
 
+- [ ] Add email notifications for orders
+- [ ] Add real-time WebSocket for queue updates
+- [ ] Add payment gateway integration
 - [ ] Build Next.js frontend
 - [ ] Deploy to Vercel/Netlify
 - [ ] Add more dashboard charts
-- [ ] Email invoice receipts
-- [ ] Customer management
+- [ ] Customer profiles with saved vehicles

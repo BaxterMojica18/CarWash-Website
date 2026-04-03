@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Car Wash</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo">🚗</span>
+            <h2 id="sidebarName">CarWash</h2>
+        </div>
+        <ul>
+            <!-- Tabs are dynamically generated in menu.js -->
+        </ul>
+    </nav>
+    <main class="content">
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Order Management</h1>
+            <div class="profile-dropdown">
+                <div class="profile-icon" onclick="toggleProfileMenu()">
+                    <img id="profilePhoto" src="" alt="Profile">
+                </div>
+                <div class="profile-menu" id="profileMenu" style="display: none;">
+                    <div class="profile-info">
+                        <img id="menuProfilePhoto" src="" alt="Profile" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #667eea;">
+                        <div>
+                            <strong id="profileName">User</strong>
+                            <p id="profileRole" style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Role</p>
+                        </div>
+                    </div>
+                    <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
+                    <a href="#" onclick="showEditProfile(); return false;">✏️ Edit Profile</a>
+                    <a href="settings.html">⚙️ Settings</a>
+                    <a href="login.html" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
+        </header>
+        
+        <div class="filters" style="display: flex; gap: 10px; margin-bottom: 30px; padding: 15px; border-radius: 15px; flex-wrap: wrap; background: white; border: 1px solid #e0e0e0; justify-content: center;">
+            <button onclick="filterOrders('all')" class="filter-btn active" data-filter="all" style="padding: 12px 20px; border: 2px solid #667eea; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: #667eea; color: white; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">All Orders</button>
+            <button onclick="filterOrders('pending')" class="filter-btn" data-filter="pending" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Pending</button>
+            <button onclick="filterOrders('accepted')" class="filter-btn" data-filter="accepted" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Accepted</button>
+            <button onclick="filterOrders('processing')" class="filter-btn" data-filter="processing" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Processing</button>
+            <button onclick="filterOrders('completed')" class="filter-btn" data-filter="completed" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Completed</button>
+            <button onclick="filterOrders('delayed')" class="filter-btn" data-filter="delayed" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Delayed</button>
+            <button onclick="filterOrders('cancelled')" class="filter-btn" data-filter="cancelled" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Cancelled</button>
+            <select id="location-filter" class="filter-select" onchange="filterByLocation()" style="padding: 12px 20px; border: 2px solid #e0e0e0; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; color: #333; font-size: 14px; outline: none; transition: all 0.3s ease;">
+                <option value="all">All Locations</option>
+            </select>
+        </div>
+
+        <div id="orders-list"></div>
+    </main>
+    
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditProfile()">&times;</span>
+            <h2>Edit Profile</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="editName" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <input type="text" id="editRole" required>
+                </div>
+                <div class="form-group">
+                    <label>Profile Photo</label>
+                    <input type="file" id="editPhoto" accept="image/*">
+                    <div style="margin-top: 10px;">
+                        <img id="photoPreview" src="" alt="Preview" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: none; background: #667eea;">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">Save Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/profile.js"></script>
+    <script>
+        let allOrders = [];
+        let currentFilter = 'all';
+        let currentLocation = 'all';
+        let locations = [];
+
+        async function loadLocations() {
+            try {
+                const response = await fetch('http://localhost:8000/api/settings/locations', {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                locations = await response.json();
+                const select = document.getElementById('location-filter');
+                select.innerHTML = '<option value="all">All Locations</option>' +
+                    locations.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load locations:', error);
+            }
+        }
+
+        async function loadOrders() {
+            try {
+                const response = await fetch('http://localhost:8000/api/orders', {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                allOrders = await response.json();
+                renderOrders();
+            } catch (error) {
+                console.error('Failed to load orders:', error);
+                showToast('Failed to load orders', 'error');
+            }
+        }
+
+        function filterByLocation() {
+            currentLocation = document.getElementById('location-filter').value;
+            renderOrders();
+        }
+
+        function filterOrders(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === status) {
+                    btn.style.background = '#667eea';
+                    btn.style.color = 'white';
+                    btn.style.border = '2px solid #667eea';
+                    btn.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.3)';
+                } else {
+                    btn.style.background = 'white';
+                    btn.style.color = '#333';
+                    btn.style.border = '2px solid #e0e0e0';
+                    btn.style.boxShadow = 'none';
+                }
+            });
+            renderOrders();
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('orders-list');
+            let filtered = currentFilter === 'all' 
+                ? allOrders 
+                : allOrders.filter(o => o.status === currentFilter);
+            
+            if (currentLocation !== 'all') {
+                filtered = filtered.filter(o => o.location_id == currentLocation);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state">📭 No orders found</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(order => `
+                <div class="order-card">
+                    <div class="card-header">
+                        <div class="order-info">
+                            <h3>🧾 ${order.order_number}</h3>
+                            <p class="order-date">📅 ${new Date(order.created_at).toLocaleString()}</p>
+                        </div>
+                        <span class="status-badge status-${order.status}">${order.status.toUpperCase()}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="order-details">
+                            <div class="detail-item">
+                                <span class="detail-label">💰 Total:</span>
+                                <span class="detail-value">$${order.total_amount.toFixed(2)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">💳 Payment:</span>
+                                <span class="detail-value">${order.payment_method || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <div class="order-items">
+                            <p class="items-title">📦 Items:</p>
+                            <ul>
+                                ${(order.items || []).map(item => `
+                                    <li>
+                                        <span>${item.product_service?.name || 'Unknown Product'}</span>
+                                        <span class="item-qty">×${item.quantity}</span>
+                                        <span class="item-price">$${item.subtotal.toFixed(2)}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        ${order.status === 'pending' ? `
+                            <button onclick="updateStatus(${order.id}, 'accepted')" class="action-btn accept-btn">Accept</button>
+                            <button onclick="updateStatus(${order.id}, 'cancelled')" class="action-btn reject-btn">Reject</button>
+                        ` : ''}
+                        ${order.status === 'accepted' ? `
+                            <button onclick="updateStatus(${order.id}, 'processing')" class="action-btn process-btn">Start Processing</button>
+                            <button onclick="updateStatus(${order.id}, 'cancelled')" class="action-btn reject-btn">Cancel</button>
+                        ` : ''}
+                        ${order.status === 'processing' ? `
+                            <button onclick="updateStatus(${order.id}, 'completed')" class="action-btn complete-btn">Mark Complete</button>
+                            <button onclick="updateStatus(${order.id}, 'delayed')" class="action-btn" style="background: linear-gradient(135deg, #f0932b 0%, #e67e22 100%);">Delay</button>
+                        ` : ''}
+                        ${order.status === 'delayed' ? `
+                            <button onclick="updateStatus(${order.id}, 'processing')" class="action-btn process-btn">Resume</button>
+                            <button onclick="updateStatus(${order.id}, 'cancelled')" class="action-btn reject-btn">Cancel</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateStatus(orderId, status) {
+            try {
+                await fetch(`http://localhost:8000/api/orders/${orderId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+                showToast('Order status updated!', 'success');
+                loadOrders();
+            } catch (error) {
+                console.error('Failed to update status:', error);
+                showToast('Failed to update status', 'error');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        loadLocations();
+        loadOrders();
+        setInterval(loadOrders, 30000);
+    </script>
+
+    <style>
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.4);
+        }
+        .order-card {
+            background: white;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .order-info h3 {
+            color: white;
+            margin: 0 0 8px 0;
+            font-size: 1.3rem;
+        }
+        .order-date {
+            color: rgba(255,255,255,0.9);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-accepted { background: #d1ecf1; color: #0c5460; }
+        .status-processing { background: #cce5ff; color: #004085; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-delayed { background: #fff8e1; color: #f57c00; }
+        .card-body {
+            padding: 25px;
+        }
+        .order-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .detail-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .order-items {
+            margin-top: 20px;
+        }
+        .items-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        .order-items ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .order-items li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .item-qty {
+            color: #6c757d;
+            font-weight: 600;
+        }
+        .item-price {
+            color: #667eea;
+            font-weight: bold;
+        }
+        .card-actions {
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+        .accept-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        .accept-btn:hover {
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+        .reject-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        .reject-btn:hover {
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+        .process-btn {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        }
+        .process-btn:hover {
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+        }
+        .complete-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        .complete-btn:hover {
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+        .empty-state {
+            text-align: center;
+            color: #666;
+            font-size: 1.5rem;
+            padding: 60px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #location-filter:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+        #location-filter:focus {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</body>
+</html>
