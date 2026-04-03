@@ -6,9 +6,10 @@ from urllib.parse import unquote
 import os
 from pathlib import Path
 
-# Force load from the correct .env file
+# Load .env only in local development (not on Render/production)
 env_path = Path(__file__).parent.parent / '.env'
-load_dotenv(dotenv_path=env_path, override=True)
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path, override=False)
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL and '%' in DATABASE_URL:
     parts = DATABASE_URL.split('@')
