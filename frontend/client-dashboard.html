@@ -78,6 +78,16 @@
             <h2>Reservation History</h2>
             <div id="reservation-history"></div>
         </div>
+
+        <div class="table-container" style="margin-bottom: 30px;">
+            <h2>🏢 Join a Business</h2>
+            <p style="color: #666; margin-bottom: 15px;">Enter the business code provided by your car wash owner to link your account.</p>
+            <div id="currentBusinessInfo" style="margin-bottom: 15px;"></div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="businessCodeInput" placeholder="Enter business code..." style="flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; min-width: 200px;">
+                <button onclick="joinBusiness()" class="btn-primary" style="padding: 12px 24px;">Join Business</button>
+            </div>
+        </div>
     </div>
 
     <script src="/js/api.js"></script>
@@ -209,12 +219,47 @@
             window.location.href = '/login.html';
         }
 
+        async function loadCurrentBusiness() {
+            try {
+                const res = await fetch(`${API_BASE}/auth/me/permissions`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                const data = await res.json();
+                const box = document.getElementById('currentBusinessInfo');
+                if (data.business_number) {
+                    box.innerHTML = `<p style="color: #28a745; font-weight: 600;">✅ Currently linked to business: <strong>${data.business_number}</strong></p>`;
+                } else {
+                    box.innerHTML = `<p style="color: #999;">⚠️ Not linked to any business yet.</p>`;
+                }
+            } catch(e) {}
+        }
+
+        async function joinBusiness() {
+            const code = document.getElementById('businessCodeInput').value.trim();
+            if (!code) { showToast('Please enter a business code', 'error'); return; }
+            try {
+                const res = await fetch(`${API_BASE}/settings/join-business`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ business_code: code })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail);
+                showToast('Successfully joined the business!', 'success');
+                document.getElementById('businessCodeInput').value = '';
+                loadCurrentBusiness();
+            } catch(e) {
+                showToast(e.message || 'Failed to join business', 'error');
+            }
+        }
+
         const userEmail = localStorage.getItem('userEmail') || 'Client';
         const clientName = userEmail.split('@')[0].charAt(0).toUpperCase() + userEmail.split('@')[0].slice(1);
         document.getElementById('userEmail').textContent = userEmail;
         document.getElementById('welcomeMessage').textContent = `Welcome back, ${clientName}!`;
 
         loadDashboard();
+        loadCurrentBusiness();
         setInterval(loadDashboard, 30000);
     </script>
 </body>

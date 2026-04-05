@@ -45,6 +45,14 @@
                     <button class="btn-primary" onclick="showAddUser()">+ Add User</button>
                 </div>
             </div>
+            <div id="businessCodeBox" style="background: #f0f4ff; border: 2px dashed #667eea; border-radius: 12px; padding: 20px; margin-bottom: 25px; display: none;">
+                <p style="margin: 0 0 10px 0; font-weight: 600; color: #2c3e50;">🏢 Business / Company Code</p>
+                <p style="margin: 0 0 12px 0; font-size: 13px; color: #666;">Share this code with staff, admins, and clients so they can join your business.</p>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="text" id="businessCodeDisplay" readonly style="flex: 1; padding: 10px 14px; border: 2px solid #667eea; border-radius: 8px; font-size: 16px; font-weight: 700; letter-spacing: 2px; background: white; color: #667eea;">
+                    <button onclick="copyBusinessCode()" class="btn-primary" style="white-space: nowrap;">📋 Copy Code</button>
+                </div>
+            </div>
             <div class="users-grid" id="usersGrid">
             </div>
         </div>
@@ -454,5 +462,31 @@
     <script src="js/menu.js"></script>
     <script src="js/toast.js"></script>
     <script src="js/settings.js"></script>
+    <script>
+        async function loadBusinessCode() {
+            try {
+                const res = await fetch(`${API_BASE}/settings/business-code`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                document.getElementById('businessCodeDisplay').value = data.business_code;
+                document.getElementById('businessCodeBox').style.display = 'block';
+            } catch (e) {}
+        }
+
+        function copyBusinessCode() {
+            const code = document.getElementById('businessCodeDisplay').value;
+            navigator.clipboard.writeText(code).then(() => showToast('Business code copied!', 'success'));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const perms = JSON.parse(localStorage.getItem('user_permissions') || '[]');
+            const roles = JSON.parse(localStorage.getItem('user_roles') || '[]');
+            if (roles.includes('superadmin') || roles.includes('admin') || roles.includes('owner')) {
+                loadBusinessCode();
+            }
+        });
+    </script>
 </body>
 </html>
