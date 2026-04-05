@@ -92,7 +92,8 @@ function normalizeSidebarIcons() {
         'reports': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>',
         'settings': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
         'logout': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
-        'tabs': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>'
+        'tabs': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>',
+        'permissions': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
     };
 
     const links = document.querySelectorAll('.sidebar ul li a');
@@ -112,6 +113,7 @@ function normalizeSidebarIcons() {
         else if (lowerText.includes('settings')) key = 'settings';
         else if (lowerText.includes('logout')) key = 'logout';
         else if (lowerText.includes('sidebar tabs')) key = 'tabs';
+        else if (lowerText.includes('permissions')) key = 'permissions';
 
         if (key && icons[key]) {
             const iconSpan = link.querySelector('.icon');
@@ -176,12 +178,18 @@ async function loadBranding() {
                 
                 // Real-time update UI
                 const nameElement = document.getElementById('sidebarName');
-                if (nameElement) nameElement.textContent = business.business_name;
+                if (nameElement) nameElement.textContent = business.business_name || '';
                 
                 const logoElement = document.getElementById('sidebarLogo');
                 if (logoElement) {
                     updateSidebarLogo(logoElement, business.logo, business.logo_type);
                 }
+            } else {
+                // No business — hide logo and name
+                const nameElement = document.getElementById('sidebarName');
+                if (nameElement) nameElement.textContent = '';
+                const logoElement = document.getElementById('sidebarLogo');
+                if (logoElement) { logoElement.innerHTML = ''; logoElement.style.display = 'none'; }
             }
 
             const activeTheme = await API.settings.getActiveTheme();
@@ -201,8 +209,8 @@ function applyBrandingFromStorage() {
     const savedTheme = localStorage.getItem('selectedTheme') || 'default';
     
     const nameElement = document.getElementById('sidebarName');
-    if (nameElement && businessName) {
-        nameElement.textContent = businessName;
+    if (nameElement) {
+        nameElement.textContent = businessName || '';
     }
     
     const logoElement = document.getElementById('sidebarLogo');
@@ -222,15 +230,11 @@ function applyBrandingFromStorage() {
 }
 
 function updateSidebarLogo(el, logo, logoType) {
-    if (logoType === 'none') {
+    if (!logo || !logoType || logoType === 'none') {
         el.innerHTML = '';
+        el.style.display = 'none';
         return;
     }
-    
-    if (!logo || !logoType) {
-        // Default car SVG logo for fresh users
-        el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 32px; height: 32px; transition: transform 0.3s ease;"><path d="M14 16H9m10 0h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11M5 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>`;
-    } else {
         if (logoType === 'emoji') {
             el.textContent = logo;
             el.style.fontSize = '32px';
