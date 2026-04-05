@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqladmin import Admin, ModelView
 from app.database import create_tables, engine, User, Location, ProductService, Invoice, Order, Reservation
-from app.routers import auth, settings, invoices, reports, cart, orders, reservations, client, dashboard, payment_methods
+from app.routers import auth, settings, invoices, reports, cart, orders, reservations, client, dashboard, payment_methods, payments
 import os
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -84,6 +84,7 @@ app.include_router(reservations.router, prefix="/api/reservations", tags=["Reser
 app.include_router(client.router, prefix="/api/client", tags=["Client"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
 app.include_router(payment_methods.router, prefix="/api/payment-methods", tags=["Payment Methods"])
+app.include_router(payments.router, prefix="/api/payments", tags=["Stripe Payments"])
 
 @app.get("/api/health")
 def health_check():

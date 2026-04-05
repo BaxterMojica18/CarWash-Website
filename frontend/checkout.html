@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Car Wash</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <button onclick="window.location.href='/cart.html'" class="back-btn">← Back to Cart</button>
+            <h1>💳 Secure Checkout</h1>
+        </div>
+
+        <div class="checkout-grid">
+            <!-- Order Summary -->
+            <div class="order-summary-card">
+                <h2>Order Summary</h2>
+                <div id="summary-items"></div>
+                <div class="summary-total">
+                    <span>Total</span>
+                    <span id="summary-total">$0.00</span>
+                </div>
+                <div id="demo-notice" style="display:none; margin-top:15px; padding:12px; background:#fff3cd; border-radius:8px; border-left:4px solid #ffc107;">
+                    <p style="margin:0; font-size:13px; color:#856404;">
+                        🧪 <strong>Demo Mode</strong> — Use test card: <code>4242 4242 4242 4242</code><br>
+                        Expiry: any future date &nbsp;|&nbsp; CVC: any 3 digits &nbsp;|&nbsp; ZIP: any 5 digits
+                    </p>
+                </div>
+            </div>
+
+            <!-- Payment Form -->
+            <div class="payment-card">
+                <h2>Payment Details</h2>
+                <form id="payment-form">
+                    <div class="form-group">
+                        <label>Card Information</label>
+                        <div id="card-element"></div>
+                        <div id="card-errors" style="color:#dc3545; font-size:13px; margin-top:8px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Name on Card</label>
+                        <input type="text" id="card-name" placeholder="John Doe" required>
+                    </div>
+                    <button type="submit" id="pay-btn" class="pay-btn">
+                        <span id="pay-btn-text">Pay Now</span>
+                        <span id="pay-spinner" style="display:none;">Processing...</span>
+                    </button>
+                </form>
+                <div class="secure-badge">
+                    🔒 Payments secured by <strong>Stripe</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/toast.js"></script>
+    <script>
+        let stripe, cardElement, clientSecret, totalAmount;
+
+        async function init() {
+            const token = getToken();
+            if (!token) { window.location.href = '/login.html'; return; }
+
+            // Load cart summary
+            const cart = await fetch(`${API_BASE}/cart`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json());
+
+            if (!cart.length) { window.location.href = '/cart.html'; return; }
+
+            totalAmount = cart.reduce((s, i) => s + i.quantity * i.price_at_add, 0);
+            document.getElementById('summary-total').textContent = `$${totalAmount.toFixed(2)}`;
+            document.getElementById('summary-items').innerHTML = cart.map(i => `
+                <div class="summary-item">
+                    <span>${i.product_service.name} ×${i.quantity}</span>
+                    <span>$${(i.quantity * i.price_at_add).toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            // Get Stripe config
+            const config = await fetch(`${API_BASE}/payments/config`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json());
+
+            stripe = Stripe(config.publishable_key);
+
+            // Create PaymentIntent
+            const intentRes = await fetch(`${API_BASE}/payments/create-payment-intent`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ payment_method: 'card' })
+            }).then(r => r.json());
+
+            clientSecret = intentRes.client_secret;
+            document.getElementById('pay-btn-text').textContent = `Pay $${intentRes.amount.toFixed(2)}`;
+
+            // Show demo notice for demo accounts
+            if (intentRes.is_demo) {
+                document.getElementById('demo-notice').style.display = 'block';
+            }
+
+            // Mount Stripe Elements
+            const elements = stripe.elements();
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#2c3e50',
+                        fontFamily: "'Segoe UI', sans-serif",
+                        '::placeholder': { color: '#aab7c4' }
+                    },
+                    invalid: { color: '#dc3545' }
+                }
+            });
+            cardElement.mount('#card-element');
+            cardElement.on('change', e => {
+                document.getElementById('card-errors').textContent = e.error ? e.error.message : '';
+            });
+        }
+
+        document.getElementById('payment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('pay-btn');
+            btn.disabled = true;
+            document.getElementById('pay-btn-text').style.display = 'none';
+            document.getElementById('pay-spinner').style.display = 'inline';
+
+            const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: { name: document.getElementById('card-name').value }
+                }
+            });
+
+            if (error) {
+                document.getElementById('card-errors').textContent = error.message;
+                btn.disabled = false;
+                document.getElementById('pay-btn-text').style.display = 'inline';
+                document.getElementById('pay-spinner').style.display = 'none';
+                return;
+            }
+
+            if (paymentIntent.status === 'succeeded') {
+                // Create order after successful payment
+                const token = getToken();
+                await fetch(`${API_BASE}/orders/`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ payment_method: 'stripe' })
+                });
+                showToast('Payment successful! Order placed.', 'success');
+                setTimeout(() => window.location.href = '/client-dashboard.html?payment=success', 1500);
+            }
+        });
+
+        init();
+    </script>
+
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .checkout-container { max-width: 1000px; margin: 0 auto; padding: 30px 20px; }
+        .checkout-header {
+            display: flex; align-items: center; gap: 20px;
+            margin-bottom: 30px; flex-wrap: wrap;
+        }
+        .checkout-header h1 { color: white; margin: 0; font-size: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .back-btn {
+            background: white; border: none; padding: 10px 20px;
+            border-radius: 50px; cursor: pointer; font-size: 15px;
+            font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover { transform: translateY(-2px); }
+        .checkout-grid {
+            display: grid; grid-template-columns: 1fr 1.4fr;
+            gap: 25px;
+        }
+        .order-summary-card, .payment-card {
+            background: white; border-radius: 20px;
+            padding: 30px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        h2 { margin: 0 0 20px 0; color: #2c3e50; font-size: 1.3rem; }
+        .summary-item {
+            display: flex; justify-content: space-between;
+            padding: 10px 0; border-bottom: 1px solid #f0f0f0;
+            font-size: 15px; color: #555;
+        }
+        .summary-total {
+            display: flex; justify-content: space-between;
+            padding: 15px 0 0 0; font-size: 1.2rem;
+            font-weight: 700; color: #2c3e50;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block; margin-bottom: 8px;
+            font-weight: 600; color: #2c3e50; font-size: 14px;
+        }
+        .form-group input {
+            width: 100%; padding: 12px 15px;
+            border: 2px solid #e0e0e0; border-radius: 8px;
+            font-size: 15px; transition: border-color 0.3s;
+        }
+        .form-group input:focus { outline: none; border-color: #667eea; }
+        #card-element {
+            padding: 12px 15px; border: 2px solid #e0e0e0;
+            border-radius: 8px; background: white;
+            transition: border-color 0.3s;
+        }
+        #card-element.StripeElement--focus { border-color: #667eea; }
+        .pay-btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer;
+            transition: all 0.3s ease; margin-top: 10px;
+        }
+        .pay-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.4); }
+        .pay-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .secure-badge {
+            text-align: center; margin-top: 15px;
+            font-size: 13px; color: #888;
+        }
+        @media (max-width: 768px) {
+            .checkout-grid { grid-template-columns: 1fr; }
+            .checkout-header h1 { font-size: 1.5rem; }
+        }
+    </style>
+</body>
+</html>

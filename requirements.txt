@@ -11,3 +11,4 @@ reportlab
 requests
 sqladmin
 firebase-admin
+stripe
