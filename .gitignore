@@ -50,6 +50,8 @@ docker_logs.txt
 # Database
 *.db
 *.sqlite3
+*.dump
+*.sql
 
 # Firebase credentials
 app/firebase-credentials.json
