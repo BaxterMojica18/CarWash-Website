@@ -1124,3 +1124,121 @@ For issues or questions:
 - ✅ Email notifications for all order/reservation events (client + owner)
 - ✅ Owner email includes action button linking to order/queue management page
 - ✅ Production deployment working on Vercel (frontend) + Render (backend + PostgreSQL)
+
+---
+
+## Latest Updates (April 5, 2026 — Session 4)
+
+> **Version:** 6.0.0 | **Branch:** `feature/stripe-payment-integration` → merged to `main`
+
+---
+
+### 💳 Stripe Payment Integration
+**Status:** ✅ Completed
+
+#### Features:
+- New `app/routers/payments.py` with 4 endpoints:
+  - `GET /api/payments/config` — returns Stripe publishable key to frontend
+  - `POST /api/payments/create-payment-intent` — creates PaymentIntent from cart total
+  - `POST /api/payments/create-checkout-session` — creates Stripe Checkout Session
+  - `POST /api/payments/webhook` — handles `checkout.session.completed` and `payment_intent.succeeded` to auto-create order
+- New `frontend/checkout.html` — full Stripe Elements checkout page with:
+  - Separate card number, expiry, CVC fields (individual Stripe Elements iframes)
+  - Name on Card + ZIP regular inputs
+  - Test Mode panel always visible with **📋 Copy** buttons for each test card field
+  - **⚡ Fill Name & ZIP** button auto-fills those fields
+  - Error handling with visible error banner if Stripe keys not configured
+  - On success → creates order via `/api/orders/` then redirects to client dashboard
+- `frontend/cart.html` — added **"💳 Pay with Card (Stripe)"** button alongside existing cash/QR checkout
+- `requirements.txt` — added `stripe`
+- `docker-compose.yml` — added `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` env vars
+- `.env.example` — added Stripe env var documentation
+- Demo accounts show test card panel: `4242 4242 4242 4242` | `12/29` | `123` | `12345`
+
+#### Files Created/Modified:
+- ✅ `app/routers/payments.py` — NEW Stripe router
+- ✅ `app/main.py` — registered payments router, added `Request` import, added `/api/contact-sales` endpoint
+- ✅ `frontend/checkout.html` — NEW Stripe checkout page
+- ✅ `frontend/cart.html` — Stripe pay button + dashboard back button
+- ✅ `requirements.txt` — added `stripe`
+- ✅ `docker-compose.yml` — Stripe env vars added
+- ✅ `.env.example` — Stripe keys documented
+
+---
+
+### 📦 Client Orders Page & Sidebar
+**Status:** ✅ Completed
+
+#### Features:
+- New `frontend/client-orders.html` — dedicated orders page for clients with:
+  - Filter buttons: All, Pending, Accepted, Processing, Completed, Cancelled
+  - Order cards showing number, date, status badge, total, payment method, itemized list
+  - Auto-refreshes every 30 seconds
+- Added **My Orders** tab to `CLIENT_TABS` in `menu.js`
+- Added dedicated SVG icons for all client sidebar tabs:
+  - Dashboard — grid squares
+  - My Orders — clipboard with lines
+  - Shop — shopping bag
+  - Cart — shopping cart
+  - Reserve — calendar
+  - Logout — exit door
+
+#### Files Modified:
+- ✅ `frontend/client-orders.html` — NEW client orders page
+- ✅ `frontend/js/menu.js` — My Orders tab added, shop/cart/reserve/myorders icons added
+
+---
+
+### 📧 Demo Notification Email & Settings
+**Status:** ✅ Completed
+
+#### Features:
+- Default fallback notification email: `baxterdavid.mojica@gmail.com`
+- Configurable via `DEMO_NOTIFICATION_EMAIL` env var
+- Owner/superadmin can edit it in **Settings → Notification Email** section
+- All orders/reservations from unlinked accounts now always send owner alerts to fallback email
+- `POST /api/settings/notification-email` endpoint saves it
+
+#### Files Modified:
+- ✅ `app/email_service.py` — added `DEMO_NOTIFICATION_EMAIL` constant
+- ✅ `app/routers/orders.py` — fallback to `DEMO_NOTIFICATION_EMAIL`
+- ✅ `app/routers/reservations.py` — fallback to `DEMO_NOTIFICATION_EMAIL`
+- ✅ `app/routers/settings.py` — added `notification-email` endpoint
+- ✅ `frontend/settings.html` — Notification Email section (owner/superadmin only)
+
+---
+
+### 🌐 Landing Page Updates
+**Status:** ✅ Completed
+
+#### Features:
+- One-Time Payment card: price hidden, replaced with **"Contact Sales"** text and **"Get a Quote"** button
+- Contact Sales modal with fields: Full Name, Email, Business Name, Phone, Message
+- On submit → `POST /api/contact-sales` → sends styled HTML email to `baxterdavid.mojica@gmail.com`
+- Email includes all form fields with reply-to hint
+- Success message shown, modal auto-closes after 2.5 seconds
+- Clipboard fallback for browsers blocking `navigator.clipboard`
+- Updated pricing: Lite ₱990/mo, Plus ₱1,990/mo, Pro ₱2,990/mo
+- Fixed `/month` overflow on Pro card by reducing price font size to 48px and using flexbox
+
+#### Files Modified:
+- ✅ `frontend/index.html` — Contact Sales modal, pricing updates
+- ✅ `frontend/css/landing.css` — price flexbox fix
+- ✅ `app/main.py` — `/api/contact-sales` endpoint
+
+---
+
+## Change Log
+
+### Version 6.0.0 (April 5, 2026)
+- ✅ Stripe payment integration with test card support
+- ✅ Client orders page with filter buttons and status tracking
+- ✅ My Orders tab added to client sidebar with dedicated icon
+- ✅ All client sidebar tabs now have distinct SVG icons
+- ✅ Demo notification email fallback (`baxterdavid.mojica@gmail.com`)
+- ✅ Owner can edit notification email in Settings
+- ✅ Landing page: One-Time Payment shows "Contact Sales" instead of price
+- ✅ Contact Sales modal sends email inquiry to owner
+- ✅ Pricing updated: Lite ₱990, Plus ₱1,990, Pro ₱2,990
+- ✅ Cart page: added Dashboard back button
+- ✅ Fixed `/month` text overflow on Pro pricing card

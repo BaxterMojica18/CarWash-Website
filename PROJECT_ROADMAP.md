@@ -344,3 +344,48 @@ REDIS_URL=redis://localhost:6379/0
 | Real-time WebSockets for Queue | ⬜ Pending |
 | Payment Gateway Integration | ⬜ Pending |
 | SMS Notifications (Twilio) | ⬜ Pending |
+
+
+---
+
+## ✅ Completed in Session 4 (April 5, 2026)
+
+### 💳 Stripe Payments
+- [x] Stripe PaymentIntent integration with card Elements
+- [x] Separate card number / expiry / CVC fields
+- [x] Test card panel with copy buttons on checkout page
+- [x] Webhook auto-creates order on payment success
+- [x] Demo accounts show test card details
+- [x] Cart page has "Pay with Card (Stripe)" button
+
+### 📦 Client Orders
+- [x] Dedicated `/client-orders.html` page with filter buttons
+- [x] My Orders tab in client sidebar
+- [x] Distinct SVG icons for all client sidebar tabs (Shop, Cart, Reserve, My Orders)
+
+### 📧 Notifications
+- [x] Demo notification email fallback — `baxterdavid.mojica@gmail.com`
+- [x] Owner can edit notification email in Settings
+- [x] All unlinked accounts send alerts to fallback email
+
+### 🌐 Landing Page
+- [x] One-Time Payment: price hidden, "Contact Sales" + "Get a Quote" button
+- [x] Contact Sales modal with email inquiry form
+- [x] Pricing updated: Lite ₱990, Plus ₱1,990, Pro ₱2,990
+- [x] Fixed `/month` overflow on Pro card
+
+---
+
+## 🔄 Updated Phase 2 Status (April 5, 2026 — Session 4)
+
+| Feature | Status |
+|---------|--------|
+| Stripe Payment Integration | ✅ Done |
+| Client Orders Page | ✅ Done |
+| Client Sidebar Icons | ✅ Done |
+| Demo Notification Email | ✅ Done |
+| Contact Sales Modal | ✅ Done |
+| Landing Page Pricing Update | ✅ Done |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| SMS Notifications (Twilio) | ⬜ Pending |
+| React + Next.js Frontend | ⬜ Pending |
