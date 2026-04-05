@@ -5,6 +5,7 @@ from fastapi.responses import FileResponse
 from sqladmin import Admin, ModelView
 from app.database import create_tables, engine, User, Location, ProductService, Invoice, Order, Reservation
 from app.routers import auth, settings, invoices, reports, cart, orders, reservations, client, dashboard, payment_methods, payments
+from app.email_service import send_email
 import os
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -89,6 +90,46 @@ app.include_router(payments.router, prefix="/api/payments", tags=["Stripe Paymen
 @app.get("/api/health")
 def health_check():
     return {"status": "ok", "message": "API is running"}
+
+
+@app.post("/api/contact-sales")
+async def contact_sales(request: Request):
+    from pydantic import BaseModel
+    data = await request.json()
+    name = data.get("name", "")
+    email = data.get("email", "")
+    business = data.get("business", "")
+    phone = data.get("phone", "")
+    message = data.get("message", "")
+
+    html = f"""
+    <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#f5f5f5;padding:30px;">
+        <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:25px;border-radius:12px 12px 0 0;text-align:center;">
+            <h1 style="color:white;margin:0;font-size:22px;">💼 New One-Time Payment Inquiry</h1>
+        </div>
+        <div style="background:white;padding:30px;border-radius:0 0 12px 12px;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+            <table style="width:100%;border-collapse:collapse;">
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;color:#555;width:140px;">Name</td><td style="padding:10px 0;border-bottom:1px solid #eee;color:#2c3e50;">{name}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;color:#555;">Email</td><td style="padding:10px 0;border-bottom:1px solid #eee;"><a href="mailto:{email}" style="color:#667eea;">{email}</a></td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;color:#555;">Business</td><td style="padding:10px 0;border-bottom:1px solid #eee;color:#2c3e50;">{business}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;color:#555;">Phone</td><td style="padding:10px 0;border-bottom:1px solid #eee;color:#2c3e50;">{phone}</td></tr>
+                <tr><td style="padding:10px 0;font-weight:600;color:#555;vertical-align:top;">Message</td><td style="padding:10px 0;color:#2c3e50;">{message or 'No message provided.'}</td></tr>
+            </table>
+            <div style="margin-top:20px;padding:15px;background:#f0f4ff;border-radius:8px;border-left:4px solid #667eea;">
+                <p style="margin:0;font-size:13px;color:#667eea;">Reply directly to <strong>{email}</strong> to follow up with this lead.</p>
+            </div>
+        </div>
+        <p style="text-align:center;color:#aaa;font-size:12px;margin-top:15px;">&copy; CarWash Management System</p>
+    </div>
+    """
+
+    send_email(
+        "baxterdavid.mojica@gmail.com",
+        f"💼 New Sales Inquiry from {name} — {business}",
+        html,
+        f"New inquiry from {name} ({email})\nBusiness: {business}\nPhone: {phone}\nMessage: {message}"
+    )
+    return {"message": "Thank you! We'll be in touch shortly."}
 
 # Serve frontend static files BEFORE catch-all routes
 app.mount("/css", StaticFiles(directory="frontend/css"), name="css")

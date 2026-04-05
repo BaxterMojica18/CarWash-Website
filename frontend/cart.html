@@ -10,7 +10,10 @@
     <div class="cart-container">
         <div class="cart-header">
             <h1>🛒 Shopping Cart</h1>
-            <button onclick="window.location.href='/shop.html'" class="back-btn">← Continue Shopping</button>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button onclick="window.location.href='/client-dashboard.html'" class="back-btn">← Dashboard</button>
+                <button onclick="window.location.href='/shop.html'" class="back-btn">🛍️ Continue Shopping</button>
+            </div>
         </div>
         
         <div id="cart-items"></div>
