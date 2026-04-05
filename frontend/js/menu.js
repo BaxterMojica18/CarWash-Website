@@ -235,12 +235,11 @@ function updateSidebarLogo(el, logo, logoType) {
         el.style.display = 'none';
         return;
     }
-        if (logoType === 'emoji') {
-            el.textContent = logo;
-            el.style.fontSize = '32px';
-        } else if (logoType === 'image') {
-            el.innerHTML = `<img src="${logo}" alt="Logo" style="width: 40px; height: 40px; border-radius: 5px; object-fit: contain; transition: transform 0.3s ease;">`;
-        }
+    if (logoType === 'emoji') {
+        el.textContent = logo;
+        el.style.fontSize = '32px';
+    } else if (logoType === 'image') {
+        el.innerHTML = `<img src="${logo}" alt="Logo" style="width: 40px; height: 40px; border-radius: 5px; object-fit: contain; transition: transform 0.3s ease;">`;
     }
     el.style.display = 'block';
 }
