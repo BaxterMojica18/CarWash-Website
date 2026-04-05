@@ -1,26 +1,21 @@
 import firebase_admin
 from firebase_admin import credentials, auth
 import os
-
-# Initialize Firebase Admin SDK
-# For development/local testing, you can download a service account JSON file
-# from the Firebase Console (Project Settings > Service Accounts)
-# and set GOOGLE_APPLICATION_CREDENTIALS in your .env
-# If deployed on GCP, it will automatically use default credentials.
+import json
 
 try:
     if not firebase_admin._apps:
-        # If GOOGLE_APPLICATION_CREDENTIALS is not set, this will attempt to use
-        # Application Default Credentials (ADC) or run unauthenticated.
-        # The Firebase Admin SDK requires a Service Account JSON for full token verification
-        # outside of Google Cloud.
+        firebase_creds_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
         cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "app/firebase-credentials.json")
-        if os.path.exists(cred_path):
+
+        if firebase_creds_json:
+            cred = credentials.Certificate(json.loads(firebase_creds_json))
+            firebase_admin.initialize_app(cred)
+        elif os.path.exists(cred_path):
             cred = credentials.Certificate(cred_path)
             firebase_admin.initialize_app(cred)
         else:
-            print("ERROR: firebase-credentials.json not found! Firebase Auth will fail.")
-            # Explicitly provide the project ID as a last resort
+            print("ERROR: No Firebase credentials found!")
             firebase_admin.initialize_app(options={'projectId': 'carwash-mgmt-system-41402'})
 except Exception as e:
     print(f"Warning: Failed to initialize Firebase Admin SDK: {e}")
