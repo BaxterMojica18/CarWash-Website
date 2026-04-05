@@ -1,12 +1,13 @@
 # 🚗 Car Wash Management System
 
-> **Version 2.0** — Full-stack car wash management platform with e-commerce, multi-tenant support, and live production deployment.
+> **Version 2.0** — Full-stack car wash management platform with e-commerce, multi-tenant support, Stripe payments, and live production deployment.
 
 [![Frontend](https://img.shields.io/badge/Frontend-Vercel-black?logo=vercel)](https://car-wash-website-khaki.vercel.app)
 [![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render)](https://carwash-website-jzr2.onrender.com)
 [![Database](https://img.shields.io/badge/Database-PostgreSQL-336791?logo=postgresql)](https://render.com)
 [![Auth](https://img.shields.io/badge/Auth-Firebase-FFCA28?logo=firebase)](https://firebase.google.com)
 [![Email](https://img.shields.io/badge/Email-Gmail_SMTP-EA4335?logo=gmail)](https://gmail.com)
+[![Payments](https://img.shields.io/badge/Payments-Stripe-635BFF?logo=stripe)](https://stripe.com)
 
 ---
 
@@ -19,6 +20,7 @@
 | Database | Render PostgreSQL | Singapore region |
 | Google Login | Firebase Auth | `carwash-mgmt-system-41402` |
 | Email | Gmail SMTP | Transactional emails |
+| Payments | Stripe | Test mode (card payments) |
 
 ---
 
@@ -39,6 +41,7 @@
 | Frontend | HTML / CSS / JavaScript |
 | Authentication | JWT + Google Firebase Auth |
 | Email | Gmail SMTP |
+| Payments | Stripe (card payments + webhooks) |
 | Containerization | Docker + Docker Compose |
 | Frontend Hosting | Vercel |
 | Backend Hosting | Render |
@@ -73,6 +76,20 @@
 - ✅ Client dashboard (orders, reservations, history)
 - ✅ Queue management for owner/admin
 - ✅ Delayed and cancelled order/reservation statuses
+
+### 💳 Stripe Payments *(New in V2)*
+- ✅ Stripe Elements card payment form (separate number/expiry/CVC fields)
+- ✅ PaymentIntent API integration
+- ✅ Webhook auto-creates order on successful payment
+- ✅ Test mode with copy buttons for test card details
+- ✅ "Pay with Card" button in cart alongside cash/QR options
+- ✅ Dedicated `/checkout.html` page
+
+### 📦 Client Orders Page *(New in V2)*
+- ✅ Dedicated `/client-orders.html` with filter buttons (All, Pending, Accepted, Processing, Completed, Cancelled)
+- ✅ My Orders tab in client sidebar with clipboard icon
+- ✅ Distinct SVG icons for all client sidebar tabs (Shop, Cart, Reserve, My Orders)
+- ✅ Auto-refreshes every 30 seconds
 
 ### 📧 Email Notifications *(New in V2)*
 - ✅ Client receives confirmation email when order is placed
@@ -227,6 +244,15 @@ uvicorn app.main:app --reload --port 8000
 | GET | `/api/reservations/` | List reservations |
 | PATCH | `/api/reservations/{id}/status` | Update reservation status |
 
+### Payments
+| Method | Endpoint | Description |
+|--------|----------|--------------|
+| GET | `/api/payments/config` | Get Stripe publishable key |
+| POST | `/api/payments/create-payment-intent` | Create PaymentIntent from cart |
+| POST | `/api/payments/create-checkout-session` | Create Stripe Checkout Session |
+| POST | `/api/payments/webhook` | Stripe webhook handler |
+| POST | `/api/contact-sales` | Send sales inquiry email |
+
 ### Other
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -243,9 +269,11 @@ uvicorn app.main:app --reload --port 8000
 
 ### Client Pages
 - `/shop.html` — Browse products and services
-- `/cart.html` — Shopping cart and checkout
+- `/cart.html` — Shopping cart and checkout (cash/QR or Stripe card)
+- `/checkout.html` — Stripe card payment page
 - `/reserve.html` — Reserve car wash service
 - `/client-dashboard.html` — Orders, reservations, join business
+- `/client-orders.html` — View all orders with status tracking
 
 ### Owner/Admin Pages
 - `/dashboard.html` — Stats and revenue charts
@@ -262,10 +290,12 @@ uvicorn app.main:app --reload --port 8000
 ## 🗺️ Next Implementations
 
 ### 💳 Stripe Payment Integration
-- Online payment processing for orders
-- Secure card handling via Stripe Elements
-- Payment history and receipts
-- Refund processing
+- ✅ Online card payment processing via Stripe Elements
+- ✅ PaymentIntent + webhook integration
+- ✅ Test mode with demo card details
+- ⏳ Live mode activation (add live Stripe keys when ready)
+- ⏳ Payment history and receipts page
+- ⏳ Refund processing
 
 ### ⚛️ Frontend Overhaul — React + Next.js
 - Migrate from plain HTML/CSS/JS to Next.js 14 with App Router
@@ -329,6 +359,11 @@ FROM_EMAIL=your-email@gmail.com
 
 # Firebase (Render only — paste full JSON as single line)
 FIREBASE_CREDENTIALS_JSON={"type":"service_account",...}
+
+# Stripe Payments
+STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
+STRIPE_SECRET_KEY=sk_test_your_secret_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 
 # Frontend URL (for email action buttons)
 FRONTEND_URL=https://car-wash-website-khaki.vercel.app
