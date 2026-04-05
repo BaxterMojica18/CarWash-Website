@@ -6,23 +6,50 @@ from app.dependencies import get_current_user
 from app.permissions import is_admin_or_owner
 from app.demo_limits import DemoLimits
 from app.crud import get_business_user_ids
-# from app.sms_service import send_queue_update_sms
+from app.email_service import (
+    send_reservation_confirmation_client,
+    send_reservation_notification_owner,
+    send_reservation_status_update
+)
+import threading
 
 router = APIRouter()
+
+
+def _get_owner_email(db, current_user):
+    if current_user.business_number:
+        owner = db.query(database.User).filter(
+            database.User.business_number == current_user.business_number,
+            database.User.account_type == 'owner'
+        ).first()
+        return owner.email if owner else None
+    return None
 
 @router.post("/", response_model=schemas.ReservationResponse)
 def create_reservation(reservation_data: schemas.ReservationCreate, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     DemoLimits.check_limit(db, current_user, "reservations")
     reservation = crud.create_reservation(
-        db, 
-        current_user.id, 
-        reservation_data.service_id, 
-        reservation_data.location_id, 
+        db,
+        current_user.id,
+        reservation_data.service_id,
+        reservation_data.location_id,
         reservation_data.vehicle_plate
     )
     if not reservation:
         raise HTTPException(status_code=400, detail="Invalid service or service not found")
     DemoLimits.increment_usage(db, current_user, "reservations")
+    owner_email = _get_owner_email(db, current_user)
+    threading.Thread(target=send_reservation_confirmation_client, args=(
+        current_user.email, reservation.reservation_number,
+        reservation.service.name, reservation.location.name,
+        reservation.vehicle_plate, reservation.queue_position or 0
+    ), daemon=True).start()
+    if owner_email:
+        threading.Thread(target=send_reservation_notification_owner, args=(
+            owner_email, reservation.reservation_number, current_user.email,
+            reservation.service.name, reservation.location.name,
+            reservation.vehicle_plate, reservation.queue_position or 0
+        ), daemon=True).start()
     return reservation
 
 @router.get("/", response_model=List[schemas.ReservationResponse])
@@ -62,17 +89,9 @@ def update_reservation_status(reservation_id: int, status_data: schemas.Reservat
     reservation = crud.update_reservation_status(db, reservation_id, status_data.status)
     if not reservation:
         raise HTTPException(status_code=404, detail="Reservation not found")
-    
-    # Send SMS notification if opted in (Commented out for now)
-    # client = db.query(database.User).filter(database.User.id == reservation.client_id).first()
-    # if client and client.phone_number:
-    #     pref = crud.get_user_preferences(db, client.id)
-    #     if pref and pref.sms_opt_in:
-    #         send_queue_update_sms(
-    #             client.phone_number, 
-    #             reservation.reservation_number, 
-    #             reservation.queue_position, 
-    #             reservation.status
-    #         )
-            
+    client = db.query(database.User).filter(database.User.id == reservation.client_id).first()
+    if client:
+        threading.Thread(target=send_reservation_status_update, args=(
+            client.email, reservation.reservation_number, status_data.status
+        ), daemon=True).start()
     return reservation

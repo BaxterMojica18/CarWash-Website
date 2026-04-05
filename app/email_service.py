@@ -207,3 +207,158 @@ This code will expire in 15 minutes. If you didn't request this, please ignore t
 
     return send_email(to_email, subject, html_body, text_body)
 
+
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://car-wash-website-khaki.vercel.app")
+
+
+def _base_template(header_emoji: str, header_title: str, body_html: str) -> str:
+    return f"""
+    <!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+    <body style="margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f5f5f5;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f5f5f5;padding:40px 20px;">
+        <tr><td align="center">
+        <table role="presentation" width="500" cellspacing="0" cellpadding="0" style="background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.1);overflow:hidden;">
+            <tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:30px;text-align:center;">
+                <h1 style="color:#fff;margin:0;font-size:24px;font-weight:600;">{header_emoji} {header_title}</h1>
+            </td></tr>
+            <tr><td style="padding:35px 30px;">{body_html}</td></tr>
+            <tr><td style="background:#f9f9f9;padding:20px 30px;text-align:center;border-top:1px solid #eee;">
+                <p style="color:#aaa;font-size:12px;margin:0;">&copy; Car Wash Management System</p>
+            </td></tr>
+        </table>
+        </td></tr>
+    </table>
+    </body></html>
+    """
+
+
+def _action_button(label: str, url: str) -> str:
+    return f"""
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+        <tr><td align="center" style="padding:15px 0 25px 0;">
+            <a href="{url}" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:16px;font-weight:600;">{label}</a>
+        </td></tr>
+    </table>
+    """
+
+
+def _items_table(items: list) -> str:
+    rows = "".join(
+        f"<tr><td style='padding:8px 12px;border-bottom:1px solid #eee;'>{i.get('name','')}</td>"
+        f"<td style='padding:8px 12px;border-bottom:1px solid #eee;text-align:center;'>x{i.get('quantity',1)}</td>"
+        f"<td style='padding:8px 12px;border-bottom:1px solid #eee;text-align:right;color:#667eea;font-weight:600;'>${i.get('subtotal',0):.2f}</td></tr>"
+        for i in items
+    )
+    return f"""
+    <table width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:15px 0;">
+        <tr style="background:#f8f9fa;">
+            <th style="padding:10px 12px;text-align:left;font-size:13px;color:#555;">Item</th>
+            <th style="padding:10px 12px;text-align:center;font-size:13px;color:#555;">Qty</th>
+            <th style="padding:10px 12px;text-align:right;font-size:13px;color:#555;">Subtotal</th>
+        </tr>
+        {rows}
+    </table>
+    """
+
+
+def send_order_confirmation_client(to_email: str, order_number: str, items: list, total: float, payment_method: str):
+    items_html = _items_table(items)
+    body = f"""
+        <p style="color:#333;font-size:16px;margin:0 0 15px 0;">Hi there,</p>
+        <p style="color:#555;font-size:15px;margin:0 0 20px 0;">Your order has been placed successfully!</p>
+        <div style="background:#f8f9fa;border-radius:8px;padding:15px;margin-bottom:20px;">
+            <p style="margin:0 0 8px 0;"><strong>Order #:</strong> {order_number}</p>
+            <p style="margin:0 0 8px 0;"><strong>Payment:</strong> {payment_method or 'N/A'}</p>
+            <p style="margin:0;"><strong>Total:</strong> <span style="color:#667eea;font-size:18px;font-weight:700;">${total:.2f}</span></p>
+        </div>
+        {items_html}
+        <p style="color:#888;font-size:13px;">We'll notify you as your order status changes. Thank you!</p>
+    """
+    return send_email(to_email, f"Order Confirmed — {order_number}", _base_template("🧾", "Order Confirmed!", body))
+
+
+def send_order_notification_owner(to_email: str, order_number: str, client_email: str, items: list, total: float, payment_method: str):
+    order_url = f"{FRONTEND_URL}/order-management.html"
+    items_html = _items_table(items)
+    body = f"""
+        <p style="color:#333;font-size:16px;margin:0 0 15px 0;">New order received!</p>
+        <div style="background:#f8f9fa;border-radius:8px;padding:15px;margin-bottom:20px;">
+            <p style="margin:0 0 8px 0;"><strong>Order #:</strong> {order_number}</p>
+            <p style="margin:0 0 8px 0;"><strong>Client:</strong> {client_email}</p>
+            <p style="margin:0 0 8px 0;"><strong>Payment:</strong> {payment_method or 'N/A'}</p>
+            <p style="margin:0;"><strong>Total:</strong> <span style="color:#667eea;font-size:18px;font-weight:700;">${total:.2f}</span></p>
+        </div>
+        {items_html}
+        {_action_button('View Order', order_url)}
+    """
+    return send_email(to_email, f"New Order Received — {order_number}", _base_template("🛒", "New Order Received", body))
+
+
+def send_order_status_update(to_email: str, order_number: str, new_status: str):
+    status_colors = {
+        'accepted': '#28a745', 'processing': '#007bff',
+        'completed': '#20c997', 'cancelled': '#dc3545', 'delayed': '#f0932b'
+    }
+    color = status_colors.get(new_status, '#667eea')
+    body = f"""
+        <p style="color:#333;font-size:16px;margin:0 0 15px 0;">Hi there,</p>
+        <p style="color:#555;font-size:15px;margin:0 0 20px 0;">Your order status has been updated:</p>
+        <div style="background:#f8f9fa;border-radius:8px;padding:20px;text-align:center;margin-bottom:20px;">
+            <p style="margin:0 0 8px 0;font-size:15px;"><strong>Order #:</strong> {order_number}</p>
+            <span style="display:inline-block;background:{color};color:#fff;padding:8px 24px;border-radius:20px;font-weight:700;font-size:16px;text-transform:uppercase;">{new_status}</span>
+        </div>
+        <p style="color:#888;font-size:13px;">Thank you for choosing us!</p>
+    """
+    return send_email(to_email, f"Order Update — {order_number} is now {new_status.upper()}", _base_template("📦", "Order Status Updated", body))
+
+
+def send_reservation_confirmation_client(to_email: str, reservation_number: str, service_name: str, location_name: str, vehicle_plate: str, queue_position: int):
+    body = f"""
+        <p style="color:#333;font-size:16px;margin:0 0 15px 0;">Hi there,</p>
+        <p style="color:#555;font-size:15px;margin:0 0 20px 0;">Your reservation has been confirmed!</p>
+        <div style="background:#f8f9fa;border-radius:8px;padding:15px;margin-bottom:20px;">
+            <p style="margin:0 0 8px 0;"><strong>Reservation #:</strong> {reservation_number}</p>
+            <p style="margin:0 0 8px 0;"><strong>Service:</strong> {service_name}</p>
+            <p style="margin:0 0 8px 0;"><strong>Location:</strong> {location_name}</p>
+            <p style="margin:0 0 8px 0;"><strong>Vehicle Plate:</strong> {vehicle_plate}</p>
+            <p style="margin:0;"><strong>Queue Position:</strong> <span style="color:#667eea;font-size:18px;font-weight:700;">#{queue_position}</span></p>
+        </div>
+        <p style="color:#888;font-size:13px;">We'll notify you as your reservation status changes. See you soon!</p>
+    """
+    return send_email(to_email, f"Reservation Confirmed — {reservation_number}", _base_template("🚗", "Reservation Confirmed!", body))
+
+
+def send_reservation_notification_owner(to_email: str, reservation_number: str, client_email: str, service_name: str, location_name: str, vehicle_plate: str, queue_position: int):
+    queue_url = f"{FRONTEND_URL}/queue-management.html"
+    body = f"""
+        <p style="color:#333;font-size:16px;margin:0 0 15px 0;">New reservation received!</p>
+        <div style="background:#f8f9fa;border-radius:8px;padding:15px;margin-bottom:20px;">
+            <p style="margin:0 0 8px 0;"><strong>Reservation #:</strong> {reservation_number}</p>
+            <p style="margin:0 0 8px 0;"><strong>Client:</strong> {client_email}</p>
+            <p style="margin:0 0 8px 0;"><strong>Service:</strong> {service_name}</p>
+            <p style="margin:0 0 8px 0;"><strong>Location:</strong> {location_name}</p>
+            <p style="margin:0 0 8px 0;"><strong>Vehicle Plate:</strong> {vehicle_plate}</p>
+            <p style="margin:0;"><strong>Queue Position:</strong> #{queue_position}</p>
+        </div>
+        {_action_button('View Queue', queue_url)}
+    """
+    return send_email(to_email, f"New Reservation — {reservation_number}", _base_template("📅", "New Reservation Received", body))
+
+
+def send_reservation_status_update(to_email: str, reservation_number: str, new_status: str):
+    status_colors = {
+        'accepted': '#28a745', 'in_progress': '#007bff',
+        'completed': '#20c997', 'cancelled': '#dc3545', 'delayed': '#f0932b'
+    }
+    color = status_colors.get(new_status, '#667eea')
+    body = f"""
+        <p style="color:#333;font-size:16px;margin:0 0 15px 0;">Hi there,</p>
+        <p style="color:#555;font-size:15px;margin:0 0 20px 0;">Your reservation status has been updated:</p>
+        <div style="background:#f8f9fa;border-radius:8px;padding:20px;text-align:center;margin-bottom:20px;">
+            <p style="margin:0 0 8px 0;font-size:15px;"><strong>Reservation #:</strong> {reservation_number}</p>
+            <span style="display:inline-block;background:{color};color:#fff;padding:8px 24px;border-radius:20px;font-weight:700;font-size:16px;text-transform:uppercase;">{new_status.replace('_', ' ')}</span>
+        </div>
+        <p style="color:#888;font-size:13px;">Thank you for choosing us!</p>
+    """
+    return send_email(to_email, f"Reservation Update — {reservation_number} is now {new_status.upper()}", _base_template("🔧", "Reservation Status Updated", body))
