@@ -9,7 +9,8 @@ from app.crud import get_business_user_ids
 from app.email_service import (
     send_order_confirmation_client,
     send_order_notification_owner,
-    send_order_status_update
+    send_order_status_update,
+    DEMO_NOTIFICATION_EMAIL
 )
 import threading
 
@@ -41,14 +42,13 @@ def create_order(order_data: schemas.OrderCreate, db: Session = Depends(database
         raise HTTPException(status_code=400, detail="Cart is empty")
     DemoLimits.increment_usage(db, current_user, "orders")
     items = _order_items_payload(order)
-    owner_email = _get_owner_email(db, current_user)
+    owner_email = _get_owner_email(db, current_user) or DEMO_NOTIFICATION_EMAIL
     threading.Thread(target=send_order_confirmation_client, args=(
         current_user.email, order.order_number, items, order.total_amount, order.payment_method
     ), daemon=True).start()
-    if owner_email:
-        threading.Thread(target=send_order_notification_owner, args=(
-            owner_email, order.order_number, current_user.email, items, order.total_amount, order.payment_method
-        ), daemon=True).start()
+    threading.Thread(target=send_order_notification_owner, args=(
+        owner_email, order.order_number, current_user.email, items, order.total_amount, order.payment_method
+    ), daemon=True).start()
     return order
 
 @router.get("/", response_model=List[schemas.OrderResponse])

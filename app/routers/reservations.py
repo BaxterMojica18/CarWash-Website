@@ -9,7 +9,8 @@ from app.crud import get_business_user_ids
 from app.email_service import (
     send_reservation_confirmation_client,
     send_reservation_notification_owner,
-    send_reservation_status_update
+    send_reservation_status_update,
+    DEMO_NOTIFICATION_EMAIL
 )
 import threading
 
@@ -38,18 +39,17 @@ def create_reservation(reservation_data: schemas.ReservationCreate, db: Session 
     if not reservation:
         raise HTTPException(status_code=400, detail="Invalid service or service not found")
     DemoLimits.increment_usage(db, current_user, "reservations")
-    owner_email = _get_owner_email(db, current_user)
+    owner_email = _get_owner_email(db, current_user) or DEMO_NOTIFICATION_EMAIL
     threading.Thread(target=send_reservation_confirmation_client, args=(
         current_user.email, reservation.reservation_number,
         reservation.service.name, reservation.location.name,
         reservation.vehicle_plate, reservation.queue_position or 0
     ), daemon=True).start()
-    if owner_email:
-        threading.Thread(target=send_reservation_notification_owner, args=(
-            owner_email, reservation.reservation_number, current_user.email,
-            reservation.service.name, reservation.location.name,
-            reservation.vehicle_plate, reservation.queue_position or 0
-        ), daemon=True).start()
+    threading.Thread(target=send_reservation_notification_owner, args=(
+        owner_email, reservation.reservation_number, current_user.email,
+        reservation.service.name, reservation.location.name,
+        reservation.vehicle_plate, reservation.queue_position or 0
+    ), daemon=True).start()
     return reservation
 
 @router.get("/", response_model=List[schemas.ReservationResponse])

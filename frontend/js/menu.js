@@ -284,6 +284,7 @@ const STAFF_TABS = [
 
 const CLIENT_TABS = [
     { name: 'Dashboard', href: 'client-dashboard.html', icon: 'dashboard' },
+    { name: 'My Orders', href: 'client-orders.html', icon: 'orders' },
     { name: 'Shop', href: 'shop.html', icon: 'products' },
     { name: 'Cart', href: 'cart.html', icon: 'orders' },
     { name: 'Reserve', href: 'reserve.html', icon: 'queue' }

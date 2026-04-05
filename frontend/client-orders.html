@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Car Wash</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
+        </div>
+        <ul></ul>
+    </nav>
+
+    <main class="content">
+        <header style="display:flex; justify-content:space-between; align-items:center;">
+            <h1>My Orders</h1>
+        </header>
+
+        <div class="filters" style="display:flex; gap:10px; margin-bottom:25px; padding:15px; border-radius:15px; flex-wrap:wrap; background:white; border:1px solid #e0e0e0; justify-content:center;">
+            <button onclick="filterOrders('all')" class="filter-btn active" data-filter="all" style="padding:10px 18px; border:2px solid #667eea; cursor:pointer; border-radius:10px; font-size:14px; font-weight:600; background:#667eea; color:white;">All</button>
+            <button onclick="filterOrders('pending')" class="filter-btn" data-filter="pending" style="padding:10px 18px; border:2px solid #e0e0e0; cursor:pointer; border-radius:10px; font-size:14px; font-weight:600; background:white; color:#333;">Pending</button>
+            <button onclick="filterOrders('accepted')" class="filter-btn" data-filter="accepted" style="padding:10px 18px; border:2px solid #e0e0e0; cursor:pointer; border-radius:10px; font-size:14px; font-weight:600; background:white; color:#333;">Accepted</button>
+            <button onclick="filterOrders('processing')" class="filter-btn" data-filter="processing" style="padding:10px 18px; border:2px solid #e0e0e0; cursor:pointer; border-radius:10px; font-size:14px; font-weight:600; background:white; color:#333;">Processing</button>
+            <button onclick="filterOrders('completed')" class="filter-btn" data-filter="completed" style="padding:10px 18px; border:2px solid #e0e0e0; cursor:pointer; border-radius:10px; font-size:14px; font-weight:600; background:white; color:#333;">Completed</button>
+            <button onclick="filterOrders('cancelled')" class="filter-btn" data-filter="cancelled" style="padding:10px 18px; border:2px solid #e0e0e0; cursor:pointer; border-radius:10px; font-size:14px; font-weight:600; background:white; color:#333;">Cancelled</button>
+        </div>
+
+        <div id="orders-list"></div>
+    </main>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/menu.js"></script>
+    <script src="/js/toast.js"></script>
+    <script>
+        let allOrders = [];
+        let currentFilter = 'all';
+
+        async function loadOrders() {
+            const token = getToken();
+            if (!token) { window.location.href = '/login.html'; return; }
+            try {
+                const res = await fetch(`${API_BASE}/orders/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.status === 401) { window.location.href = '/login.html'; return; }
+                allOrders = await res.json();
+                renderOrders();
+            } catch (e) {
+                showToast('Failed to load orders', 'error');
+            }
+        }
+
+        function filterOrders(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                const active = btn.dataset.filter === status;
+                btn.style.background = active ? '#667eea' : 'white';
+                btn.style.color = active ? 'white' : '#333';
+                btn.style.border = active ? '2px solid #667eea' : '2px solid #e0e0e0';
+            });
+            renderOrders();
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('orders-list');
+            const filtered = currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#666; font-size:1.3rem; padding:60px 20px;">📭 No orders found</div>';
+                return;
+            }
+
+            const statusColors = {
+                pending: '#fff3cd; color:#856404',
+                accepted: '#d1ecf1; color:#0c5460',
+                processing: '#cce5ff; color:#004085',
+                completed: '#d4edda; color:#155724',
+                cancelled: '#f8d7da; color:#721c24',
+                delayed: '#fff8e1; color:#f57c00'
+            };
+
+            container.innerHTML = filtered.map(order => `
+                <div style="background:white; border-radius:16px; margin-bottom:20px; box-shadow:0 4px 20px rgba(0,0,0,0.1); overflow:hidden;">
+                    <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); padding:18px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <h3 style="color:white; margin:0 0 4px 0; font-size:1.1rem;">🧾 ${order.order_number}</h3>
+                            <p style="color:rgba(255,255,255,0.85); margin:0; font-size:0.85rem;">📅 ${new Date(order.created_at).toLocaleString()}</p>
+                        </div>
+                        <span style="padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; text-transform:uppercase; background:${statusColors[order.status] || '#e0e0e0; color:#333'}">
+                            ${order.status.toUpperCase()}
+                        </span>
+                    </div>
+                    <div style="padding:20px;">
+                        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+                            <div style="flex:1; min-width:150px; background:#f8f9fa; padding:10px 14px; border-radius:8px;">
+                                <span style="font-size:12px; color:#888;">Total</span>
+                                <p style="margin:4px 0 0 0; font-weight:700; color:#667eea; font-size:1.2rem;">$${order.total_amount.toFixed(2)}</p>
+                            </div>
+                            <div style="flex:1; min-width:150px; background:#f8f9fa; padding:10px 14px; border-radius:8px;">
+                                <span style="font-size:12px; color:#888;">Payment</span>
+                                <p style="margin:4px 0 0 0; font-weight:600; color:#2c3e50;">${order.payment_method || 'N/A'}</p>
+                            </div>
+                        </div>
+                        <p style="font-weight:600; color:#2c3e50; margin:0 0 8px 0;">📦 Items:</p>
+                        <div style="display:grid; gap:6px;">
+                            ${(order.items || []).map(item => `
+                                <div style="display:flex; justify-content:space-between; padding:8px 12px; background:#f8f9fa; border-radius:8px; font-size:14px;">
+                                    <span>${item.product_service?.name || 'Item'}</span>
+                                    <span style="color:#888;">×${item.quantity}</span>
+                                    <span style="color:#667eea; font-weight:600;">$${item.subtotal.toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        loadOrders();
+        setInterval(loadOrders, 30000);
+    </script>
+</body>
+</html>

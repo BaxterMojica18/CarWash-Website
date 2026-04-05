@@ -8,6 +8,7 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 FROM_EMAIL = os.getenv("FROM_EMAIL", SMTP_USERNAME)
+DEMO_NOTIFICATION_EMAIL = os.getenv("DEMO_NOTIFICATION_EMAIL", "baxterdavid.mojica@gmail.com")
 
 
 def send_email(to_email: str, subject: str, html_body: str, text_body: str = None):

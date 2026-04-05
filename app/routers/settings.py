@@ -217,6 +217,25 @@ def delete_payment_method(pm_id: int, db: Session = Depends(database.get_db), cu
 class JoinBusinessRequest(BaseModel):
     business_code: str
 
+@router.post("/notification-email")
+def save_notification_email(data: dict, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    """Save the fallback notification email for demo/unlinked accounts."""
+    import os
+    email = data.get("email", "").strip()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+    # Store in environment at runtime (affects current process only)
+    os.environ["DEMO_NOTIFICATION_EMAIL"] = email
+    # Also persist in business_info email field for the owner
+    from app.crud import get_business_owner_id, save_business_info
+    owner_id = get_business_owner_id(db, current_user)
+    info = db.query(database.BusinessInfo).filter(database.BusinessInfo.user_id == owner_id).first()
+    if info:
+        info.email = email
+        db.commit()
+    return {"message": "Notification email updated"}
+
+
 @router.get("/business-code")
 def get_business_code(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     if not current_user.business_number:

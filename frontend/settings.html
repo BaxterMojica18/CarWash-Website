@@ -232,6 +232,18 @@
             <div id="modulesList"></div>
         </div>
         
+        <div class="settings-section" id="notificationEmailSection" style="display:none;">
+            <h2>📧 Notification Email</h2>
+            <p style="color:#666; font-size:14px; margin-bottom:15px;">This email receives all order and reservation alerts when no business owner is linked. Used as the default fallback for demo accounts.</p>
+            <form id="notifEmailForm">
+                <div class="form-group">
+                    <label>Notification Email Address</label>
+                    <input type="email" id="notifEmail" placeholder="owner@example.com">
+                </div>
+                <button type="submit" class="btn-primary">Save Notification Email</button>
+            </form>
+        </div>
+
         <div class="settings-section">
             <h2>Business Information</h2>
             <form id="businessForm">
@@ -486,6 +498,32 @@
             if (roles.includes('superadmin') || roles.includes('admin') || roles.includes('owner')) {
                 loadBusinessCode();
             }
+            if (roles.includes('superadmin') || roles.includes('owner')) {
+                const section = document.getElementById('notificationEmailSection');
+                if (section) section.style.display = 'block';
+                loadNotifEmail();
+            }
+        });
+
+        async function loadNotifEmail() {
+            const stored = localStorage.getItem('notifEmail') || 'baxterdavid.mojica@gmail.com';
+            document.getElementById('notifEmail').value = stored;
+        }
+
+        document.getElementById('notifEmailForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('notifEmail').value.trim();
+            if (!email) return;
+            localStorage.setItem('notifEmail', email);
+            // Also update via API so backend uses it
+            try {
+                await fetch(`${API_BASE}/settings/notification-email`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+            } catch(e) {}
+            showToast('Notification email saved!', 'success');
         });
     </script>
 </body>
