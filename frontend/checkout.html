@@ -24,10 +24,40 @@
                     <span id="summary-total">$0.00</span>
                 </div>
                 <div id="demo-notice" style="display:none; margin-top:15px; padding:12px; background:#fff3cd; border-radius:8px; border-left:4px solid #ffc107;">
-                    <p style="margin:0; font-size:13px; color:#856404;">
-                        🧪 <strong>Demo Mode</strong> — Use test card: <code>4242 4242 4242 4242</code><br>
-                        Expiry: any future date &nbsp;|&nbsp; CVC: any 3 digits &nbsp;|&nbsp; ZIP: any 5 digits
+                    <p style="margin:0 0 8px 0; font-size:13px; color:#856404;">
+                        🧪 <strong>Test Mode</strong> — Use these test card details:
                     </p>
+                    <div style="display:grid; gap:6px; margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:6px 10px; border-radius:6px;">
+                            <span style="font-size:13px; color:#333;">Card Number</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <code style="font-size:13px; color:#667eea; font-weight:700;">4242 4242 4242 4242</code>
+                                <button onclick="copyText('4242424242424242', this)" style="background:#667eea; color:white; border:none; padding:3px 8px; border-radius:4px; font-size:11px; cursor:pointer;">📋 Copy</button>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:6px 10px; border-radius:6px;">
+                            <span style="font-size:13px; color:#333;">Expiry</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <code style="font-size:13px; color:#667eea; font-weight:700;">12/29</code>
+                                <button onclick="copyText('12/29', this)" style="background:#667eea; color:white; border:none; padding:3px 8px; border-radius:4px; font-size:11px; cursor:pointer;">📋 Copy</button>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:6px 10px; border-radius:6px;">
+                            <span style="font-size:13px; color:#333;">CVC</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <code style="font-size:13px; color:#667eea; font-weight:700;">123</code>
+                                <button onclick="copyText('123', this)" style="background:#667eea; color:white; border:none; padding:3px 8px; border-radius:4px; font-size:11px; cursor:pointer;">📋 Copy</button>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:6px 10px; border-radius:6px;">
+                            <span style="font-size:13px; color:#333;">ZIP</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <code style="font-size:13px; color:#667eea; font-weight:700;">12345</code>
+                                <button onclick="copyText('12345', this)" style="background:#667eea; color:white; border:none; padding:3px 8px; border-radius:4px; font-size:11px; cursor:pointer;">📋 Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="fillName()" style="width:100%; background:#ffc107; border:none; padding:8px 16px; border-radius:6px; font-weight:600; font-size:13px; cursor:pointer; color:#333;">⚡ Fill Name Field</button>
                 </div>
             </div>
 
@@ -98,10 +128,8 @@
             clientSecret = intentRes.client_secret;
             document.getElementById('pay-btn-text').textContent = `Pay $${intentRes.amount.toFixed(2)}`;
 
-            // Show demo notice for demo accounts
-            if (intentRes.is_demo) {
-                document.getElementById('demo-notice').style.display = 'block';
-            }
+            // Show demo notice for all accounts (test mode)
+            document.getElementById('demo-notice').style.display = 'block';
 
             // Mount Stripe Elements
             const elements = stripe.elements();
@@ -156,6 +184,23 @@
                 setTimeout(() => window.location.href = '/client-dashboard.html?payment=success', 1500);
             }
         });
+
+        function copyText(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                const original = btn.textContent;
+                btn.textContent = '✅ Copied';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.textContent = original;
+                    btn.style.background = '#667eea';
+                }, 1500);
+            });
+        }
+
+        function fillName() {
+            document.getElementById('card-name').value = 'Test User';
+            showToast('Name filled! Copy each card field above and enter them manually.', 'success');
+        }
 
         init();
     </script>
