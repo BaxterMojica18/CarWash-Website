@@ -1,227 +1,360 @@
-# Car Wash Management System
+# 🚗 Car Wash Management System
 
-A full-stack web application for managing car wash operations with dashboard, invoicing, and settings management.
+> **Version 2.0** — Full-stack car wash management platform with e-commerce, multi-tenant support, and live production deployment.
+
+[![Frontend](https://img.shields.io/badge/Frontend-Vercel-black?logo=vercel)](https://car-wash-website-khaki.vercel.app)
+[![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render)](https://carwash-website-jzr2.onrender.com)
+[![Database](https://img.shields.io/badge/Database-PostgreSQL-336791?logo=postgresql)](https://render.com)
+[![Auth](https://img.shields.io/badge/Auth-Firebase-FFCA28?logo=firebase)](https://firebase.google.com)
+[![Email](https://img.shields.io/badge/Email-Gmail_SMTP-EA4335?logo=gmail)](https://gmail.com)
+
+---
+
+## 🌐 Live Deployment
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| Frontend | Vercel | https://car-wash-website-khaki.vercel.app |
+| Backend API | Render | https://carwash-website-jzr2.onrender.com |
+| Database | Render PostgreSQL | Singapore region |
+| Google Login | Firebase Auth | `carwash-mgmt-system-41402` |
+| Email | Gmail SMTP | Transactional emails |
+
+---
 
 ## 📚 Documentation
 
-**For complete system updates, features, and change history, see:**
-- **[SYSTEM_UPDATES_DATA_HISTORY_LOGS.md](SYSTEM_UPDATES_DATA_HISTORY_LOGS.md)** - Comprehensive documentation of all features, updates, and changes
+- **[SYSTEM_UPDATES_DATA_HISTORY_LOGS.md](SYSTEM_UPDATES_DATA_HISTORY_LOGS.md)** — Full feature history and change log
+- **[PROJECT_ROADMAP.md](PROJECT_ROADMAP.md)** — Planned features and implementation phases
+- **[GIT_BRANCH_GUIDE.md](GIT_BRANCH_GUIDE.md)** — Git workflow reference
 
-## Tech Stack
+---
 
-- **Backend**: Python FastAPI
-- **Database**: PostgreSQL
-- **Frontend**: HTML/CSS/JS (Next.js coming soon)
+## 🛠️ Tech Stack
 
-## Features
+| Layer | Technology |
+|-------|-----------|
+| Backend | Python FastAPI |
+| Database | PostgreSQL (Docker locally, Render in production) |
+| Frontend | HTML / CSS / JavaScript |
+| Authentication | JWT + Google Firebase Auth |
+| Email | Gmail SMTP |
+| Containerization | Docker + Docker Compose |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render |
 
-### Core Features
-- ✅ User Authentication (Demo & Admin accounts)
-- ✅ Dashboard with stats and reports
-- ✅ Invoice creation and PDF generation
-- ✅ Manage washing bays (locations)
-- ✅ Manage products and services
-- ✅ Sales reports with filtering (day/month/year)
-- ✅ Export reports as PDF or CSV
-- ✅ Demo account for testing
+---
 
-### E-Commerce Features (NEW!)
-- ✅ Shopping cart for products
-- ✅ Order management system
-- ✅ Service reservation with queue
-- ✅ Client dashboard
-- ✅ Queue management for owner/admin
-- ✅ Order status tracking
-- ✅ FIFO queue system for car wash services
+## ✨ Features — V2.0
 
-### Permissions Management (NEW!)
+### 🔐 Authentication
+- ✅ Email/password login with JWT tokens
+- ✅ Google Sign-In via Firebase Auth
+- ✅ Forgot password — reset link or 6-digit OTP
+- ✅ Styled HTML email templates for password reset
 - ✅ Role-based access control (RBAC)
-- ✅ 6 granular permissions (products, locations, invoices, reports, settings, users)
-- ✅ Visual permissions management UI
-- ✅ Real-time permission toggling
-- ✅ Search and filter users
-- ✅ Admin/Owner dashboard for user management
 
-## Security Best Practices
+### 📊 Dashboard & Reports
+- ✅ Dynamic dashboard with customizable modules
+- ✅ Revenue charts (weekly, monthly, quarterly, annual)
+- ✅ Sales reports with CSV and PDF export
+- ✅ Drag-and-drop dashboard editor (superadmin)
+- ✅ 17 predefined dashboard module templates
 
-**Before deploying to production:**
-1. Change all default passwords in the database
-2. Generate a strong `SECRET_KEY` in your `.env` file
-3. Use environment variables for all sensitive data
-4. Never commit `.env` files to version control
-5. Enable HTTPS/SSL for production deployments
-6. Use strong, unique passwords for database access
+### 🧾 Invoicing
+- ✅ Invoice creation and PDF generation
+- ✅ Invoice customization (address, phone, email)
+- ✅ Invoice status tracking
 
-## Setup Instructions
+### 🛒 E-Commerce
+- ✅ Product and service shopping cart
+- ✅ Order management with status flow (pending → accepted → processing → completed)
+- ✅ Service reservation with FIFO queue system
+- ✅ Client dashboard (orders, reservations, history)
+- ✅ Queue management for owner/admin
+- ✅ Delayed and cancelled order/reservation statuses
 
-### Option 1: Docker Setup (Recommended)
+### 📧 Email Notifications *(New in V2)*
+- ✅ Client receives confirmation email when order is placed
+- ✅ Client receives email on every order status change
+- ✅ Client receives confirmation email when reservation is created
+- ✅ Client receives email on every reservation status change
+- ✅ Owner receives new order alert with **"View Order"** action button
+- ✅ Owner receives new reservation alert with **"View Queue"** action button
+- ✅ All emails sent asynchronously (non-blocking background threads)
+
+### 🏢 Multi-Tenant Business System *(New in V2)*
+- ✅ Business code system — owner shares code, staff/clients join via code
+- ✅ Data isolation by `business_number` — each business sees only their own data
+- ✅ Shared business branding (name, logo, theme) across all staff in same business
+- ✅ Client-specific theme system separate from staff/admin theme
+- ✅ Owner-scoped saves for all shared settings
+
+### 👥 User & Permissions Management *(New in V2)*
+- ✅ Role hierarchy: Superadmin → Admin → Staff → Client
+- ✅ 8 granular permissions (products, locations, invoices, reports, settings, users)
+- ✅ Visual permissions management UI with toggle switches
+- ✅ Sidebar tab visibility control per role
+- ✅ User management in Settings (add users, assign roles)
+
+### 🎨 UI & Navigation *(New in V2)*
+- ✅ Collapsible sidebar with localStorage persistence across all pages
+- ✅ SVG icon set for all sidebar navigation items
+- ✅ Profile dropdown with photo, name, role on all pages
+- ✅ Sidebar logo/name hidden when no business info set
+- ✅ Centered filter buttons and empty states in order/queue management
+- ✅ No-cache middleware for HTML/CSS/JS files
+- ✅ Theme customization with 10 presets + custom color picker
+
+### ⚙️ Settings
+- ✅ Business information (name, logo, address, phone)
+- ✅ Payment methods with QR code upload and account number
+- ✅ Invoice customization
+- ✅ Theme presets (staff and client-facing)
+- ✅ Washing bay management
+- ✅ SMS opt-in preferences
+
+---
+
+## 🔒 Security
+
+### Current Implementation
+- JWT tokens with configurable expiry
+- Password hashing with bcrypt
+- Firebase token verification for Google login
+- Environment variables for all secrets
+- CORS configured for allowed origins only
+- No-cache headers on frontend assets
+- `.env` and credential files excluded from version control
+
+### Best Practices Before Production
+1. Rotate `SECRET_KEY` to a strong random value
+2. Change all default passwords in the database
+3. Never commit `.env` or credential files
+4. Enable HTTPS (handled by Vercel/Render automatically)
+5. Use strong, unique database passwords
+
+---
+
+## 🚀 Setup Instructions
+
+### Option 1: Docker (Recommended for Local Dev)
 
 ```bash
-# Clone the repository
-git clone <your-repo-url>
-cd car-wash-website
+git clone https://github.com/BaxterMojica18/CarWash-Website.git
+cd CarWash-Website
 
-# Start with Docker Compose
+# Start all services
 docker-compose up -d
 
-# Access the application at http://localhost:8000
+# Create superadmin account
+docker-compose exec web python commands/users/create_superadmin.py
+
+# Access at http://localhost:8000
 ```
 
 ### Option 2: Local Setup
 
-#### 1. Database Setup
-
 ```bash
-# Create the database
-python create_db.py
-
-# Create tables and seed data
-python seed_data.py
-```
-
-#### 2. Install Dependencies
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-#### 3. Configure Environment
-
-```bash
-# Copy .env.example to .env and update with your settings
+# Configure environment
 cp .env.example .env
-```
+# Edit .env with your database credentials
 
-#### 4. Start the Server
+# Create database tables
+python commands/database/seed_data.py
 
-```bash
-# Windows
-start_server.bat
+# Create superadmin
+python commands/users/create_superadmin.py
 
-# Or manually
+# Start server
 uvicorn app.main:app --reload --port 8000
 ```
 
-#### 5. Test the API
+---
 
-```bash
-python test_api.py
-```
+## 🔑 Login Credentials
 
-## Login Credentials
+> ⚠️ **Development only.** Change all passwords before production deployment.
 
-> **⚠️ SECURITY NOTE:** These are demo/test credentials for development only. 
-> Never use these passwords in production. Change all default passwords before deploying.
+| Role | Email | Password |
+|------|-------|----------|
+| Superadmin/Owner | `owner@carwash.com` | `owner123` |
+| Admin | `admin@carwash.com` | `admin123` |
+| Staff | `staff@carwash.com` | `staff123` |
+| Client | `client@carwash.com` | `client123` |
+| Demo Client | `demo-client@carwash.com` | `demo123` |
+| Demo Staff | `demo-staff@carwash.com` | `demo123` |
 
-### Demo Account (Development Only)
-- Email: `demo@carwash.com`
-- Password: `demo123`
+> Run `docker-compose exec web python commands/users/create_superadmin.py` to create the owner account.
 
-### Superadmin Account (Development Only)
-- Email: `owner@carwash.com`
-- Password: `owner123`
-- Note: Run `python create_superadmin.py` to create this account
+---
 
-### Admin Account (Development Only)
-- Email: `admin@carwash.com`
-- Password: `admin123`
-
-### Demo Accounts (For Testing)
-- **Client:** `demo-client@carwash.com` / `demo123` (10 orders, 10 reservations max)
-- **Staff:** `demo-staff@carwash.com` / `demo123` (10 invoices max)
-- **Admin:** `demo-admin@carwash.com` / `demo123` (1 product, 1 service, 10 invoices max)
-- Note: Run `python create_demo_users.py` to create these accounts
-
-## API Endpoints
+## 📡 API Endpoints
 
 ### Authentication
-- `POST /api/auth/login` - Login with email/password
-- `POST /api/auth/demo-login` - Quick demo login
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/login` | Email/password login |
+| POST | `/api/auth/firebase-login` | Google Firebase login |
+| POST | `/api/auth/register` | Register new account |
+| POST | `/api/auth/forgot-password` | Request password reset |
+| POST | `/api/auth/verify-otp` | Verify 6-digit OTP |
+| POST | `/api/auth/reset-password` | Reset password with token |
+| GET | `/api/auth/me/permissions` | Get current user permissions |
 
 ### Settings
-- `GET /api/settings/locations` - Get all washing bays
-- `POST /api/settings/locations` - Create new location
-- `PUT /api/settings/locations/{id}` - Update location
-- `DELETE /api/settings/locations/{id}` - Delete location
-- `GET /api/settings/products` - Get all products/services
-- `POST /api/settings/products` - Create new product
-- `PUT /api/settings/products/{id}` - Update product
-- `DELETE /api/settings/products/{id}` - Delete product
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET/POST | `/api/settings/business` | Business info |
+| GET/POST | `/api/settings/profile` | User profile |
+| GET/POST | `/api/settings/theme` | Theme management |
+| GET | `/api/settings/business-code` | Get business join code |
+| POST | `/api/settings/join-business` | Join a business by code |
+| GET/POST/PUT/DELETE | `/api/settings/locations` | Washing bays |
+| GET/POST/PUT/DELETE | `/api/settings/products` | Products & services |
+| GET/POST/PUT/DELETE | `/api/settings/payment-methods` | Payment methods |
 
-### Invoices
-- `POST /api/invoices/` - Create new invoice
-- `GET /api/invoices/` - Get all invoices
-- `GET /api/invoices/{id}` - Get specific invoice
-- `GET /api/invoices/{id}/pdf` - Download invoice as PDF
-- `GET /api/invoices/dashboard/stats` - Get dashboard statistics
+### Orders & Reservations
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/orders/` | Create order from cart |
+| GET | `/api/orders/` | List orders |
+| PATCH | `/api/orders/{id}/status` | Update order status |
+| POST | `/api/reservations/` | Create reservation |
+| GET | `/api/reservations/` | List reservations |
+| PATCH | `/api/reservations/{id}/status` | Update reservation status |
 
-### Reports
-- `GET /api/reports/sales` - Get sales report with filters (period, date, month, year)
-- `GET /api/reports/sales/download/csv` - Download sales report as CSV
-- `GET /api/reports/sales/download/pdf` - Download sales report as PDF
+### Other
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET/POST/PATCH/DELETE | `/api/cart` | Shopping cart |
+| GET | `/api/invoices/` | Invoices |
+| GET | `/api/reports/sales` | Sales reports |
+| GET | `/api/health` | Health check |
 
-## API Documentation
+> **API Docs:** https://carwash-website-jzr2.onrender.com/docs
 
-Once the server is running, visit:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+---
 
-## Database Schema
-
-### Users
-- id, email, password_hash, is_demo
-
-### Locations (Washing Bays)
-- id, name, address
-
-### ProductService
-- id, name, price, description, type
-
-### Invoice
-- id, invoice_number, date, customer_name, total_amount, location_id, user_id
-
-### InvoiceItem
-- id, invoice_id, product_service_id, quantity, unit_price, subtotal
-
-## E-Commerce Setup
-
-To enable the new e-commerce features:
-
-```bash
-# 1. Create new database tables
-python add_ecommerce_tables.py
-
-# 2. Update roles and permissions
-python seed_data.py
-
-# 3. Create test client user
-python create_client_user.py
-
-# 4. Start the server
-start_server.bat
-```
-
-See [ECOMMERCE_SETUP.md](ECOMMERCE_SETUP.md) for detailed documentation.
-
-## New Pages
+## 📄 Pages
 
 ### Client Pages
-- `/shop.html` - Browse and shop products/services
-- `/cart.html` - Shopping cart
-- `/reserve.html` - Reserve car wash service
-- `/client-dashboard.html` - View orders and reservations
+- `/shop.html` — Browse products and services
+- `/cart.html` — Shopping cart and checkout
+- `/reserve.html` — Reserve car wash service
+- `/client-dashboard.html` — Orders, reservations, join business
 
 ### Owner/Admin Pages
-- `/order-management.html` - Manage customer orders
-- `/queue-management.html` - Manage service queue
-- `/permissions-management.html` - Manage user permissions (Admin/Owner only)
+- `/dashboard.html` — Stats and revenue charts
+- `/invoices.html` — Invoice management
+- `/order-management.html` — Manage customer orders
+- `/queue-management.html` — Manage service queue
+- `/products.html` / `/services.html` — Product/service management
+- `/reports.html` — Sales reports
+- `/settings.html` — All settings including business code
+- `/permissions-management.html` — User permissions (superadmin)
 
-## Next Steps
+---
 
-- [ ] Add email notifications for orders
-- [ ] Add real-time WebSocket for queue updates
-- [ ] Add payment gateway integration
-- [ ] Build Next.js frontend
-- [ ] Deploy to Vercel/Netlify
-- [ ] Add more dashboard charts
-- [ ] Customer profiles with saved vehicles
+## 🗺️ Next Implementations
+
+### 💳 Stripe Payment Integration
+- Online payment processing for orders
+- Secure card handling via Stripe Elements
+- Payment history and receipts
+- Refund processing
+
+### ⚛️ Frontend Overhaul — React + Next.js
+- Migrate from plain HTML/CSS/JS to Next.js 14 with App Router
+- TypeScript for type safety
+- Tailwind CSS for styling
+- Reusable component library
+- Server-side rendering for better SEO and performance
+
+### 🔒 Security Enhancements (Recommended)
+The following security improvements are planned for the next phase:
+
+#### Backend
+- **Rate Limiting** — `slowapi` middleware to prevent brute-force and DDoS attacks on API endpoints
+- **Input Validation & Sanitization** — Stricter Pydantic schemas + SQL injection prevention
+- **HTTPS-only Cookies** — Move JWT from localStorage to `HttpOnly` + `Secure` cookies to prevent XSS token theft
+- **Refresh Token Rotation** — Short-lived access tokens (15 min) + long-lived refresh tokens stored in HttpOnly cookies
+- **API Key Management** — Per-client API keys for third-party integrations
+- **Audit Logging** — Log all sensitive actions (login, permission changes, data deletions) to a dedicated table
+- **CORS Hardening** — Restrict allowed origins to exact production domains only
+
+#### Frontend
+- **Content Security Policy (CSP)** — HTTP headers to prevent XSS attacks
+- **Subresource Integrity (SRI)** — Hash verification for CDN-loaded scripts (Chart.js, Firebase SDK)
+- **HTTPS Enforcement** — Redirect all HTTP to HTTPS (handled by Vercel/Render)
+- **Sensitive Data Cleanup** — Remove tokens/permissions from localStorage, use memory or HttpOnly cookies instead
+
+#### Infrastructure
+- **Secrets Scanning** — GitHub secret scanning already enabled; add pre-commit hooks with `detect-secrets`
+- **Dependency Auditing** — Regular `pip audit` and `npm audit` checks in CI/CD
+- **Database Backups** — Automated daily backups on Render with point-in-time recovery
+- **Environment Separation** — Separate `.env` configs for dev, staging, and production
+
+### 🔔 Real-time Features
+- WebSocket integration for live queue updates
+- Browser push notifications for order status changes
+
+### 📱 Mobile PWA
+- Progressive Web App support
+- Offline capability with service workers
+- Mobile-optimized UI
+
+---
+
+## 📝 Environment Variables
+
+```env
+# Database
+DATABASE_URL=postgresql://user:password@host:5432/carwash_db
+
+# Authentication
+SECRET_KEY=your-strong-secret-key-min-32-chars
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Email (Gmail SMTP)
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+FROM_EMAIL=your-email@gmail.com
+
+# Firebase (Render only — paste full JSON as single line)
+FIREBASE_CREDENTIALS_JSON={"type":"service_account",...}
+
+# Frontend URL (for email action buttons)
+FRONTEND_URL=https://car-wash-website-khaki.vercel.app
+```
+
+---
+
+## 📊 Database Schema (Key Tables)
+
+| Table | Description |
+|-------|-------------|
+| `users` | User accounts with roles, business_number, account_type |
+| `roles` / `permissions` | RBAC system |
+| `locations` | Washing bays |
+| `products_services` | Products and services |
+| `invoices` / `invoice_items` | Invoice management |
+| `orders` / `order_items` | E-commerce orders |
+| `reservations` | Service queue reservations |
+| `cart_items` | Shopping cart |
+| `payment_methods` | Payment options with QR codes |
+| `business_info` | Business branding per owner |
+| `settings_theme_selection` | Custom themes (staff + client) |
+| `dashboard_settings` / `dashboard_modules` | Dashboard customization |
+| `password_reset_tokens` | Password reset with OTP |
+| `user_profiles` | Profile photos and display names |
+
+---
+
+*Built with ❤️ by BuxTek Inc.*
