@@ -9,11 +9,17 @@ try:
         cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "app/firebase-credentials.json")
 
         if firebase_creds_json:
-            cred = credentials.Certificate(json.loads(firebase_creds_json))
+            creds_dict = json.loads(firebase_creds_json)
+            # Fix escaped newlines in private key
+            if 'private_key' in creds_dict:
+                creds_dict['private_key'] = creds_dict['private_key'].replace('\\n', '\n')
+            cred = credentials.Certificate(creds_dict)
             firebase_admin.initialize_app(cred)
+            print("Firebase initialized from FIREBASE_CREDENTIALS_JSON env var")
         elif os.path.exists(cred_path):
             cred = credentials.Certificate(cred_path)
             firebase_admin.initialize_app(cred)
+            print("Firebase initialized from credentials file")
         else:
             print("ERROR: No Firebase credentials found!")
             firebase_admin.initialize_app(options={'projectId': 'carwash-mgmt-system-41402'})
