@@ -288,3 +288,59 @@ REDIS_URL=redis://localhost:6379/0
 - Document API changes and new endpoints
 - Consider backward compatibility when making changes
 - Regular security audits and dependency updates
+
+
+---
+
+## ✅ Completed in Session 3 (April 5, 2026)
+
+### UI & Navigation
+- [x] **Sidebar Icons** — Replaced emoji icons with clean white Unicode/SVG icons across all pages
+- [x] **Profile Dropdown** — Added to all sidebar pages via reusable `profile.js`
+- [x] **Sidebar Close/Open Button** — Collapsible sidebar with localStorage persistence across all pages
+- [x] **Filter Centering** — Centered filter buttons and empty states in order/queue management
+- [x] **Permissions Icon** — Added lock SVG icon to Permissions sidebar tab
+- [x] **Logo Hide** — Sidebar logo/name hidden when account has no business info
+
+### Production Deployment
+- [x] **Vercel + Render Live** — Frontend on Vercel, backend + PostgreSQL on Render
+- [x] **API_BASE Fix** — All hardcoded `localhost:8000` URLs replaced with dynamic `API_BASE`
+- [x] **Firebase on Render** — Credentials loaded from `FIREBASE_CREDENTIALS_JSON` env var
+- [x] **Database Restore** — Local Docker DB dumped and restored to Render PostgreSQL
+- [x] **SECRET_KEY Sync** — Matched between local and Render to fix 401 token errors
+
+### Business Code System
+- [x] **Owner Business Code** — Displayed in Settings → User Management with copy button
+- [x] **Join Business** — Client can enter code in dashboard to link their account to a business
+- [x] **API Endpoints** — `GET /api/settings/business-code`, `POST /api/settings/join-business`
+
+### Email Notifications ✅ *(Added April 5, 2026)*
+- [x] **Order Confirmation** — Client receives email when order is placed
+- [x] **Order Status Updates** — Client notified on every status change
+- [x] **New Order Alert (Owner)** — Owner receives email with items + "View Order" button
+- [x] **Reservation Confirmation** — Client receives email when reservation is created
+- [x] **Reservation Status Updates** — Client notified on every status change
+- [x] **New Reservation Alert (Owner)** — Owner receives email with details + "View Queue" button
+- [x] **Background Threading** — All emails sent async (non-blocking)
+
+### Documentation
+- [x] **GIT_BRANCH_GUIDE.md** — Local reference for creating, naming, and pushing branches
+- [x] **SYSTEM_UPDATES_DATA_HISTORY_LOGS.md** — Updated with all session 3 changes
+- [x] **PROJECT_ROADMAP.md** — Updated with all completed items
+
+---
+
+## 🔄 Updated Phase 2 Status (April 5, 2026)
+
+| Feature | Status |
+|---------|--------|
+| Production Deployment (Vercel + Render) | ✅ Done |
+| Multi-Tenant Data Isolation | ✅ Done |
+| Staff Sidebar Permissions | ✅ Done |
+| Shared Business Branding | ✅ Done |
+| Client-Specific Themes | ✅ Done |
+| Business Code / Join Business | ✅ Done |
+| Email Notifications (Orders + Reservations) | ✅ Done |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| Payment Gateway Integration | ⬜ Pending |
+| SMS Notifications (Twilio) | ⬜ Pending |

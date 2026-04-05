@@ -960,3 +960,167 @@ For issues or questions:
 ---
 
 **End of System Updates, Data & History Logs**
+
+---
+
+## Latest Updates (April 5, 2026 — Session 3)
+
+> **Version:** 5.0.0 | **Branch:** main
+
+---
+
+### 🎨 UI: Sidebar Icons, Profile Dropdown & Filter Centering
+**Status:** ✅ Completed | **Branch:** `update/icons-profile-ui-update`
+
+#### Changes:
+- Replaced all colorful emoji sidebar icons with clean white Unicode symbols (■ ▣ ☐ ⧗ ▢ ⚙ ▤ ⎋)
+- Added profile dropdown to all sidebar pages (dashboard, invoices, products, services, reports, order-management, queue-management)
+- Created reusable `frontend/js/profile.js` with `toggleProfileMenu()`, `showEditProfile()`, `closeEditProfile()`, `loadProfileData()`
+- Default white user icon SVG used when no profile photo exists
+- Centered filter buttons row and empty state messages in `order-management.html` and `queue-management.html`
+- Enhanced location dropdown styling with hover/focus effects in both order and queue management pages
+- Fixed corrupted HTML in queue-management.html empty state message
+
+#### Files Modified:
+- ✅ `frontend/js/profile.js` — NEW reusable profile dropdown script
+- ✅ `frontend/css/style.css` — Sidebar icon flexbox, profile dropdown styles
+- ✅ `frontend/dashboard.html`, `invoices.html`, `products.html`, `services.html`, `reports.html`, `order-management.html`, `queue-management.html` — Profile dropdown added
+- ✅ `frontend/settings.html`, `edit-dashboard.html`, `permissions-management.html` — Queue menu item added
+
+---
+
+### 🔲 Sidebar: Collapsible Close/Open Button
+**Status:** ✅ Completed | **Branch:** `update/sidebar-navigation-button-update`
+
+#### Changes:
+- Added `✕` close button injected dynamically into sidebar via `menu.js` (no HTML changes needed)
+- Desktop: clicking `✕` collapses sidebar to `width: 0`, content expands to fill space
+- Mobile: clicking `✕` closes the slide-in sidebar overlay
+- `☰` hamburger button restores sidebar when clicked
+- Sidebar collapsed state persisted in `localStorage` — survives page navigation across all HTML files
+- Added `padding-left: 60px` to content when sidebar is collapsed to prevent `☰` button overlapping title text
+- Fixed broken `updateSidebarLogo` function brace structure that caused entire sidebar to disappear
+
+#### Files Modified:
+- ✅ `frontend/js/menu.js` — `closeSidebar()`, `toggleMenu()`, `DOMContentLoaded` injection, localStorage persistence
+- ✅ `frontend/css/style.css` — `.sidebar-close`, `.sidebar.collapsed`, `.content.sidebar-collapsed` styles
+
+---
+
+### 🚀 Production Deployment: Vercel + Render
+**Status:** ✅ Completed
+
+#### Changes:
+- Fixed all hardcoded `http://localhost:8000` URLs across 6 frontend files — replaced with `${API_BASE}`
+- Fixed `client-dashboard.html` calling localhost causing redirect to login on Vercel
+- Added `FRONTEND_URL` env var support in `email_service.py` (defaults to Vercel URL)
+- Restored Render PostgreSQL database from local Docker dump using ordered SQL restore
+- Fixed Firebase credentials on Render by loading from `FIREBASE_CREDENTIALS_JSON` env var instead of file
+- Fixed private key newline escaping when parsing Firebase credentials from env var
+- Removed `app/firebase-credentials.json` from git tracking, added to `.gitignore`
+- Added `.dump` and `.sql` to `.gitignore`
+- Fixed `SECRET_KEY` mismatch between local and Render causing 401 on dashboard load
+
+#### Files Modified:
+- ✅ `frontend/client-dashboard.html` — Fixed localhost URL
+- ✅ `frontend/order-management.html` — 3 localhost URLs fixed
+- ✅ `frontend/queue-management.html` — 3 localhost URLs fixed
+- ✅ `frontend/cart.html` — 5 localhost URLs fixed
+- ✅ `frontend/shop.html` — 3 localhost URLs fixed
+- ✅ `frontend/reserve.html` — 3 localhost URLs fixed
+- ✅ `app/firebase_auth.py` — Load credentials from env var, handle escaped newlines
+- ✅ `.gitignore` — Added `.dump`, `.sql`, `firebase-credentials.json`, log files
+
+---
+
+### 🏢 Business Code / Join Business System
+**Status:** ✅ Completed
+
+#### Features:
+- Owner/admin sees their **Business Code** (from `business_number` field) in Settings → User Management section with a **📋 Copy Code** button
+- Client can enter the business code in their dashboard to **join a business** — links their account to the owner
+- Business code for `owner@carwash.com` set to `CARWASH001` in both local and Render databases
+- Code box only shown to superadmin/admin/owner roles
+
+#### API Endpoints Added:
+- `GET /api/settings/business-code` — Returns current user's business code
+- `POST /api/settings/join-business` — Links client account to a business by code
+
+#### Files Modified:
+- ✅ `app/routers/settings.py` — Added `JoinBusinessRequest` Pydantic model, `get_business_code()`, `join_business()` endpoints
+- ✅ `frontend/settings.html` — Business code display box with copy button in User Management section
+- ✅ `frontend/client-dashboard.html` — Join Business section with current business status display
+
+---
+
+### 🔒 Sidebar: Permissions Icon + Logo Hide Fix
+**Status:** ✅ Completed
+
+#### Changes:
+- Added `permissions` key to `normalizeSidebarIcons()` icon map with a lock SVG icon
+- Added `permissions` text detection in icon key matching
+- Fixed `updateSidebarLogo()` — now hides logo and sidebar name when no business info exists (instead of showing default car SVG)
+- Fixed broken brace structure in `updateSidebarLogo` that caused entire sidebar to disappear after icon update
+
+#### Files Modified:
+- ✅ `frontend/js/menu.js` — Permissions icon added, logo hide logic fixed, brace structure corrected
+
+---
+
+### 📧 Email Notifications: Orders & Reservations
+**Status:** ✅ Completed
+
+#### Features:
+- **Client receives emails for:**
+  - Order placed — items list, total, payment method
+  - Order status changed — accepted, processing, completed, cancelled, delayed
+  - Reservation created — service, location, vehicle plate, queue position
+  - Reservation status changed — accepted, in_progress, completed, cancelled, delayed
+- **Owner receives emails for:**
+  - New order placed — client email, items, total, **"View Order" button** → order-management.html
+  - New reservation — client email, service, location, vehicle, queue position, **"View Queue" button** → queue-management.html
+- All emails sent in **background threads** (non-blocking)
+- Reusable `_base_template()`, `_action_button()`, `_items_table()` helpers for consistent HTML email design
+- Owner email resolved via `business_number` matching
+
+#### New Email Functions in `email_service.py`:
+- `send_order_confirmation_client()`
+- `send_order_notification_owner()`
+- `send_order_status_update()`
+- `send_reservation_confirmation_client()`
+- `send_reservation_notification_owner()`
+- `send_reservation_status_update()`
+
+#### Files Modified:
+- ✅ `app/email_service.py` — 6 new email functions + base template helpers
+- ✅ `app/routers/orders.py` — Email on order create + status update; `_get_owner_email()` helper
+- ✅ `app/routers/reservations.py` — Email on reservation create + status update; `_get_owner_email()` helper
+
+---
+
+### 📝 Git Branch Management
+**Status:** ✅ Completed
+
+#### Branches Created & Pushed:
+- `update/icons-profile-ui-update` — Sidebar icons, profile dropdown, filter centering
+- `update/sidebar-navigation-button-update` — Sidebar close/open button
+- `update/gmail-smtp-password-reset-dbfill-update` — Email/SMTP and DB fill updates
+- `update/email-ui-forget-pass-update` — Email UI and forgot password flow
+- Created `GIT_BRANCH_GUIDE.md` — Local reference guide for creating, naming, and pushing branches
+
+---
+
+## Change Log
+
+### Version 5.0.0 (April 5, 2026)
+- ✅ Sidebar icons replaced with SVG set; permissions icon added (lock SVG)
+- ✅ Profile dropdown added to all sidebar pages via reusable `profile.js`
+- ✅ Sidebar collapsible with localStorage persistence across all pages
+- ✅ Fixed sidebar disappearing due to broken brace in `updateSidebarLogo`
+- ✅ Logo/name hidden in sidebar when no business info exists
+- ✅ All hardcoded `localhost:8000` URLs replaced with `API_BASE` across 6 frontend files
+- ✅ Firebase credentials loaded from Render env var (`FIREBASE_CREDENTIALS_JSON`)
+- ✅ Business code system: owner shares code, clients/staff join via code
+- ✅ Email notifications for all order/reservation events (client + owner)
+- ✅ Owner email includes action button linking to order/queue management page
+- ✅ Production deployment working on Vercel (frontend) + Render (backend + PostgreSQL)
