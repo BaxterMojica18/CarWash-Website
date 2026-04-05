@@ -214,6 +214,9 @@ def delete_payment_method(pm_id: int, db: Session = Depends(database.get_db), cu
         raise HTTPException(status_code=404, detail="Payment method not found")
     return {"message": "Payment method deleted"}
 
+class JoinBusinessRequest(BaseModel):
+    business_code: str
+
 @router.get("/business-code")
 def get_business_code(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
     if not current_user.business_number:
@@ -221,8 +224,8 @@ def get_business_code(db: Session = Depends(database.get_db), current_user = Dep
     return {"business_code": current_user.business_number}
 
 @router.post("/join-business")
-def join_business(data: dict, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
-    code = data.get("business_code", "").strip()
+def join_business(data: JoinBusinessRequest, db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+    code = data.business_code.strip()
     if not code:
         raise HTTPException(status_code=400, detail="Business code is required")
     owner = db.query(database.User).filter(database.User.business_number == code).first()
