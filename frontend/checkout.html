@@ -23,7 +23,7 @@
                     <span>Total</span>
                     <span id="summary-total">$0.00</span>
                 </div>
-                <div id="demo-notice" style="display:none; margin-top:15px; padding:12px; background:#fff3cd; border-radius:8px; border-left:4px solid #ffc107;">
+                <div id="demo-notice" style="margin-top:15px; padding:12px; background:#fff3cd; border-radius:8px; border-left:4px solid #ffc107;">
                     <p style="margin:0 0 8px 0; font-size:13px; color:#856404;">
                         🧪 <strong>Test Mode</strong> — Use these test card details:
                     </p>
@@ -127,9 +127,6 @@
 
             clientSecret = intentRes.client_secret;
             document.getElementById('pay-btn-text').textContent = `Pay $${intentRes.amount.toFixed(2)}`;
-
-            // Show demo notice for all accounts (test mode)
-            document.getElementById('demo-notice').style.display = 'block';
 
             // Mount Stripe Elements
             const elements = stripe.elements();
