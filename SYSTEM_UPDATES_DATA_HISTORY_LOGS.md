@@ -1242,3 +1242,52 @@ For issues or questions:
 - ✅ Pricing updated: Lite ₱990, Plus ₱1,990, Pro ₱2,990
 - ✅ Cart page: added Dashboard back button
 - ✅ Fixed `/month` text overflow on Pro pricing card
+
+---
+
+## Latest Updates (April 5, 2026 — Session 5)
+
+> **Version:** 6.1.0 | **Branch:** `main`
+
+---
+
+### 🧹 Repository Cleanup
+**Status:** ✅ Completed
+
+#### Removed unnecessary root-level files:
+- `change_db_password.sql` — one-time SQL script no longer needed
+- `create_db.py` — replaced by Docker + `commands/` folder
+- `force_delete_user.py` — debug/utility script
+- `setup_database.py` — replaced by Docker + `commands/` folder
+- `start_server.bat` — replaced by `docker-compose up`
+- `start_server_local.bat` — replaced by `docker-compose up`
+- `temp.json` — leftover temporary file
+
+#### Kept (still useful):
+- `setup.ps1` / `start.ps1` — Windows dev environment automation
+- `render.yaml` — Render deployment blueprint
+- `vercel.json` — Vercel deployment config
+- `docker-compose.yml` — local Docker setup
+- `Dockerfile` — container build
+
+---
+
+### 📄 README Update
+**Status:** ✅ Completed
+
+#### Changes:
+- Added **Stripe** badge to header
+- Added Stripe to deployment table and tech stack table
+- Added **Stripe Payments** and **Client Orders Page** feature sections
+- Added **Payments API endpoints** table (`/config`, `/create-payment-intent`, `/create-checkout-session`, `/webhook`, `/contact-sales`)
+- Added `/checkout.html` and `/client-orders.html` to Pages section
+- Added `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` to environment variables
+- Updated Next Implementations — Stripe section shows ✅ done vs ⏳ pending
+
+---
+
+## Change Log
+
+### Version 6.1.0 (April 5, 2026)
+- ✅ Removed 7 unused root-level files for cleaner repository
+- ✅ README updated with Stripe badge, payments section, new API endpoints, pricing
