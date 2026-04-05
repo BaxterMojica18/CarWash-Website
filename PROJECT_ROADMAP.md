@@ -161,6 +161,8 @@
   - Business-scoped data queries via `business_number`
   - Admins can't see other businesses' data
   - Staff sidebar restricted (Settings hidden)
+  - Owner-scoped saves for shared branding (name, logo, themes)
+  - Client-specific theme system (`for_client` flag)
 - [ ] GDPR compliance
 - [ ] Data encryption at rest
 - [x] Audit logging *(partial — via report cache)*
@@ -217,10 +219,13 @@
 1. ✅ **Production Deployment**: Created `vercel.json` and `render.yaml` configs for Vercel/Render with managed Postgres. *(April 4, 2026)*
 2. ✅ **Multi-Tenant Data Isolation**: All data scoped by `business_number` — admins can't see other businesses' data. *(April 4, 2026)*
 3. ✅ **Staff Sidebar Permissions**: Settings hidden from staff, only visible to admin/owner/superadmin. *(April 4, 2026)*
-4. 📧 **Dynamic Client Notifications**: Automatic email/SMS notifications to clients when their service status (Queue) or order (Product) is updated.
-5. **Dynamic Business Dashboards**: Tailor modules based on account_type (Owner vs Client).
-6. Payment gateway integration
-7. Real-time features (WebSockets for Queue)
+4. ✅ **Demo Account Overhaul**: Replaced legacy demo accounts with properly scoped BuxWash (BXTK-001) + SparkleWash (WASH-002) businesses. *(April 4, 2026)*
+5. ✅ **Shared Business Branding**: Owner/admin saves to business name, logo, themes now shared across all staff via owner-scoped writes. *(April 4, 2026)*
+6. ✅ **Client-Specific Themes**: `for_client` flag on themes, separate client presets dropdown, auto-detect on login. *(April 4, 2026)*
+7. 📧 **Dynamic Client Notifications**: Automatic email/SMS notifications to clients when their service status (Queue) or order (Product) is updated.
+8. **Dynamic Business Dashboards**: Tailor modules based on account_type (Owner vs Client).
+9. Payment gateway integration
+10. Real-time features (WebSockets for Queue)
 
 ### Phase 3 (Medium-term - 8 weeks)
 1. PWA implementation

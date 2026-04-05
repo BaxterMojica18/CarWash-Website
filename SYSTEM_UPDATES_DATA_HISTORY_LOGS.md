@@ -1,7 +1,7 @@
 # System Updates, Data & History Logs
 
 > **Last Updated:** April 4, 2026  
-> **Version:** 4.0.0  
+> **Version:** 4.1.0  
 > **Branch:** main
 
 ---
@@ -18,7 +18,62 @@
 
 ---
 
-## Latest Updates (April 4, 2026)
+## Latest Updates (April 4, 2026 — Session 2)
+
+### 🏢 Shared Business Branding & Client Theme System
+**Status:** ✅ Completed
+
+#### Features Added:
+- **Multi-Tenant Demo Account Overhaul:**
+  - Created `commands/users/setup_demo_accounts.py` — full automated setup script.
+  - **Business 1 — BuxWash (BXTK-001):**
+    - `owner@carwash.com` / `owner123` (superadmin)
+    - `admin@carwash.com` / `admin123` (admin)
+    - `staff@carwash.com` / `staff123` (user/staff)
+    - `demo-client@carwash.com` / `demo123` (client)
+  - **Business 2 — SparkleWash (WASH-002):** (for data isolation testing)
+    - `owner2@sparklewash.com` / `owner123` (owner)
+    - `client@sparklewash.com` / `client123` (client)
+  - Each business has unique products, services, locations, invoices, orders, and reservations.
+  - Script runs automatically on Docker startup.
+
+- **Shared Business Branding (Owner-Scoped Saves):**
+  - When admin/owner saves business name, logo, or invoice settings → saves to the **owner's DB record**.
+  - All staff/admin in the same business see the same branding in their sidebar.
+  - Affected endpoints: `POST /settings/business`, `POST /settings/theme`, `PUT /settings/theme/{id}/activate`, `POST /settings/invoice-custom`.
+  - Powered by `get_business_owner_id()` resolving all saves to the owner.
+
+- **Client-Specific Theme System:**
+  - Added `for_client` boolean column to `settings_theme_selection` table.
+  - Admin can check "🛒 Save for Client Only" to create a separate color scheme for client-facing pages.
+  - `GET /settings/theme/active` auto-detects if user is a client and serves the client theme if one exists.
+  - New endpoints: `GET /settings/theme/client/active`, `GET /settings/theme/client/all`.
+  - New UI: "Client Theme Presets" section with its own dropdown in Settings.
+
+- **Demo Login Credentials Updated:**
+  - `frontend/js/demo.js` now uses `staff@carwash.com` (staff), `admin@carwash.com` (admin), `demo-client@carwash.com` (client).
+  - Old `demo@carwash.com` with incorrect admin privileges is no longer used.
+
+#### Files Created/Modified:
+- ✅ `commands/users/setup_demo_accounts.py` — Multi-tenant demo data setup (NEW)
+- ✅ `app/routers/settings.py` — All saves use `owner_id`; client theme endpoints added
+- ✅ `app/crud.py` — Theme functions support `for_client` filtering
+- ✅ `app/schemas.py` — Added `for_client: bool` to CustomTheme schemas
+- ✅ `app/database.py` — Added `for_client` column to CustomTheme model
+- ✅ `frontend/settings.html` — "Save for Client Only" toggle + Client Theme Presets section
+- ✅ `frontend/js/settings.js` — Theme form sends `for_client`, client preset management
+- ✅ `frontend/js/demo.js` — Updated demo credentials
+- ✅ `docker-compose.yml` — Added demo setup script + `for_client` migration to startup
+
+#### Verified Results:
+- ✅ Admin changes business name → Staff sees updated name in sidebar
+- ✅ BuxWash (61 invoices) vs SparkleWash (25 invoices) — data fully isolated
+- ✅ Staff sidebar: Settings tab hidden
+- ✅ Client theme saves and loads independently from staff theme
+
+---
+
+## Updates (April 4, 2026 — Session 1)
 
 ### 🔒 Multi-Tenant Data Isolation & Deployment Configuration
 **Status:** ✅ Completed
