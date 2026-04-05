@@ -66,14 +66,28 @@
                 <h2>Payment Details</h2>
                 <form id="payment-form">
                     <div class="form-group">
-                        <label>Card Information</label>
-                        <div id="card-element"></div>
-                        <div id="card-errors" style="color:#dc3545; font-size:13px; margin-top:8px;"></div>
+                        <label>Card Number</label>
+                        <div id="card-number-element" class="stripe-input"></div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <div id="card-expiry-element" class="stripe-input"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>CVC</label>
+                            <div id="card-cvc-element" class="stripe-input"></div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Name on Card</label>
                         <input type="text" id="card-name" placeholder="John Doe" required>
                     </div>
+                    <div class="form-group">
+                        <label>ZIP / Postal Code</label>
+                        <input type="text" id="card-zip" placeholder="12345" maxlength="10">
+                    </div>
+                    <div id="card-errors" style="color:#dc3545; font-size:13px; margin-bottom:10px;"></div>
                     <button type="submit" id="pay-btn" class="pay-btn">
                         <span id="pay-btn-text">Pay Now</span>
                         <span id="pay-spinner" style="display:none;">Processing...</span>
@@ -89,7 +103,17 @@
     <script src="/js/api.js"></script>
     <script src="/js/toast.js"></script>
     <script>
-        let stripe, cardElement, clientSecret, totalAmount;
+        let stripe, cardNumberElement, cardExpiryElement, cardCvcElement, clientSecret, totalAmount;
+
+        const stripeStyle = {
+            base: {
+                fontSize: '16px',
+                color: '#2c3e50',
+                fontFamily: "'Segoe UI', sans-serif",
+                '::placeholder': { color: '#aab7c4' }
+            },
+            invalid: { color: '#dc3545' }
+        };
 
         async function init() {
             const token = getToken();
@@ -128,22 +152,20 @@
             clientSecret = intentRes.client_secret;
             document.getElementById('pay-btn-text').textContent = `Pay $${intentRes.amount.toFixed(2)}`;
 
-            // Mount Stripe Elements
+            // Mount separate Stripe Elements
             const elements = stripe.elements();
-            cardElement = elements.create('card', {
-                style: {
-                    base: {
-                        fontSize: '16px',
-                        color: '#2c3e50',
-                        fontFamily: "'Segoe UI', sans-serif",
-                        '::placeholder': { color: '#aab7c4' }
-                    },
-                    invalid: { color: '#dc3545' }
-                }
-            });
-            cardElement.mount('#card-element');
-            cardElement.on('change', e => {
-                document.getElementById('card-errors').textContent = e.error ? e.error.message : '';
+            cardNumberElement = elements.create('cardNumber', { style: stripeStyle, showIcon: true });
+            cardExpiryElement = elements.create('cardExpiry', { style: stripeStyle });
+            cardCvcElement    = elements.create('cardCvc',    { style: stripeStyle });
+
+            cardNumberElement.mount('#card-number-element');
+            cardExpiryElement.mount('#card-expiry-element');
+            cardCvcElement.mount('#card-cvc-element');
+
+            [cardNumberElement, cardExpiryElement, cardCvcElement].forEach(el => {
+                el.on('change', e => {
+                    document.getElementById('card-errors').textContent = e.error ? e.error.message : '';
+                });
             });
         }
 
@@ -156,8 +178,11 @@
 
             const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
                 payment_method: {
-                    card: cardElement,
-                    billing_details: { name: document.getElementById('card-name').value }
+                    card: cardNumberElement,
+                    billing_details: {
+                        name: document.getElementById('card-name').value,
+                        address: { postal_code: document.getElementById('card-zip').value }
+                    }
                 }
             });
 
@@ -196,7 +221,8 @@
 
         function fillName() {
             document.getElementById('card-name').value = 'Test User';
-            showToast('Name filled! Copy each card field above and enter them manually.', 'success');
+            document.getElementById('card-zip').value = '12345';
+            showToast('Name and ZIP filled! Copy card number, expiry, and CVC above.', 'success');
         }
 
         init();
@@ -259,6 +285,12 @@
             transition: border-color 0.3s;
         }
         #card-element.StripeElement--focus { border-color: #667eea; }
+        .stripe-input {
+            padding: 12px 15px; border: 2px solid #e0e0e0;
+            border-radius: 8px; background: white;
+            transition: border-color 0.3s;
+        }
+        .stripe-input.StripeElement--focus { border-color: #667eea; }
         .pay-btn {
             width: 100%; padding: 16px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
