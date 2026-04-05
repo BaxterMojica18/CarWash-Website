@@ -437,11 +437,16 @@ body {
 }
 
 .price {
-    font-size: 56px;
+    font-size: 48px;
     font-weight: 800;
     margin-bottom: 10px;
     color: inherit;
-    line-height: 1;
+    line-height: 1.1;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px;
 }
 
 .pricing-card:not(.featured) .price {
