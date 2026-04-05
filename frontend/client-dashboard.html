@@ -91,7 +91,7 @@
                 return;
             }
             try {
-                const response = await fetch('http://localhost:8000/api/client/dashboard', {
+                const response = await fetch(`${API_BASE}/client/dashboard`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) {

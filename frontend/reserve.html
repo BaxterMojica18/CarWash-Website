@@ -62,7 +62,7 @@
             
             try {
                 const token = getToken();
-                const response = await fetch('http://localhost:8000/api/settings/products', {
+                const response = await fetch(`${API_BASE}/settings/products`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -76,7 +76,7 @@
                 const products = await response.json();
                 services = products.filter(p => p.type === 'service');
                 
-                const locResponse = await fetch('http://localhost:8000/api/settings/locations', {
+                const locResponse = await fetch(`${API_BASE}/settings/locations`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!locResponse.ok) throw new Error('Failed to load locations');
@@ -121,7 +121,7 @@
 
             try {
                 const token = getToken();
-                const response = await fetch('http://localhost:8000/api/reservations/', {
+                const response = await fetch(`${API_BASE}/reservations/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

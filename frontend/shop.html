@@ -42,7 +42,7 @@
 
         async function loadProducts() {
             try {
-                const response = await fetch('http://localhost:8000/api/settings/products', {
+                const response = await fetch(`${API_BASE}/settings/products`, {
                     headers: { 'Authorization': `Bearer ${getToken()}` }
                 });
                 const data = await response.json();
@@ -98,7 +98,7 @@
 
         async function addToCart(productId) {
             try {
-                const response = await fetch('http://localhost:8000/api/cart', {
+                const response = await fetch(`${API_BASE}/cart`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -124,7 +124,7 @@
 
         async function updateCartCount() {
             try {
-                const response = await fetch('http://localhost:8000/api/cart', {
+                const response = await fetch(`${API_BASE}/cart`, {
                     headers: {
                         'Authorization': `Bearer ${getToken()}`
                     }

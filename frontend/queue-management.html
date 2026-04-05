@@ -93,7 +93,7 @@
         async function loadLocations() {
             try {
                 const token = getToken();
-                const response = await fetch('http://localhost:8000/api/settings/locations', {
+                const response = await fetch(`${API_BASE}/settings/locations`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 locations = await response.json();
@@ -111,8 +111,8 @@
             try {
                 const token = getToken();
                 const url = locationId 
-                    ? `http://localhost:8000/api/reservations/?location_id=${locationId}`
-                    : 'http://localhost:8000/api/reservations/';
+                    ? `${API_BASE}/reservations/?location_id=${locationId}`
+                    : `${API_BASE}/reservations/`;
                 const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -216,7 +216,7 @@
         async function updateStatus(reservationId, status) {
             try {
                 const token = getToken();
-                const response = await fetch(`http://localhost:8000/api/reservations/${reservationId}/status`, {
+                const response = await fetch(`${API_BASE}/reservations/${reservationId}/status`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',

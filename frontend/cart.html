@@ -46,7 +46,7 @@
 
         async function loadPaymentMethods() {
             try {
-                const response = await fetch('http://localhost:8000/api/settings/payment-methods', {
+                const response = await fetch(`${API_BASE}/settings/payment-methods`, {
                     headers: { 'Authorization': `Bearer ${getToken()}` }
                 });
                 paymentMethods = await response.json();
@@ -78,7 +78,7 @@
                 return;
             }
             try {
-                const response = await fetch('http://localhost:8000/api/cart', {
+                const response = await fetch(`${API_BASE}/cart`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) {
@@ -131,7 +131,7 @@
         async function updateQuantity(itemId, quantity) {
             if (quantity < 1) return;
             try {
-                await fetch(`http://localhost:8000/api/cart/${itemId}`, {
+                await fetch(`${API_BASE}/cart/${itemId}`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -147,7 +147,7 @@
 
         async function removeItem(itemId) {
             try {
-                await fetch(`http://localhost:8000/api/cart/${itemId}`, {
+                await fetch(`${API_BASE}/cart/${itemId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${getToken()}` }
                 });
@@ -167,7 +167,7 @@
             const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
 
             try {
-                const response = await fetch('http://localhost:8000/api/orders', {
+                const response = await fetch(`${API_BASE}/orders`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
