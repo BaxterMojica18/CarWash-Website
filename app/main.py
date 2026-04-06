@@ -54,13 +54,17 @@ admin.add_view(InvoiceAdmin)
 admin.add_view(OrderAdmin)
 admin.add_view(ReservationAdmin)
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://car-wash-website-khaki.vercel.app")
+
+cors_origins = [
+    "http://localhost:8000",
+    "http://127.0.0.1:5500",
+    FRONTEND_URL,
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:8000",
-        "http://127.0.0.1:5500",
-        "https://car-wash-website-khaki.vercel.app",
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

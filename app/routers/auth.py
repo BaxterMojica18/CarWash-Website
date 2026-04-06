@@ -100,10 +100,12 @@ def get_my_permissions(current_user: database.User = Depends(get_current_user), 
     
     hidden_tabs = []
     role_ids = [r.id for r in current_user.roles]
+    biz = current_user.business_number or '__global__'
     if role_ids:
         hidden_settings = db.query(database.RoleSidebarSetting).filter(
             database.RoleSidebarSetting.role_id.in_(role_ids),
-            database.RoleSidebarSetting.is_visible == False
+            database.RoleSidebarSetting.is_visible == False,
+            database.RoleSidebarSetting.business_number == biz
         ).all()
         hidden_tabs = list(set([s.page_name for s in hidden_settings]))
         
@@ -140,10 +142,12 @@ def list_users(db: Session = Depends(database.get_db), current_user: database.Us
         
         hidden_tabs = []
         role_ids = [r.id for r in user.roles]
+        biz = user.business_number or '__global__'
         if role_ids:
             hidden_settings = db.query(database.RoleSidebarSetting).filter(
                 database.RoleSidebarSetting.role_id.in_(role_ids),
-                database.RoleSidebarSetting.is_visible == False
+                database.RoleSidebarSetting.is_visible == False,
+                database.RoleSidebarSetting.business_number == biz
             ).all()
             hidden_tabs = list(set([s.page_name for s in hidden_settings]))
             
@@ -185,10 +189,12 @@ def get_user_details(user_id: int, db: Session = Depends(database.get_db), curre
     
     hidden_tabs = []
     role_ids = [r.id for r in user.roles]
+    biz = user.business_number or '__global__'
     if role_ids:
         hidden_settings = db.query(database.RoleSidebarSetting).filter(
             database.RoleSidebarSetting.role_id.in_(role_ids),
-            database.RoleSidebarSetting.is_visible == False
+            database.RoleSidebarSetting.is_visible == False,
+            database.RoleSidebarSetting.business_number == biz
         ).all()
         hidden_tabs = list(set([s.page_name for s in hidden_settings]))
     
@@ -257,20 +263,26 @@ def get_all_roles(db: Session = Depends(database.get_db), current_user: database
 
 @router.get("/roles/{role_id}/sidebar")
 def get_role_sidebar_settings(role_id: int, db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
-    settings = db.query(database.RoleSidebarSetting).filter(database.RoleSidebarSetting.role_id == role_id).all()
+    biz = current_user.business_number or '__global__'
+    settings = db.query(database.RoleSidebarSetting).filter(
+        database.RoleSidebarSetting.role_id == role_id,
+        database.RoleSidebarSetting.business_number == biz
+    ).all()
     return {s.page_name: s.is_visible for s in settings}
 
 @router.put("/roles/{role_id}/sidebar")
 def update_role_sidebar_settings(role_id: int, data: schemas.UpdateSidebarSettings, db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
+    biz = current_user.business_number or '__global__'
     for page_name, is_visible in data.settings.items():
         setting = db.query(database.RoleSidebarSetting).filter(
             database.RoleSidebarSetting.role_id == role_id,
-            database.RoleSidebarSetting.page_name == page_name
+            database.RoleSidebarSetting.page_name == page_name,
+            database.RoleSidebarSetting.business_number == biz
         ).first()
         if setting:
             setting.is_visible = is_visible
         else:
-            setting = database.RoleSidebarSetting(role_id=role_id, page_name=page_name, is_visible=is_visible)
+            setting = database.RoleSidebarSetting(role_id=role_id, page_name=page_name, is_visible=is_visible, business_number=biz)
             db.add(setting)
     db.commit()
     return {"message": "Sidebar settings updated successfully"}
@@ -301,21 +313,21 @@ def forgot_password(request: schemas.ForgotPasswordRequest, http_request: Reques
         reset_data = crud.create_password_reset_token(db, user.id)
         reset_token = reset_data["token"]
         otp_code = reset_data["otp_code"]
-        base_url = str(http_request.base_url).rstrip("/")
         
         email_sent = False
         if reset_method == "otp":
             email_sent = send_otp_email(request.email, otp_code)
         else:
-            email_sent = send_password_reset_email(request.email, reset_token, base_url)
+            email_sent = send_password_reset_email(request.email, reset_token)
         
         if not email_sent:
             # Fallback: log to console if email fails
+            frontend_url = os.getenv("FRONTEND_URL", "https://car-wash-website-khaki.vercel.app")
             print(f"\n{'='*50}")
             print(f"PASSWORD RESET for {request.email} (method: {reset_method})")
             print(f"Token: {reset_token}")
             print(f"OTP Code: {otp_code}")
-            print(f"Reset URL: {base_url}/reset-password.html?token={reset_token}")
+            print(f"Reset URL: {frontend_url}/reset-password.html?token={reset_token}")
             print(f"Expires in 15 minutes")
             print(f"{'='*50}\n")
     

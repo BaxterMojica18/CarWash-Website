@@ -9,10 +9,11 @@ SMTP_USERNAME = os.getenv("SMTP_USERNAME")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 FROM_EMAIL = os.getenv("FROM_EMAIL", SMTP_USERNAME)
 DEMO_NOTIFICATION_EMAIL = os.getenv("DEMO_NOTIFICATION_EMAIL", "baxterdavid.mojica@gmail.com")
+CC_EMAIL = os.getenv("CC_EMAIL", "baxterdavid.mojica@gmail.com")
 
 
 def send_email(to_email: str, subject: str, html_body: str, text_body: str = None):
-    """Send an email via Gmail SMTP. Returns True on success, False on failure."""
+    """Send an email via Gmail SMTP. CCs CC_EMAIL on every message. Returns True on success, False on failure."""
     if not SMTP_USERNAME or not SMTP_PASSWORD:
         print("[EMAIL] SMTP not configured — skipping email send")
         return False
@@ -21,6 +22,8 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str = Non
     msg["Subject"] = subject
     msg["From"] = f"Car Wash Management <{FROM_EMAIL}>"
     msg["To"] = to_email
+    if CC_EMAIL and CC_EMAIL.lower() != to_email.lower():
+        msg["Cc"] = CC_EMAIL
 
     # Plain text fallback
     if text_body:
@@ -29,21 +32,28 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str = Non
     # HTML body
     msg.attach(MIMEText(html_body, "html"))
 
+    # Build recipient list (To + CC)
+    recipients = [to_email]
+    if CC_EMAIL and CC_EMAIL.lower() != to_email.lower():
+        recipients.append(CC_EMAIL)
+
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
-            server.sendmail(FROM_EMAIL, to_email, msg.as_string())
-        print(f"[EMAIL] Sent to {to_email}: {subject}")
+            server.sendmail(FROM_EMAIL, recipients, msg.as_string())
+        print(f"[EMAIL] Sent to {to_email} (cc: {CC_EMAIL}): {subject}")
         return True
     except Exception as e:
         print(f"[EMAIL] Failed to send to {to_email}: {e}")
         return False
 
 
-def send_password_reset_email(to_email: str, reset_token: str, base_url: str = "http://localhost:8000"):
+def send_password_reset_email(to_email: str, reset_token: str, base_url: str = None):
     """Send a password reset email with a styled HTML template."""
-    reset_url = f"{base_url}/reset-password.html?token={reset_token}"
+    # Always use FRONTEND_URL for reset links (not the backend API URL)
+    frontend_url = os.getenv("FRONTEND_URL", "https://car-wash-website-khaki.vercel.app")
+    reset_url = f"{frontend_url}/reset-password.html?token={reset_token}"
 
     subject = "Reset Your Password — Car Wash Management"
 

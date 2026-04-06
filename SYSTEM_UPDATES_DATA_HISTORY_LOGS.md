@@ -1,7 +1,7 @@
 # System Updates, Data & History Logs
 
-> **Last Updated:** April 4, 2026  
-> **Version:** 4.1.0  
+> **Last Updated:** April 7, 2026  
+> **Version:** 4.2.0  
 > **Branch:** main
 
 ---
@@ -18,7 +18,67 @@
 
 ---
 
-## Latest Updates (April 4, 2026 — Session 2)
+## Latest Updates (April 7, 2026)
+
+### 🚀 Production Deployment Fixes & Email CC System
+**Status:** ✅ Completed
+
+#### Issues Fixed:
+- **Password Reset Links Pointed to Localhost:**
+  - `send_password_reset_email()` was using `http_request.base_url` (= Render backend URL) instead of the Vercel frontend URL.
+  - Fix: Now uses `FRONTEND_URL` env var (`https://car-wash-website-khaki.vercel.app`) for all reset links.
+  - Console fallback also updated.
+
+- **Emails Not Working / No CC on Emails:**
+  - Added `CC_EMAIL` env var — every email sent by the system now CCs `baxterdavid.mojica@gmail.com`.
+  - Updated `send_email()` to build a `recipients` list (To + CC) and set the `Cc` header.
+  - All email types affected: password reset, OTP, order confirmation, order status, reservation confirmation, reservation status.
+
+- **Sidebar Tabs Not Reflecting Per-Business Changes:**
+  - `RoleSidebarSetting` was global (no business scoping) — if Business A hid a tab, it also hid for Business B.
+  - Added `business_number` column to `role_sidebar_settings` table (defaults to `'__global__'`).
+  - All 4 queries updated: `GET /me/permissions`, `GET /users`, `GET /users/{id}`, `GET/PUT /roles/{id}/sidebar`.
+  - Now each business has independent sidebar configurations.
+
+- **Render Deployment Not Running Migrations:**
+  - Dockerfile used bare `uvicorn` command — no migrations ran on deploy.
+  - Created `start.sh` startup script that runs `create_tables()`, `migrate_db.py`, `add_signup_columns.py`, and column migrations before starting uvicorn.
+  - Updated `Dockerfile` to use `start.sh` as CMD.
+
+- **CORS Origins Hardcoded:**
+  - Made `allow_origins` dynamic by reading `FRONTEND_URL` from env var.
+
+#### New Environment Variables:
+| Variable | Default | Purpose |
+|----------|---------|----------|
+| `FRONTEND_URL` | `https://car-wash-website-khaki.vercel.app` | Used in reset links, email buttons, CORS |
+| `CC_EMAIL` | `baxterdavid.mojica@gmail.com` | CCs all system emails for trailing |
+
+#### Files Created/Modified:
+- ✅ `app/email_service.py` — CC on every email, `FRONTEND_URL` for reset links
+- ✅ `app/routers/auth.py` — Removed `base_url` from forgot-password, business-scoped sidebar queries
+- ✅ `app/database.py` — Added `business_number` to `RoleSidebarSetting`
+- ✅ `app/main.py` — Dynamic CORS origins from `FRONTEND_URL`
+- ✅ `Dockerfile` — Runs `start.sh` for migration-first startup
+- ✅ `start.sh` — NEW: Startup script with all migrations
+- ✅ `render.yaml` — Added `FRONTEND_URL` and `CC_EMAIL` env vars
+- ✅ `.env` — Added `FRONTEND_URL` and `CC_EMAIL`
+- ✅ `docker-compose.yml` — Added `business_number` column migration
+
+#### Deployment Checklist (Render):
+> [!IMPORTANT]
+> After pushing, set these env vars in Render dashboard:
+> - `FRONTEND_URL` = `https://car-wash-website-khaki.vercel.app`
+> - `CC_EMAIL` = `baxterdavid.mojica@gmail.com`
+> - `SMTP_SERVER` = `smtp.gmail.com`
+> - `SMTP_PORT` = `587`
+> - `SMTP_USERNAME` = `baxterdavid.mojica@gmail.com`
+> - `SMTP_PASSWORD` = *(Gmail app password)*
+> - `FROM_EMAIL` = `baxterdavid.mojica@gmail.com`
+
+---
+
+## Updates (April 4, 2026 — Session 2)
 
 ### 🏢 Shared Business Branding & Client Theme System
 **Status:** ✅ Completed

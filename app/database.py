@@ -307,6 +307,7 @@ class RoleSidebarSetting(Base):
     role_id = Column(Integer, ForeignKey("roles.id"))
     page_name = Column(String)
     is_visible = Column(Boolean, default=True)
+    business_number = Column(String, default="__global__")
 
 def create_tables():
     try:

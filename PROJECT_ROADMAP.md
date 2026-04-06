@@ -222,10 +222,12 @@
 4. ✅ **Demo Account Overhaul**: Replaced legacy demo accounts with properly scoped BuxWash (BXTK-001) + SparkleWash (WASH-002) businesses. *(April 4, 2026)*
 5. ✅ **Shared Business Branding**: Owner/admin saves to business name, logo, themes now shared across all staff via owner-scoped writes. *(April 4, 2026)*
 6. ✅ **Client-Specific Themes**: `for_client` flag on themes, separate client presets dropdown, auto-detect on login. *(April 4, 2026)*
-7. 📧 **Dynamic Client Notifications**: Automatic email/SMS notifications to clients when their service status (Queue) or order (Product) is updated.
-8. **Dynamic Business Dashboards**: Tailor modules based on account_type (Owner vs Client).
-9. Payment gateway integration
-10. Real-time features (WebSockets for Queue)
+7. ✅ **Production Deployment Fixes**: Fixed password reset links (localhost → Vercel), Dockerfile migration startup, dynamic CORS, business-scoped sidebar settings. *(April 7, 2026)*
+8. ✅ **Email CC System**: All system emails now CC `baxterdavid.mojica@gmail.com` for audit trailing. *(April 7, 2026)*
+9. 📧 **Dynamic Client Notifications**: Automatic email/SMS notifications to clients when their service status (Queue) or order (Product) is updated.
+10. **Dynamic Business Dashboards**: Tailor modules based on account_type (Owner vs Client).
+11. Payment gateway integration
+12. Real-time features (WebSockets for Queue)
 
 ### Phase 3 (Medium-term - 8 weeks)
 1. PWA implementation
@@ -268,6 +270,10 @@ SMTP_USERNAME=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
 FROM_EMAIL=noreply@carwash.com
 
+# Frontend & Trailing
+FRONTEND_URL=https://car-wash-website-khaki.vercel.app
+CC_EMAIL=baxterdavid.mojica@gmail.com
+
 # SMS Configuration
 TWILIO_ACCOUNT_SID=your-account-sid
 TWILIO_AUTH_TOKEN=your-auth-token
@@ -288,7 +294,6 @@ REDIS_URL=redis://localhost:6379/0
 - Document API changes and new endpoints
 - Consider backward compatibility when making changes
 - Regular security audits and dependency updates
-
 
 ---
 
@@ -389,7 +394,6 @@ REDIS_URL=redis://localhost:6379/0
 | Real-time WebSockets for Queue | ⬜ Pending |
 | SMS Notifications (Twilio) | ⬜ Pending |
 | React + Next.js Frontend | ⬜ Pending |
-
 
 ---
 
