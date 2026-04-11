@@ -1351,3 +1351,51 @@ For issues or questions:
 ### Version 6.1.0 (April 5, 2026)
 - ✅ Removed 7 unused root-level files for cleaner repository
 - ✅ README updated with Stripe badge, payments section, new API endpoints, pricing
+
+---
+
+## Latest Updates (April 5, 2026 — Session 6)
+
+> **Version:** 6.2.0 | **Branch:** `main`
+
+---
+
+### 📧 Email Service Overhaul — Gmail SMTP → Resend API
+**Status:** ✅ Completed | **Pushed to production**
+
+#### Changes:
+- Replaced Gmail SMTP (`smtplib`) with **Resend API** (`resend` Python SDK)
+- Removed `SMTP_SERVER`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` env vars
+- Added `RESEND_API_KEY` env var
+- Added `CC_EMAIL` env var (defaults to `baxterdavid.mojica@gmail.com`) — all emails CC this address
+- `FROM_EMAIL` defaults to `onboarding@resend.dev` (Resend's shared domain until custom domain verified)
+- CC is automatically skipped when using `onboarding@resend.dev` (Resend restriction on shared domain)
+- `requirements.txt` updated — replaced loose package names with pinned versions, added `resend==2.27.0`
+- `docker-compose.yml` updated — removed SMTP vars, added `RESEND_API_KEY`
+- `frontend/forgot-password.html` — updated for new email flow
+- `app/routers/auth.py` — updated email sending calls
+
+#### New Environment Variables:
+| Variable | Description |
+|----------|-------------|
+| `RESEND_API_KEY` | Resend API key from resend.com dashboard |
+| `FROM_EMAIL` | Sender email (use `onboarding@resend.dev` until domain verified) |
+| `CC_EMAIL` | CC recipient for all emails (default: `baxterdavid.mojica@gmail.com`) |
+| `DEMO_NOTIFICATION_EMAIL` | Fallback owner email for demo accounts |
+
+#### Files Modified:
+- ✅ `app/email_service.py` — full rewrite using Resend SDK
+- ✅ `app/routers/auth.py` — updated email calls
+- ✅ `docker-compose.yml` — SMTP vars removed, RESEND_API_KEY added
+- ✅ `frontend/forgot-password.html` — updated for Resend flow
+- ✅ `requirements.txt` — pinned versions, added `resend==2.27.0`
+
+---
+
+## Change Log
+
+### Version 6.2.0 (April 5, 2026)
+- ✅ Email service migrated from Gmail SMTP to Resend API
+- ✅ All transactional emails (orders, reservations, password reset, OTP, contact sales) now use Resend
+- ✅ CC_EMAIL added — all emails CC `baxterdavid.mojica@gmail.com` by default
+- ✅ requirements.txt pinned to exact versions for reproducible builds

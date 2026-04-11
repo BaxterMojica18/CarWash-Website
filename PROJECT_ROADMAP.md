@@ -404,3 +404,26 @@ REDIS_URL=redis://localhost:6379/0
 - [x] README updated with Stripe badge, payments API table, client orders page, updated pricing
 
 ### 📊 Current Version: 6.1.0
+
+
+---
+
+## ✅ Completed in Session 6 (April 5, 2026)
+
+### 📧 Email Service Overhaul
+- [x] Migrated from Gmail SMTP to **Resend API**
+- [x] All transactional emails use Resend SDK
+- [x] CC_EMAIL auto-copies all emails to `baxterdavid.mojica@gmail.com`
+- [x] `requirements.txt` pinned to exact versions
+- [x] `docker-compose.yml` updated with `RESEND_API_KEY`
+
+### 📊 Current Version: 6.2.0
+
+### 🔑 Required Render Environment Variables (add to Render dashboard):
+```
+RESEND_API_KEY=re_your_api_key_here
+FROM_EMAIL=onboarding@resend.dev
+CC_EMAIL=baxterdavid.mojica@gmail.com
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+```
