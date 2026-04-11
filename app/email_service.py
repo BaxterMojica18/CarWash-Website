@@ -1,48 +1,39 @@
-import smtplib
 import os
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import resend
 
-SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
-SMTP_USERNAME = os.getenv("SMTP_USERNAME")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
-FROM_EMAIL = os.getenv("FROM_EMAIL", SMTP_USERNAME)
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+if RESEND_API_KEY:
+    resend.api_key = RESEND_API_KEY
+
+# When using Resend without a verified domain, you must use onboarding@resend.dev
+# Update this once you verify a custom domain on Resend.
+FROM_EMAIL = os.getenv("FROM_EMAIL", "onboarding@resend.dev")
 DEMO_NOTIFICATION_EMAIL = os.getenv("DEMO_NOTIFICATION_EMAIL", "baxterdavid.mojica@gmail.com")
 CC_EMAIL = os.getenv("CC_EMAIL", "baxterdavid.mojica@gmail.com")
 
-
 def send_email(to_email: str, subject: str, html_body: str, text_body: str = None):
-    """Send an email via Gmail SMTP. CCs CC_EMAIL on every message. Returns True on success, False on failure."""
-    if not SMTP_USERNAME or not SMTP_PASSWORD:
-        print("[EMAIL] SMTP not configured — skipping email send")
+    """Send an email via Resend API. CCs CC_EMAIL on every message. Returns True on success, False on failure."""
+    if not RESEND_API_KEY or RESEND_API_KEY == "re_your_api_key_here":
+        print("[EMAIL] Resend API key not configured — skipping email send")
         return False
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = f"Car Wash Management <{FROM_EMAIL}>"
-    msg["To"] = to_email
-    if CC_EMAIL and CC_EMAIL.lower() != to_email.lower():
-        msg["Cc"] = CC_EMAIL
-
-    # Plain text fallback
+    params = {
+        "from": f"Car Wash Management <{FROM_EMAIL}>",
+        "to": [to_email],
+        "subject": subject,
+        "html": html_body,
+    }
+    
     if text_body:
-        msg.attach(MIMEText(text_body, "plain"))
+        params["text"] = text_body
 
-    # HTML body
-    msg.attach(MIMEText(html_body, "html"))
-
-    # Build recipient list (To + CC)
-    recipients = [to_email]
-    if CC_EMAIL and CC_EMAIL.lower() != to_email.lower():
-        recipients.append(CC_EMAIL)
+    # Important: Resend blocks multiple recipients if using the onboarding domain
+    if CC_EMAIL and CC_EMAIL.lower() != to_email.lower() and FROM_EMAIL != "onboarding@resend.dev":
+        params["cc"] = [CC_EMAIL]
 
     try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-            server.sendmail(FROM_EMAIL, recipients, msg.as_string())
-        print(f"[EMAIL] Sent to {to_email} (cc: {CC_EMAIL}): {subject}")
+        response = resend.Emails.send(params)
+        print(f"[EMAIL] Sent via Resend to {to_email} (cc: {CC_EMAIL}) | subject: {subject}")
         return True
     except Exception as e:
         print(f"[EMAIL] Failed to send to {to_email}: {e}")

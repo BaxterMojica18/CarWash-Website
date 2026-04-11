@@ -309,33 +309,30 @@ def forgot_password(request: schemas.ForgotPasswordRequest, http_request: Reques
         except Exception as e:
             pass # User doesn't exist anywhere
     
+    # Note: Only OTP method is used now.
+    
     if user:
         reset_data = crud.create_password_reset_token(db, user.id)
         reset_token = reset_data["token"]
         otp_code = reset_data["otp_code"]
         
-        email_sent = False
-        if reset_method == "otp":
-            email_sent = send_otp_email(request.email, otp_code)
-        else:
-            email_sent = send_password_reset_email(request.email, reset_token)
+        email_sent = send_otp_email(request.email, otp_code)
         
         if not email_sent:
-            # Fallback: log to console if email fails
-            frontend_url = os.getenv("FRONTEND_URL", "https://car-wash-website-khaki.vercel.app")
+            # Fallback for dev: log to console
             print(f"\n{'='*50}")
-            print(f"PASSWORD RESET for {request.email} (method: {reset_method})")
-            print(f"Token: {reset_token}")
+            print(f"FAILED TO SEND EMAIL. Console fallback link:")
+            print(f"PASSWORD RESET for {request.email} (method: otp)")
             print(f"OTP Code: {otp_code}")
-            print(f"Reset URL: {frontend_url}/reset-password.html?token={reset_token}")
             print(f"Expires in 15 minutes")
             print(f"{'='*50}\n")
+            
+            raise HTTPException(
+                status_code=500, 
+                detail="Failed to send the email due to server configuration or firewall blocking. (Check if Render is blocking port 587). The OTP code was printed to the server console."
+            )
     
-    if reset_method == "otp":
-        msg = "If an account with that email exists, a 6-digit verification code has been sent."
-    else:
-        msg = "If an account with that email exists, a password reset link has been sent."
-    
+    msg = "If an account with that email exists, a 6-digit verification code has been sent."
     return {"message": msg}
 
 @router.post("/verify-otp")
