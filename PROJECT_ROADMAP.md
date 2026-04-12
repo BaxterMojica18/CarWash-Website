@@ -460,3 +460,95 @@ STRIPE_SECRET_KEY=sk_test_...
 | Real-time WebSockets for Queue | ⬜ Pending |
 | SMS Notifications (Twilio) | ⬜ Pending |
 | React + Next.js Frontend | ⬜ Pending |
+
+---
+
+## 🔜 Planned — Session 8
+
+### 🔐 Feature 1: Staff Product/Service Permissions Fix
+**Target Version:** V2.4 | **Priority:** High
+
+#### Problem:
+Staff (role: `user`) currently has `manage_products` permission which allows them to add, edit, and soft-delete products/services. This should be restricted — staff should only be able to **view** products/services, not modify them.
+
+#### What Needs to Change:
+
+**Backend (`commands/database/seed_data.py` + `commands/users/setup_demo_accounts.py`):**
+- Remove `manage_products` from the default `user` (staff) role permissions
+- Staff role should only retain: `view_locations`, `manage_invoices`, `view_invoices`, `view_reports`
+
+**Frontend (`frontend/products.html`, `frontend/services.html`):**
+- Hide Add / Edit / Delete buttons when logged-in user is staff (no `manage_products` permission)
+- Show read-only view of products/services for staff
+- Permission check already exists via `has_permission("manage_products")` on the backend — frontend just needs to respect it
+
+**Permissions Matrix (Updated):**
+
+| Permission | Superadmin | Admin | Staff | Client |
+|---|---|---|---|---|
+| `manage_products` | ✅ | ✅ | ❌ | ❌ |
+| `manage_locations` | ✅ | ✅ | ❌ | ❌ |
+| `view_locations` | ✅ | ✅ | ✅ | ❌ |
+| `manage_invoices` | ✅ | ✅ | ✅ | ❌ |
+| `view_invoices` | ✅ | ✅ | ✅ | ❌ |
+| `view_reports` | ✅ | ✅ | ✅ | ❌ |
+| `manage_settings` | ✅ | ✅ | ❌ | ❌ |
+| `manage_users` | ✅ | ❌ | ❌ | ❌ |
+
+**Files to Modify:**
+- [ ] `commands/database/seed_data.py` — remove `manage_products` from staff role defaults
+- [ ] `commands/users/setup_demo_accounts.py` — update demo staff permissions
+- [ ] `frontend/products.html` — hide add/edit/delete for non-`manage_products` users
+- [ ] `frontend/services.html` — hide add/edit/delete for non-`manage_products` users
+- [ ] `frontend/permissions-management.html` — reflect updated default matrix
+
+---
+
+### 🛍️ Feature 2: Client Shopping Experience Overhaul (Lazada/Shopee/TikTok Shop Style)
+**Target Version:** V2.5 | **Priority:** High
+
+#### Goal:
+Redesign the client-facing shopping experience (`shop.html`, `cart.html`) to match the modern e-commerce UX of Lazada, Shopee, and TikTok Shop — product cards with images, ratings display, quantity selectors, sticky cart, flash banners, and a smooth checkout flow.
+
+#### Planned UI/UX Changes:
+
+**`frontend/shop.html`:**
+- [ ] **Product Grid** — responsive card grid (2 cols mobile, 3-4 cols desktop)
+- [ ] **Product Cards** — image thumbnail, name, price with strikethrough original price, "Add to Cart" button, stock badge
+- [ ] **Category Filter Bar** — horizontal scrollable tabs (All, Products, Services, Featured)
+- [ ] **Search Bar** — live search/filter by name
+- [ ] **Flash Sale Banner** — promotional banner at top (configurable by owner)
+- [ ] **Sort Options** — Price: Low to High / High to Low, Newest
+- [ ] **Empty State** — illustrated empty state when no products match filter
+- [ ] **Floating Cart Button** — sticky bottom-right cart icon with item count badge
+
+**`frontend/cart.html`:**
+- [ ] **Cart Item Cards** — product image, name, unit price, quantity stepper (+/-), subtotal, remove button
+- [ ] **Order Summary Panel** — sticky sidebar with subtotal, fees, total
+- [ ] **Voucher/Promo Code Field** — input for discount codes (UI only for now)
+- [ ] **Payment Method Selector** — visual cards for Cash, QR, Stripe
+- [ ] **Checkout CTA** — prominent "Place Order" button with total amount
+- [ ] **Empty Cart State** — illustrated empty state with "Continue Shopping" link
+
+**`frontend/checkout.html` (Stripe):**
+- [ ] Cleaner card layout matching the new shop theme
+- [ ] Order summary visible alongside payment form
+
+**New CSS (`frontend/css/shop.css`):**
+- [ ] Shopee/Lazada-inspired color palette (orange accent or brand color)
+- [ ] Card hover effects, shadows, smooth transitions
+- [ ] Mobile-first responsive grid
+- [ ] Skeleton loading states for product cards
+
+**Backend (no changes needed)** — existing `/api/settings/products`, `/api/cart`, `/api/orders` endpoints are sufficient.
+
+#### Inspiration References:
+- Shopee: category tabs, card grid, floating cart, flash sale banners
+- Lazada: clean product cards with image, price, ratings area
+- TikTok Shop: sticky add-to-cart, quantity selector on card, smooth animations
+
+#### Files to Create/Modify:
+- [ ] `frontend/shop.html` — full redesign
+- [ ] `frontend/cart.html` — full redesign
+- [ ] `frontend/checkout.html` — minor layout improvements
+- [ ] `frontend/css/shop.css` — NEW dedicated shop stylesheet
