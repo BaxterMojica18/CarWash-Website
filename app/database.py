@@ -60,6 +60,8 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)
     is_demo = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+    deleted_at = Column(DateTime, nullable=True)
     phone_number = Column(String, nullable=True)
     account_type = Column(String, nullable=True)  # admin, staff, client, owner
     business_number = Column(String, index=True, nullable=True)
@@ -301,10 +303,10 @@ class DashboardModule(Base):
     config = Column(String, nullable=True)
     updated_at = Column(DateTime, server_default=func.now())
 
-class RoleSidebarSetting(Base):
-    __tablename__ = "role_sidebar_settings"
+class UserSidebarSetting(Base):
+    __tablename__ = "user_sidebar_settings"
     id = Column(Integer, primary_key=True, index=True)
-    role_id = Column(Integer, ForeignKey("roles.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
     page_name = Column(String)
     is_visible = Column(Boolean, default=True)
     business_number = Column(String, default="__global__")

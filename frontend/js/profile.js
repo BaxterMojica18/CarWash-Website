@@ -26,6 +26,15 @@ async function loadProfileData() {
         document.getElementById('menuProfilePhoto').src = profile.photo || defaultPhoto;
         document.getElementById('profileName').textContent = profile.name || 'User';
         document.getElementById('profileRole').textContent = profile.role || 'Role';
+        
+        // Dynamically insert business code into dropdown if an element with id profileBiz exists
+        const bizElement = document.getElementById('profileBiz');
+        if (bizElement && profile.business_number) {
+            bizElement.textContent = `Biz Code: ${profile.business_number}`;
+            bizElement.style.display = 'inline-block';
+        } else if (bizElement) {
+            bizElement.style.display = 'none';
+        }
     } catch (error) {
         console.error('Failed to load profile:', error);
         const defaultPhoto = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="50" fill="%23667eea"/%3E%3Cpath d="M50 45c8.284 0 15-6.716 15-15s-6.716-15-15-15-15 6.716-15 15 6.716 15 15 15zm0 7.5c-10 0-30 5-30 15v7.5h60v-7.5c0-10-20-15-30-15z" fill="white"/%3E%3C/svg%3E';

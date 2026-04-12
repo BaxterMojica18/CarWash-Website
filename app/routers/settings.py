@@ -168,6 +168,9 @@ def get_profile(db: Session = Depends(database.get_db), current_user = Depends(g
     profile = crud.get_user_profile(db, current_user.id)
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
+        
+    # Inject business number from the user model dynamically
+    setattr(profile, "business_number", current_user.business_number)
     return profile
 
 @router.post("/profile", response_model=schemas.UserProfile)

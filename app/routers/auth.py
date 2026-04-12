@@ -101,20 +101,21 @@ def get_my_permissions(current_user: database.User = Depends(get_current_user), 
     hidden_tabs = []
     role_ids = [r.id for r in current_user.roles]
     biz = current_user.business_number or '__global__'
-    if role_ids:
-        hidden_settings = db.query(database.RoleSidebarSetting).filter(
-            database.RoleSidebarSetting.role_id.in_(role_ids),
-            database.RoleSidebarSetting.is_visible == False,
-            database.RoleSidebarSetting.business_number == biz
+    if True: # unconditional fetch for the user
+        user_hidden_settings = db.query(database.UserSidebarSetting).filter(
+            database.UserSidebarSetting.user_id == current_user.id,
+            database.UserSidebarSetting.is_visible == False,
+            database.UserSidebarSetting.business_number == biz
         ).all()
-        hidden_tabs = list(set([s.page_name for s in hidden_settings]))
+        hidden_tabs = list(set([s.page_name for s in user_hidden_settings]))
         
     return {
         "user_id": current_user.id,
         "email": current_user.email,
         "roles": roles,
         "permissions": permissions,
-        "hidden_sidebar_tabs": hidden_tabs
+        "hidden_sidebar_tabs": hidden_tabs,
+        "business_number": current_user.business_number
     }
 
 @router.get("/users", response_model=List[schemas.UserPermissions])
@@ -137,17 +138,20 @@ def list_users(db: Session = Depends(database.get_db), current_user: database.Us
         # Hide superadmin users from non-superadmin users
         if "superadmin" in user_roles and not is_superadmin_user:
             continue
+            
+        # Hide soft-deleted users
+        if user.is_active is False:
+            continue
         
         permissions = get_user_permissions(user)
         
         hidden_tabs = []
-        role_ids = [r.id for r in user.roles]
         biz = user.business_number or '__global__'
-        if role_ids:
-            hidden_settings = db.query(database.RoleSidebarSetting).filter(
-                database.RoleSidebarSetting.role_id.in_(role_ids),
-                database.RoleSidebarSetting.is_visible == False,
-                database.RoleSidebarSetting.business_number == biz
+        if True: # unconditional fetch for the user
+            hidden_settings = db.query(database.UserSidebarSetting).filter(
+                database.UserSidebarSetting.user_id == user.id,
+                database.UserSidebarSetting.is_visible == False,
+                database.UserSidebarSetting.business_number == biz
             ).all()
             hidden_tabs = list(set([s.page_name for s in hidden_settings]))
             
@@ -156,7 +160,8 @@ def list_users(db: Session = Depends(database.get_db), current_user: database.Us
             "email": user.email,
             "roles": user_roles,
             "permissions": permissions,
-            "hidden_sidebar_tabs": hidden_tabs
+            "hidden_sidebar_tabs": hidden_tabs,
+            "business_number": user.business_number
         })
     return result
 
@@ -188,13 +193,12 @@ def get_user_details(user_id: int, db: Session = Depends(database.get_db), curre
     permissions = get_user_permissions(user)
     
     hidden_tabs = []
-    role_ids = [r.id for r in user.roles]
     biz = user.business_number or '__global__'
-    if role_ids:
-        hidden_settings = db.query(database.RoleSidebarSetting).filter(
-            database.RoleSidebarSetting.role_id.in_(role_ids),
-            database.RoleSidebarSetting.is_visible == False,
-            database.RoleSidebarSetting.business_number == biz
+    if True: # unconditional fetch for the user
+        hidden_settings = db.query(database.UserSidebarSetting).filter(
+            database.UserSidebarSetting.user_id == user.id,
+            database.UserSidebarSetting.is_visible == False,
+            database.UserSidebarSetting.business_number == biz
         ).all()
         hidden_tabs = list(set([s.page_name for s in hidden_settings]))
     
@@ -252,6 +256,31 @@ def get_all_permissions(db: Session = Depends(database.get_db), current_user: da
     permissions = db.query(database.Permission).all()
     return [{"name": p.name, "description": p.description} for p in permissions]
 
+@router.delete("/users/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
+    user = db.query(database.User).filter(database.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot delete your own account")
+        
+    if current_user.business_number and user.business_number != current_user.business_number:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this user")
+        
+    import datetime
+    timestamp = int(datetime.datetime.now().timestamp())
+    
+    # Soft delete: prefix email to allow registering and reuse, wipe out roles to disable access
+    user.email = f"deleted_{timestamp}_{user.id}_{user.email}"
+    user.password_hash = "disabled"
+    user.is_active = False
+    user.deleted_at = datetime.datetime.now()
+    user.roles.clear()
+    
+    db.commit()
+    return {"message": "User soft deleted successfully"}
+
 @router.get("/roles/all")
 def get_all_roles(db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
     roles = db.query(database.Role).filter(~database.Role.name.startswith('custom_')).all()
@@ -261,28 +290,28 @@ def get_all_roles(db: Session = Depends(database.get_db), current_user: database
         result.append({"id": role.id, "name": role.name, "description": role.description, "permissions": perms})
     return result
 
-@router.get("/roles/{role_id}/sidebar")
-def get_role_sidebar_settings(role_id: int, db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
+@router.get("/users/{user_id}/sidebar")
+def get_user_sidebar_settings(user_id: int, db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
     biz = current_user.business_number or '__global__'
-    settings = db.query(database.RoleSidebarSetting).filter(
-        database.RoleSidebarSetting.role_id == role_id,
-        database.RoleSidebarSetting.business_number == biz
+    settings = db.query(database.UserSidebarSetting).filter(
+        database.UserSidebarSetting.user_id == user_id,
+        database.UserSidebarSetting.business_number == biz
     ).all()
     return {s.page_name: s.is_visible for s in settings}
 
-@router.put("/roles/{role_id}/sidebar")
-def update_role_sidebar_settings(role_id: int, data: schemas.UpdateSidebarSettings, db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
+@router.put("/users/{user_id}/sidebar")
+def update_user_sidebar_settings(user_id: int, data: schemas.UpdateSidebarSettings, db: Session = Depends(database.get_db), current_user: database.User = Depends(is_admin_or_owner)):
     biz = current_user.business_number or '__global__'
     for page_name, is_visible in data.settings.items():
-        setting = db.query(database.RoleSidebarSetting).filter(
-            database.RoleSidebarSetting.role_id == role_id,
-            database.RoleSidebarSetting.page_name == page_name,
-            database.RoleSidebarSetting.business_number == biz
+        setting = db.query(database.UserSidebarSetting).filter(
+            database.UserSidebarSetting.user_id == user_id,
+            database.UserSidebarSetting.page_name == page_name,
+            database.UserSidebarSetting.business_number == biz
         ).first()
         if setting:
             setting.is_visible = is_visible
         else:
-            setting = database.RoleSidebarSetting(role_id=role_id, page_name=page_name, is_visible=is_visible, business_number=biz)
+            setting = database.UserSidebarSetting(user_id=user_id, page_name=page_name, is_visible=is_visible, business_number=biz)
             db.add(setting)
     db.commit()
     return {"message": "Sidebar settings updated successfully"}

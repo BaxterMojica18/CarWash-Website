@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <button class="menu-toggle" onclick="toggleMenu()">â˜°</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
-            <span id="sidebarLogo">🚗</span>
+            <span id="sidebarLogo">ðŸš—</span>
             <h2 id="sidebarName">CarWash</h2>
         </div>
         <ul>
@@ -30,6 +30,7 @@
                         <div>
                             <strong id="profileName">User</strong>
                             <p id="profileRole" style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Role</p>
+                            <p id="profileBiz" style="font-size: 11px; margin-top: 5px; color: #667eea; background: rgba(102, 126, 234, 0.1); padding: 2px 5px; border-radius: 4px; display: none; font-weight: bold;"></p>
                         </div>
                     </div>
                     <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
@@ -149,7 +150,7 @@
                 : allReservations.filter(r => r.status === currentFilter);
 
             if (filtered.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #666; font-size: 1.5rem; padding: 60px 20px; display: flex; justify-content: center; align-items: center;">📭 No reservations found</div>';
+                container.innerHTML = '<div style="text-align: center; color: #666; font-size: 1.5rem; padding: 60px 20px; display: flex; justify-content: center; align-items: center;">ðŸ“­ No reservations found</div>';
                 return;
             }
 
@@ -157,8 +158,8 @@
                 <div style="background: white; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden; transition: all 0.3s ease;">
                     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                         <div>
-                            <h3 style="color: white; margin: 0 0 8px 0; font-size: 1.3rem;">🧾 ${res.reservation_number}</h3>
-                            <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9rem;">📅 ${new Date(res.created_at).toLocaleString()}</p>
+                            <h3 style="color: white; margin: 0 0 8px 0; font-size: 1.3rem;">ðŸ§¾ ${res.reservation_number}</h3>
+                            <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9rem;">ðŸ“… ${new Date(res.created_at).toLocaleString()}</p>
                             ${res.queue_position ? `<p style="color: white; margin: 5px 0 0 0; font-weight: bold;">Queue Position: #${res.queue_position}</p>` : ''}
                         </div>
                         <span style="padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; background: ${getStatusColor(res.status)}">${res.status.replace('_', ' ').toUpperCase()}</span>
@@ -166,15 +167,15 @@
                     <div style="padding: 25px;">
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
                             <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
-                                <span style="font-weight: 600; color: #495057;">🔧 Service:</span>
+                                <span style="font-weight: 600; color: #495057;">ðŸ”§ Service:</span>
                                 <span style="font-weight: bold; color: #667eea;">${res.service.name}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
-                                <span style="font-weight: 600; color: #495057;">📍 Location:</span>
+                                <span style="font-weight: 600; color: #495057;">ðŸ“ Location:</span>
                                 <span style="font-weight: bold; color: #667eea;">${res.location.name}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
-                                <span style="font-weight: 600; color: #495057;">🚗 Vehicle:</span>
+                                <span style="font-weight: 600; color: #495057;">ðŸš— Vehicle:</span>
                                 <span style="font-weight: bold; color: #667eea;">${res.vehicle_plate}</span>
                             </div>
                         </div>
@@ -260,3 +261,5 @@
     </style>
 </body>
 </html>
+
+

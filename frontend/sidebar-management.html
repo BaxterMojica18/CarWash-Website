@@ -116,13 +116,14 @@
     <script src="js/menu.js"></script>
     <script src="js/toast.js"></script>
     <script>
+        // Updated to include Client-specific tabs 
         const ALL_TABS = [
-            "Dashboard", "Invoices", "Orders", "Queue", 
+            "Dashboard", "Invoices", "Orders", "My Orders", "Queue", 
             "Products", "Services", "Reports", "Settings", 
-            "Permissions", "Sidebar Tabs"
+            "Permissions", "Sidebar Tabs", "Shop", "Cart", "Reserve"
         ];
         
-        async function loadRoles() {
+        async function loadUsers() {
             try {
                 const meResponse = await fetch(`${API_BASE}/auth/me/permissions`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -135,58 +136,61 @@
                     return;
                 }
                 
-                const response = await fetch(`${API_BASE}/auth/roles/all`, {
+                // Fetch all users for this business
+                const response = await fetch(`${API_BASE}/auth/users`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 
-                if (!response.ok) throw new Error('Failed to load roles');
-                const roles = await response.json();
+                if (!response.ok) throw new Error('Failed to load users');
+                const users = await response.json();
                 
-                // Fetch sidebar settings for all roles
-                for (let role of roles) {
-                    const sbRes = await fetch(`${API_BASE}/auth/roles/${role.id}/sidebar`, {
+                // Fetch sidebar settings for all users
+                for (let user of users) {
+                    const sbRes = await fetch(`${API_BASE}/auth/users/${user.user_id}/sidebar`, {
                         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                     });
                     if (sbRes.ok) {
-                        role.sidebar_settings = await sbRes.json();
+                        user.sidebar_settings = await sbRes.json();
                     } else {
-                        role.sidebar_settings = {};
+                        user.sidebar_settings = {};
                     }
                 }
                 
-                renderRoles(roles);
+                renderUsers(users);
             } catch (error) {
-                console.error('Error loading roles:', error);
-                showToast('Failed to load roles', 'error');
-                document.getElementById('rolesGrid').innerHTML = '<div class="no-data">Failed to load roles. Please try again.</div>';
+                console.error('Error loading users:', error);
+                showToast('Failed to load users', 'error');
+                document.getElementById('rolesGrid').innerHTML = '<div class="no-data">Failed to load users. Please try again.</div>';
             }
         }
 
-        function renderRoles(roles) {
+        function renderUsers(users) {
             const grid = document.getElementById('rolesGrid');
             
-            if (roles.length === 0) {
-                grid.innerHTML = '<div class="no-data">No roles found.</div>';
+            if (users.length === 0) {
+                grid.innerHTML = '<div class="no-data">No users found.</div>';
                 return;
             }
 
-            grid.innerHTML = roles.map(role => {
+            grid.innerHTML = users.map(user => {
+                const rolesDisplay = user.roles && user.roles.length > 0 ? user.roles.join(', ') : 'No Role';
                 return `
                     <div class="role-card">
-                        <div class="role-header">
-                            Role: ${role.name}
+                        <div class="role-header" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+                            <div>Account: <span style="color: #667eea">${user.email}</span></div>
+                            <div style="font-size: 13px; color: #888; font-weight: normal;">Roles: ${rolesDisplay}</div>
                         </div>
                         <div class="tabs-list">
                             ${ALL_TABS.map(tab => {
                                 // Default to visible if not explicitly set to false
-                                const isVisible = role.sidebar_settings[tab] !== false;
+                                const isVisible = user.sidebar_settings[tab] !== false;
                                 return `
                                 <div class="tab-item">
                                     <div class="tab-label">${tab}</div>
                                     <label class="toggle-switch">
                                         <input type="checkbox" 
                                             ${isVisible ? 'checked' : ''} 
-                                            onchange="toggleTabVisibility(${role.id}, '${tab}', this.checked)">
+                                            onchange="toggleTabVisibility(${user.user_id}, '${tab}', this.checked)">
                                         <span class="slider"></span>
                                     </label>
                                 </div>
@@ -198,9 +202,9 @@
             }).join('');
         }
 
-        async function toggleTabVisibility(roleId, tabName, isVisible) {
+        async function toggleTabVisibility(userId, tabName, isVisible) {
             try {
-                const response = await fetch(`${API_BASE}/auth/roles/${roleId}/sidebar`, {
+                const response = await fetch(`${API_BASE}/auth/users/${userId}/sidebar`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -219,11 +223,12 @@
             } catch (error) {
                 console.error('Error updating tab:', error);
                 showToast('Failed to update tab visibility', 'error');
-                setTimeout(() => loadRoles(), 1000); // revert visually if failed
+                setTimeout(() => loadUsers(), 1000); // revert visually if failed
             }
         }
 
-        loadRoles();
+        loadUsers();
     </script>
 </body>
 </html>
+

@@ -1399,3 +1399,74 @@ For issues or questions:
 - ✅ All transactional emails (orders, reservations, password reset, OTP, contact sales) now use Resend
 - ✅ CC_EMAIL added — all emails CC `baxterdavid.mojica@gmail.com` by default
 - ✅ requirements.txt pinned to exact versions for reproducible builds
+
+### Version 6.3.0 (April 12, 2026)
+- ?? Refactored Sidebar Tab Management from Role-Based (RoleSidebarSetting) to User-Based (UserSidebarSetting).
+- ??? Owners can now manage tab visibility specifically mapped to user accounts (user_id) rather than wide Net Roles, allowing individual client customization.
+- ?? Added all Client-specific tabs (Shop, Cart, Reserve, My Orders) to the Sidebar Management view.
+- ?? Replaced /auth/roles/*/sidebar endpoints to /auth/users/*/sidebar APIs.
+
+---
+
+## Latest Updates (April 13, 2026 — Session 7)
+
+> **Version:** 6.3.0 (Public: V2.3) | **Branch:** `feature/user-sidebar-visibility-refactor`
+
+---
+
+### 🔀 Sidebar Visibility Refactor — Role-Based → User-Based
+**Status:** ✅ Completed | **Verified working in production**
+
+#### Problem Solved:
+- Sidebar tab visibility was tied to **Roles** (`RoleSidebarSetting`) — hiding a tab for the "Client" role affected ALL clients universally, making individual customization impossible.
+- Client-specific tabs (`Shop`, `Cart`, `Reserve`, `My Orders`) were missing from `sidebar-management.html` so admins couldn't toggle them at all.
+- Tab name mismatches (e.g. "Orders" vs "My Orders") caused toggles to silently fail.
+
+#### Changes Made:
+
+**Database (`app/database.py`):**
+- Removed `RoleSidebarSetting` model
+- Added new `UserSidebarSetting` model — links to `users.id` via `user_id` FK instead of `role_id`
+- New table: `user_sidebar_settings`
+
+**Backend (`app/routers/auth.py`):**
+- `GET /me/permissions` — fetches `hidden_sidebar_tabs` from `UserSidebarSetting` by `current_user.id`
+- `GET /users/{user_id}/sidebar` — replaced role-based lookup with user-based lookup
+- `PUT /users/{user_id}/sidebar` — stores visibility booleans mapped to `user_id`
+- Removed all `/auth/roles/{role_id}/sidebar` endpoints
+
+**Frontend (`frontend/sidebar-management.html`):**
+- Refactored `loadRoles()` → `loadUsers()` — lists individual user accounts (email + role) instead of generic role cards
+- Expanded `ALL_TABS` to include `My Orders`, `Shop`, `Cart`, `Reserve`
+- Updated `toggleTabVisibility` to send `user_id` instead of `role_id`
+
+**Other frontend files (35 pages):**
+- Updated all pages referencing old role-sidebar API to use new user-sidebar endpoints
+- `profile.js` updated to reflect new permission fetch logic
+
+#### API Changes:
+| Old Endpoint | New Endpoint |
+|---|---|
+| `GET /auth/roles/{role_id}/sidebar` | `GET /auth/users/{user_id}/sidebar` |
+| `PUT /auth/roles/{role_id}/sidebar` | `PUT /auth/users/{user_id}/sidebar` |
+
+#### Files Modified:
+- ✅ `app/database.py` — `UserSidebarSetting` replaces `RoleSidebarSetting`
+- ✅ `app/routers/auth.py` — user-based sidebar endpoints
+- ✅ `app/schemas.py` — updated sidebar schemas
+- ✅ `app/routers/settings.py` — updated references
+- ✅ `frontend/sidebar-management.html` — user-centric UI, client tabs added
+- ✅ `frontend/js/profile.js` — updated permission fetch
+- ✅ 35 frontend HTML files — updated to new sidebar API
+
+---
+
+## Change Log
+
+### Version 6.3.0 / V2.3 (April 13, 2026)
+- ✅ Sidebar visibility refactored from role-based to user-based (`UserSidebarSetting`)
+- ✅ Admins can now manage sidebar tabs per individual user account
+- ✅ Client tabs (Shop, Cart, Reserve, My Orders) added to Sidebar Management UI
+- ✅ Fixed tab name mismatches that caused silent toggle failures
+- ✅ Removed `/auth/roles/{role_id}/sidebar` endpoints, replaced with `/auth/users/{user_id}/sidebar`
+- ✅ README updated to V2.3

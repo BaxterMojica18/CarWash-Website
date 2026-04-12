@@ -1,6 +1,6 @@
 # 🚗 Car Wash Management System
 
-> **Version 2.0** — Full-stack car wash management platform with e-commerce, multi-tenant support, Stripe payments, and live production deployment.
+> **Version 2.3** — Full-stack car wash management platform with e-commerce, multi-tenant support, Stripe payments, user-based sidebar visibility control, and live production deployment.
 
 [![Frontend](https://img.shields.io/badge/Frontend-Vercel-black?logo=vercel)](https://car-wash-website-khaki.vercel.app)
 [![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render)](https://carwash-website-jzr2.onrender.com)
@@ -19,7 +19,7 @@
 | Backend API | Render | https://carwash-website-jzr2.onrender.com |
 | Database | Render PostgreSQL | Singapore region |
 | Google Login | Firebase Auth | `carwash-mgmt-system-41402` |
-| Email | Gmail SMTP | Transactional emails |
+| Email | Resend API | Transactional emails |
 | Payments | Stripe | Test mode (card payments) |
 
 ---
@@ -40,7 +40,7 @@
 | Database | PostgreSQL (Docker locally, Render in production) |
 | Frontend | HTML / CSS / JavaScript |
 | Authentication | JWT + Google Firebase Auth |
-| Email | Gmail SMTP |
+| Email | Resend API |
 | Payments | Stripe (card payments + webhooks) |
 | Containerization | Docker + Docker Compose |
 | Frontend Hosting | Vercel |
@@ -111,8 +111,16 @@
 - ✅ Role hierarchy: Superadmin → Admin → Staff → Client
 - ✅ 8 granular permissions (products, locations, invoices, reports, settings, users)
 - ✅ Visual permissions management UI with toggle switches
-- ✅ Sidebar tab visibility control per role
+- ✅ Sidebar tab visibility control **per individual user** (not just role)
+- ✅ Client-specific tabs (Shop, Cart, Reserve, My Orders) manageable per user
 - ✅ User management in Settings (add users, assign roles)
+
+### 🔀 Sidebar Visibility — User-Based Control *(New in V2.3)*
+- ✅ Sidebar tab visibility stored per `user_id` — fully independent per account
+- ✅ Owner/admin can show or hide any tab for any specific user
+- ✅ Client tabs (Shop, Cart, Reserve, My Orders) included in Sidebar Management UI
+- ✅ Replaces old role-based system — no more blanket changes affecting all users of a role
+- ✅ Changes persisted server-side via `user_sidebar_settings` table
 
 ### 🎨 UI & Navigation *(New in V2)*
 - ✅ Collapsible sidebar with localStorage persistence across all pages
@@ -350,12 +358,10 @@ SECRET_KEY=your-strong-secret-key-min-32-chars
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-# Email (Gmail SMTP)
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-FROM_EMAIL=your-email@gmail.com
+# Email (Resend API)
+RESEND_API_KEY=re_your_api_key_here
+FROM_EMAIL=onboarding@resend.dev
+CC_EMAIL=your-email@gmail.com
 
 # Firebase (Render only — paste full JSON as single line)
 FIREBASE_CREDENTIALS_JSON={"type":"service_account",...}
@@ -389,6 +395,7 @@ FRONTEND_URL=https://car-wash-website-khaki.vercel.app
 | `dashboard_settings` / `dashboard_modules` | Dashboard customization |
 | `password_reset_tokens` | Password reset with OTP |
 | `user_profiles` | Profile photos and display names |
+| `user_sidebar_settings` | Per-user sidebar tab visibility |
 
 ---
 

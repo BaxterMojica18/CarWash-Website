@@ -175,6 +175,7 @@ class UserProfileCreate(BaseModel):
 class UserProfile(UserProfileCreate):
     id: int
     user_id: int
+    business_number: Optional[str] = None
     class Config:
         from_attributes = True
 
@@ -184,6 +185,7 @@ class UserPermissions(BaseModel):
     roles: List[str]
     permissions: List[str]
     hidden_sidebar_tabs: Optional[List[str]] = []
+    business_number: Optional[str] = None
 
 class UpdateSidebarSettings(BaseModel):
     settings: Dict[str, bool]

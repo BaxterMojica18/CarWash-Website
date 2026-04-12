@@ -224,7 +224,7 @@
 6. ✅ **Client-Specific Themes**: `for_client` flag on themes, separate client presets dropdown, auto-detect on login. *(April 4, 2026)*
 7. ✅ **Production Deployment Fixes**: Fixed password reset links (localhost → Vercel), Dockerfile migration startup, dynamic CORS, business-scoped sidebar settings. *(April 7, 2026)*
 8. ✅ **Email CC System**: All system emails now CC `baxterdavid.mojica@gmail.com` for audit trailing. *(April 7, 2026)*
-9. 📧 **Dynamic Client Notifications**: Automatic email/SMS notifications to clients when their service status (Queue) or order (Product) is updated.
+9. ✅ **Dynamic Client Notifications**: Automatic email/SMS notifications to clients when their service status (Queue) or order (Product) is updated via Resend API HTTP Threads. *(April 13, 2026)*
 10. **Dynamic Business Dashboards**: Tailor modules based on account_type (Owner vs Client).
 11. Payment gateway integration
 12. Real-time features (WebSockets for Queue)
@@ -427,3 +427,36 @@ CC_EMAIL=baxterdavid.mojica@gmail.com
 STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_SECRET_KEY=sk_test_...
 ```
+
+### Extended User UX Customization
+- [x] **User UI Customization** ? *(Added April 2026)*
+  - Granular Sidebar module access via \UserSidebarSetting\ mapping.
+  - Sidebar toggling scoped strictly to individual users over blanket roles.
+  - Extended dynamic visibility rules to Client modules.
+
+---
+
+## ✅ Completed in Session 7 (April 13, 2026)
+
+### 🔀 User-Based Sidebar Visibility
+- [x] `UserSidebarSetting` model — sidebar tabs stored per `user_id` not `role_id`
+- [x] `GET /auth/users/{user_id}/sidebar` — fetch per-user sidebar config
+- [x] `PUT /auth/users/{user_id}/sidebar` — save per-user sidebar config
+- [x] `sidebar-management.html` — shows individual user cards instead of role cards
+- [x] Client tabs (Shop, Cart, Reserve, My Orders) added to management UI
+- [x] All 35 frontend pages updated to new user-sidebar API
+- [x] `profile.js` updated for new permission fetch
+
+### 📊 Current Version: 6.3.0 (Public: V2.3)
+
+## 🔄 Updated Phase 2 Status (April 13, 2026 — Session 7)
+
+| Feature | Status |
+|---------|--------|
+| User-Based Sidebar Visibility | ✅ Done |
+| Stripe Payment Integration | ✅ Done |
+| Email Notifications (Resend API) | ✅ Done |
+| Multi-Tenant Data Isolation | ✅ Done |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| SMS Notifications (Twilio) | ⬜ Pending |
+| React + Next.js Frontend | ⬜ Pending |
