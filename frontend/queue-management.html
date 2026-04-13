@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,11 +7,11 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">â˜°</button>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
-            <span id="sidebarLogo">ðŸš—</span>
-            <h2 id="sidebarName">CarWash</h2>
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
         </div>
         <ul>
             <!-- Tabs are dynamically generated in menu.js -->
@@ -93,9 +93,8 @@
 
         async function loadLocations() {
             try {
-                const token = getToken();
                 const response = await fetch(`${API_BASE}/settings/locations`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
                 });
                 locations = await response.json();
                 const select = document.getElementById('location-select');
@@ -108,14 +107,12 @@
 
         async function loadQueue() {
             const locationId = document.getElementById('location-select').value;
-            
             try {
-                const token = getToken();
-                const url = locationId 
+                const url = locationId
                     ? `${API_BASE}/reservations/?location_id=${locationId}`
                     : `${API_BASE}/reservations/`;
                 const response = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
                 });
                 allReservations = await response.json();
                 renderReservations();
@@ -145,84 +142,68 @@
 
         function renderReservations() {
             const container = document.getElementById('reservations-list');
-            let filtered = currentFilter === 'all' 
-                ? allReservations 
+            const filtered = currentFilter === 'all'
+                ? allReservations
                 : allReservations.filter(r => r.status === currentFilter);
 
             if (filtered.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #666; font-size: 1.5rem; padding: 60px 20px; display: flex; justify-content: center; align-items: center;">ðŸ“­ No reservations found</div>';
+                container.innerHTML = '<div class="empty-state">🔭 No reservations found</div>';
                 return;
             }
 
-            container.innerHTML = filtered.map(res => `
-                <div style="background: white; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden; transition: all 0.3s ease;">
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                        <div>
-                            <h3 style="color: white; margin: 0 0 8px 0; font-size: 1.3rem;">ðŸ§¾ ${res.reservation_number}</h3>
-                            <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9rem;">ðŸ“… ${new Date(res.created_at).toLocaleString()}</p>
+            container.innerHTML = filtered.map((res, i) => `
+                <div class="queue-card" style="animation-delay: ${i * 0.06}s">
+                    <div class="card-header">
+                        <div class="order-info">
+                            <h3>🧾 ${res.reservation_number}</h3>
+                            <p class="order-date">📅 ${new Date(res.created_at).toLocaleString()}</p>
                             ${res.queue_position ? `<p style="color: white; margin: 5px 0 0 0; font-weight: bold;">Queue Position: #${res.queue_position}</p>` : ''}
                         </div>
-                        <span style="padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; background: ${getStatusColor(res.status)}">${res.status.replace('_', ' ').toUpperCase()}</span>
+                        <span class="status-badge status-${res.status}">${res.status.replace('_', ' ').toUpperCase()}</span>
                     </div>
-                    <div style="padding: 25px;">
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
-                                <span style="font-weight: 600; color: #495057;">ðŸ”§ Service:</span>
-                                <span style="font-weight: bold; color: #667eea;">${res.service.name}</span>
+                    <div class="card-body">
+                        <div class="order-details">
+                            <div class="detail-item">
+                                <span class="detail-label">🔧 Service:</span>
+                                <span class="detail-value">${res.service.name}</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
-                                <span style="font-weight: 600; color: #495057;">ðŸ“ Location:</span>
-                                <span style="font-weight: bold; color: #667eea;">${res.location.name}</span>
+                            <div class="detail-item">
+                                <span class="detail-label">📍 Location:</span>
+                                <span class="detail-value">${res.location.name}</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px;">
-                                <span style="font-weight: 600; color: #495057;">ðŸš— Vehicle:</span>
-                                <span style="font-weight: bold; color: #667eea;">${res.vehicle_plate}</span>
+                            <div class="detail-item">
+                                <span class="detail-label">🚗 Vehicle:</span>
+                                <span class="detail-value">${res.vehicle_plate}</span>
                             </div>
                         </div>
                     </div>
-                    <div style="padding: 20px; background: #f8f9fa; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <div class="card-actions">
                         ${res.status === 'pending' ? `
-                            <button onclick="updateStatus(${res.id}, 'accepted')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">Accept</button>
-                            <button onclick="updateStatus(${res.id}, 'cancelled')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Reject</button>
+                            <button onclick="updateStatus(${res.id}, 'accepted')" class="action-btn accept-btn">Accept</button>
+                            <button onclick="updateStatus(${res.id}, 'cancelled')" class="action-btn reject-btn">Reject</button>
                         ` : ''}
                         ${res.status === 'accepted' ? `
-                            <button onclick="updateStatus(${res.id}, 'in_progress')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">Start Service</button>
-                            <button onclick="updateStatus(${res.id}, 'cancelled')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Cancel</button>
+                            <button onclick="updateStatus(${res.id}, 'in_progress')" class="action-btn process-btn">Start Service</button>
+                            <button onclick="updateStatus(${res.id}, 'cancelled')" class="action-btn reject-btn">Cancel</button>
                         ` : ''}
                         ${res.status === 'in_progress' ? `
-                            <button onclick="updateStatus(${res.id}, 'completed')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">Mark Complete</button>
-                            <button onclick="updateStatus(${res.id}, 'delayed')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #f0932b 0%, #e67e22 100%);">Delay</button>
+                            <button onclick="updateStatus(${res.id}, 'completed')" class="action-btn complete-btn">Mark Complete</button>
+                            <button onclick="updateStatus(${res.id}, 'delayed')" class="action-btn" style="background: linear-gradient(135deg, #f0932b 0%, #e67e22 100%);">Delay</button>
                         ` : ''}
                         ${res.status === 'delayed' ? `
-                            <button onclick="updateStatus(${res.id}, 'in_progress')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">Resume</button>
-                            <button onclick="updateStatus(${res.id}, 'cancelled')" style="padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">Cancel</button>
+                            <button onclick="updateStatus(${res.id}, 'in_progress')" class="action-btn process-btn">Resume</button>
+                            <button onclick="updateStatus(${res.id}, 'cancelled')" class="action-btn reject-btn">Cancel</button>
                         ` : ''}
                     </div>
                 </div>
             `).join('');
         }
 
-        function getStatusColor(status) {
-            const colors = {
-                pending: '#fff3cd; color: #856404',
-                accepted: '#d1ecf1; color: #0c5460',
-                in_progress: '#cce5ff; color: #004085',
-                completed: '#d4edda; color: #155724',
-                cancelled: '#f8d7da; color: #721c24',
-                delayed: '#fff8e1; color: #f57c00'
-            };
-            return colors[status] || '#e0e0e0; color: #333';
-        }
-
         async function updateStatus(reservationId, status) {
             try {
-                const token = getToken();
                 const response = await fetch(`${API_BASE}/reservations/${reservationId}/status`, {
                     method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
                     body: JSON.stringify({ status })
                 });
                 if (!response.ok) throw new Error('Failed to update');
@@ -243,23 +224,40 @@
     </script>
 
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        .queue-card {
             background: white;
-            min-height: 100vh;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeSlideIn 0.45s ease both;
         }
-        #location-select:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
-        }
-        #location-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-        }
+        .queue-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
+        .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .order-info h3 { color: white; margin: 0 0 8px 0; font-size: 1.3rem; }
+        .order-date { color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9rem; }
+        .status-badge { padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-accepted { background: #d1ecf1; color: #0c5460; }
+        .status-in_progress { background: #cce5ff; color: #004085; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-delayed { background: #fff8e1; color: #f57c00; }
+        .card-body { padding: 25px; }
+        .order-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .detail-item { display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px; }
+        .detail-label { font-weight: 600; color: #495057; }
+        .detail-value { font-weight: bold; color: #667eea; }
+        .card-actions { padding: 20px; background: #f8f9fa; display: flex; gap: 10px; flex-wrap: wrap; }
+        .action-btn { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease; color: white; }
+        .action-btn:hover { transform: scale(1.05); }
+        .accept-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+        .reject-btn { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+        .process-btn { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
+        .complete-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+        .empty-state { text-align: center; color: #666; font-size: 1.5rem; padding: 60px 20px; display: flex; justify-content: center; align-items: center; }
+        #location-select:hover, #location-select:focus { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.3); }
     </style>
 </body>
 </html>
-
-

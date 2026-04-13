@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,11 +7,11 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">â˜°</button>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
-            <span id="sidebarLogo">ðŸš—</span>
-            <h2 id="sidebarName">CarWash</h2>
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
         </div>
         <ul>
             <!-- Tabs are dynamically generated in menu.js -->
@@ -144,46 +144,43 @@
 
         function renderOrders() {
             const container = document.getElementById('orders-list');
-            let filtered = currentFilter === 'all' 
-                ? allOrders 
-                : allOrders.filter(o => o.status === currentFilter);
-            
+            let filtered = currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter);
             if (currentLocation !== 'all') {
                 filtered = filtered.filter(o => o.location_id == currentLocation);
             }
 
             if (filtered.length === 0) {
-                container.innerHTML = '<div class="empty-state">ðŸ“­ No orders found</div>';
+                container.innerHTML = '<div class="empty-state">🔭 No orders found</div>';
                 return;
             }
 
-            container.innerHTML = filtered.map(order => `
-                <div class="order-card">
+            container.innerHTML = filtered.map((order, i) => `
+                <div class="order-card" style="animation-delay: ${i * 0.06}s">
                     <div class="card-header">
                         <div class="order-info">
-                            <h3>ðŸ§¾ ${order.order_number}</h3>
-                            <p class="order-date">ðŸ“… ${new Date(order.created_at).toLocaleString()}</p>
+                            <h3>🧾 ${order.order_number}</h3>
+                            <p class="order-date">📅 ${new Date(order.created_at).toLocaleString()}</p>
                         </div>
                         <span class="status-badge status-${order.status}">${order.status.toUpperCase()}</span>
                     </div>
                     <div class="card-body">
                         <div class="order-details">
                             <div class="detail-item">
-                                <span class="detail-label">ðŸ’° Total:</span>
+                                <span class="detail-label">💰 Total:</span>
                                 <span class="detail-value">$${order.total_amount.toFixed(2)}</span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">ðŸ’³ Payment:</span>
+                                <span class="detail-label">💳 Payment:</span>
                                 <span class="detail-value">${order.payment_method || 'N/A'}</span>
                             </div>
                         </div>
                         <div class="order-items">
-                            <p class="items-title">ðŸ“¦ Items:</p>
+                            <p class="items-title">📦 Items:</p>
                             <ul>
                                 ${(order.items || []).map(item => `
                                     <li>
                                         <span>${item.product_service?.name || 'Unknown Product'}</span>
-                                        <span class="item-qty">Ã—${item.quantity}</span>
+                                        <span class="item-qty">×${item.quantity}</span>
                                         <span class="item-price">$${item.subtotal.toFixed(2)}</span>
                                     </li>
                                 `).join('')}
@@ -216,16 +213,12 @@
             try {
                 await fetch(`${API_BASE}/orders/${orderId}/status`, {
                     method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getToken()}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
                     body: JSON.stringify({ status })
                 });
                 showToast('Order status updated!', 'success');
                 loadOrders();
             } catch (error) {
-                console.error('Failed to update status:', error);
                 showToast('Failed to update status', 'error');
             }
         }
@@ -241,171 +234,46 @@
     </script>
 
     <style>
-        .filter-btn:hover {
-            background: rgba(255,255,255,0.4);
-        }
         .order-card {
             background: white;
             border-radius: 20px;
             margin-bottom: 20px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.15);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeSlideIn 0.45s ease both;
         }
-        .order-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
-        }
-        .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .order-info h3 {
-            color: white;
-            margin: 0 0 8px 0;
-            font-size: 1.3rem;
-        }
-        .order-date {
-            color: rgba(255,255,255,0.9);
-            margin: 0;
-            font-size: 0.9rem;
-        }
-        .status-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        .order-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
+        .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .order-info h3 { color: white; margin: 0 0 8px 0; font-size: 1.3rem; }
+        .order-date { color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9rem; }
+        .status-badge { padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-accepted { background: #d1ecf1; color: #0c5460; }
         .status-processing { background: #cce5ff; color: #004085; }
         .status-completed { background: #d4edda; color: #155724; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
         .status-delayed { background: #fff8e1; color: #f57c00; }
-        .card-body {
-            padding: 25px;
-        }
-        .order-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .detail-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        .detail-label {
-            font-weight: 600;
-            color: #495057;
-        }
-        .detail-value {
-            font-weight: bold;
-            color: #667eea;
-        }
-        .order-items {
-            margin-top: 20px;
-        }
-        .items-title {
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
-        .order-items ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .order-items li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-        .item-qty {
-            color: #6c757d;
-            font-weight: 600;
-        }
-        .item-price {
-            color: #667eea;
-            font-weight: bold;
-        }
-        .card-actions {
-            padding: 20px;
-            background: #f8f9fa;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .action-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            color: white;
-        }
-        .action-btn:hover {
-            transform: scale(1.05);
-        }
-        .accept-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        }
-        .accept-btn:hover {
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-        }
-        .reject-btn {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        }
-        .reject-btn:hover {
-            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
-        }
-        .process-btn {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-        }
-        .process-btn:hover {
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
-        }
-        .complete-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        }
-        .complete-btn:hover {
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-        }
-        .empty-state {
-            text-align: center;
-            color: #666;
-            font-size: 1.5rem;
-            padding: 60px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        #location-filter:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
-        }
-        #location-filter:focus {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-        }
+        .card-body { padding: 25px; }
+        .order-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .detail-item { display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px; }
+        .detail-label { font-weight: 600; color: #495057; }
+        .detail-value { font-weight: bold; color: #667eea; }
+        .order-items { margin-top: 20px; }
+        .items-title { font-weight: 600; color: #2d3748; margin-bottom: 10px; }
+        .order-items ul { list-style: none; padding: 0; margin: 0; }
+        .order-items li { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; }
+        .item-qty { color: #6c757d; font-weight: 600; }
+        .item-price { color: #667eea; font-weight: bold; }
+        .card-actions { padding: 20px; background: #f8f9fa; display: flex; gap: 10px; flex-wrap: wrap; }
+        .action-btn { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease; color: white; }
+        .action-btn:hover { transform: scale(1.05); }
+        .accept-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+        .reject-btn { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+        .process-btn { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
+        .complete-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+        .empty-state { text-align: center; color: #666; font-size: 1.5rem; padding: 60px 20px; display: flex; justify-content: center; align-items: center; }
+        #location-filter:hover, #location-filter:focus { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.3); }
     </style>
 </body>
 </html>
-
-
