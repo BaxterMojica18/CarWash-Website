@@ -626,3 +626,169 @@ Redesign the client-facing shopping experience (`shop.html`, `cart.html`) to mat
 | SMS Notifications (Twilio) | ⬜ Pending |
 | React + Next.js Frontend | ⬜ Pending |
 | Client Shopping Experience Overhaul | ⬜ Pending (Session 9) |
+
+---
+
+## 🔜 Planned — Session 9
+
+### 🛍️ Feature 1: Client Shopping Experience Overhaul (Lazada/Shopee/TikTok Shop Style)
+**Target Version:** V2.5 | **Priority:** High
+
+#### Goal:
+Full redesign of the client-facing shopping experience to match modern e-commerce UX — product cards with images, category filters, quantity selectors, sticky cart, and smooth checkout flow.
+
+#### Planned Changes:
+
+**`frontend/shop.html`:**
+- [ ] Responsive product card grid (2 cols mobile, 3-4 cols desktop)
+- [ ] Product cards — image thumbnail, name, price, "Add to Cart" button, stock badge
+- [ ] Category filter bar — horizontal scrollable tabs (All, Products, Services, Featured)
+- [ ] Live search/filter by name
+- [ ] Flash sale banner (configurable by owner)
+- [ ] Sort options — Price Low→High / High→Low, Newest
+- [ ] Illustrated empty state when no products match filter
+- [ ] Floating sticky cart button (bottom-right) with item count badge
+
+**`frontend/cart.html`:**
+- [ ] Cart item cards — image, name, unit price, quantity stepper (+/-), subtotal, remove
+- [ ] Sticky order summary panel — subtotal, fees, total
+- [ ] Voucher/promo code field (UI only)
+- [ ] Visual payment method selector cards (Cash, QR, Stripe)
+- [ ] Prominent "Place Order" CTA with total amount
+- [ ] Illustrated empty cart state with "Continue Shopping" link
+
+**`frontend/checkout.html`:**
+- [ ] Cleaner layout matching new shop theme
+- [ ] Order summary visible alongside Stripe payment form
+
+**`frontend/css/shop.css` (NEW):**
+- [ ] Mobile-first responsive grid
+- [ ] Card hover effects, shadows, smooth transitions
+- [ ] Skeleton loading states for product cards
+- [ ] Brand-color accent system
+
+**Backend:** No changes needed — existing `/api/settings/products`, `/api/cart`, `/api/orders` endpoints are sufficient.
+
+---
+
+## 🔜 Phase 3 — Medium-term (Next 4-8 weeks)
+
+### 📱 Feature 1: Progressive Web App (PWA)
+**Target Version:** V3.0 | **Priority:** Medium
+
+- [ ] `manifest.json` — app name, icons, theme color, display mode
+- [ ] Service worker (`sw.js`) — cache-first strategy for static assets
+- [ ] Offline fallback page (`offline.html`)
+- [ ] "Add to Home Screen" prompt on mobile
+- [ ] Background sync for cart/order actions when offline
+- [ ] Push notification support (browser-level)
+
+### 📊 Feature 2: Advanced Dashboard & Analytics
+**Target Version:** V3.1 | **Priority:** Medium
+
+- [ ] Revenue trend charts (weekly, monthly, quarterly, annual) with real data
+- [ ] Customer analytics — new vs returning, top spenders
+- [ ] Service performance metrics — most booked, avg completion time
+- [ ] Product sales breakdown — units sold, revenue per product
+- [ ] Custom date range picker for all report filters
+- [ ] Automated report scheduling — email PDF report weekly/monthly
+- [ ] Advanced filtering — by location, staff, product category
+- [ ] Dashboard widgets draggable and resizable (superadmin)
+
+### 🔔 Feature 3: Real-time Features (WebSockets)
+**Target Version:** V3.2 | **Priority:** Medium
+
+- [ ] WebSocket endpoint (`/ws/queue`) — live queue position updates
+- [ ] WebSocket endpoint (`/ws/orders`) — live order status changes
+- [ ] Client dashboard auto-updates without polling
+- [ ] Admin queue management shows live position changes
+- [ ] Browser push notifications for order/reservation status changes
+- [ ] Service worker integration for background push delivery
+- [ ] Notification preferences per user (opt-in/out per event type)
+
+### 📱 Feature 4: Mobile Optimization
+**Target Version:** V3.3 | **Priority:** Medium
+
+- [ ] Touch-friendly tap targets (min 44px) across all pages
+- [ ] Swipe gestures for sidebar open/close
+- [ ] Bottom navigation bar for client pages on mobile
+- [ ] Pinch-to-zoom disabled on form inputs (prevent iOS zoom)
+- [ ] Mobile-optimized table layouts (card view on small screens)
+- [ ] Responsive chart sizing for Chart.js on mobile
+
+---
+
+## 🔜 Phase 4 — Long-term (Next 8-16 weeks)
+
+### ⚛️ Feature 1: Next.js Frontend Migration
+**Target Version:** V4.0 | **Priority:** Low (future)
+
+- [ ] Next.js 14 with App Router setup
+- [ ] TypeScript integration across all components
+- [ ] Tailwind CSS replacing `style.css`
+- [ ] Reusable component library (Button, Card, Table, Modal, Sidebar)
+- [ ] Server-side rendering (SSR) for SEO-critical pages (landing, shop)
+- [ ] Static generation for product/service pages
+- [ ] React Query for API state management
+- [ ] Zustand for global auth/cart state
+- [ ] Migrate all 35+ HTML pages to Next.js routes
+- [ ] Preserve all existing API endpoints (FastAPI backend unchanged)
+
+### 🤖 Feature 2: AI & Smart Automation
+**Target Version:** V4.1 | **Priority:** Low (future)
+
+- [ ] AI-powered queue optimization — predict service duration, auto-assign bays
+- [ ] Smart scheduling — suggest optimal appointment slots based on historical data
+- [ ] Dynamic pricing — surge pricing during peak hours (configurable)
+- [ ] Customer churn prediction — flag clients who haven't visited in X days
+- [ ] Personalized service recommendations based on order history
+- [ ] Predictive inventory alerts — low stock warnings based on usage trends
+- [ ] Automated promotional emails triggered by AI insights
+
+### 🏢 Feature 3: Multi-location & Franchise Support
+**Target Version:** V4.2 | **Priority:** Low (future)
+
+- [ ] Multiple physical locations per business (beyond washing bays)
+- [ ] Location-specific products, pricing, and staff
+- [ ] Centralized reporting across all locations
+- [ ] Franchise management — parent account oversees child businesses
+- [ ] Location-based client routing (nearest branch)
+- [ ] Per-location theme customization
+- [ ] Cross-location inventory transfers
+
+### 🔒 Feature 4: Security Hardening
+**Target Version:** V4.3 | **Priority:** Medium (ongoing)
+
+- [ ] Rate limiting via `slowapi` — prevent brute-force on `/auth/login`
+- [ ] JWT moved from `localStorage` to `HttpOnly` + `Secure` cookies
+- [ ] Refresh token rotation — 15min access tokens + long-lived refresh tokens
+- [ ] Content Security Policy (CSP) headers on all pages
+- [ ] Subresource Integrity (SRI) for CDN scripts (Chart.js, Firebase SDK)
+- [ ] Audit log table — log all sensitive actions (login, permission changes, deletions)
+- [ ] CORS hardening — restrict to exact production domains only
+- [ ] `pip audit` + `npm audit` in CI/CD pipeline
+- [ ] Automated daily database backups on Render
+- [ ] Secrets scanning pre-commit hook (`detect-secrets`)
+
+### 💳 Feature 5: Payments Expansion
+**Target Version:** V4.4 | **Priority:** Medium
+
+- [ ] Stripe live mode activation (swap test keys for live keys)
+- [ ] Payment history page — all transactions with status and receipt download
+- [ ] Refund processing via Stripe API
+- [ ] Saved payment methods (Stripe Customer + PaymentMethod)
+- [ ] Recurring payments / subscriptions for loyalty members
+- [ ] GCash / Maya integration (Philippines-specific)
+- [ ] Invoice PDF with payment receipt attached
+
+---
+
+## 📋 Full Phase Summary
+
+| Phase | Target | Key Deliverables | Status |
+|-------|--------|-----------------|--------|
+| Phase 1 | ✅ Done | Auth, email, Firebase, sidebar, deployment | ✅ Complete |
+| Phase 2 | ✅ Done | Multi-tenant, Stripe, e-commerce, user sidebar, V2.4 | ✅ Complete |
+| Session 9 | V2.5 | Client shopping experience overhaul | 🔜 Next |
+| Phase 3 | V3.x | PWA, advanced dashboard, WebSockets, mobile UX | ⬜ Planned |
+| Phase 4 | V4.x | Next.js migration, AI, multi-location, security, payments | ⬜ Future |
