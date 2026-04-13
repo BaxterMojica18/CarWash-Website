@@ -1473,7 +1473,7 @@ For issues or questions:
 
 ---
 
-## ✅ Completed in Session 8 (April 2026)
+## ✅ Completed in Session 8 (April 14, 2026)
 
 > **Version:** 6.4.0 (Public: V2.4) | **Branch:** `main`
 
@@ -1646,3 +1646,44 @@ Staff (`user` role) had `manage_products` permission allowing them to add, edit,
 - ✅ Sidebar welcome greeting hidden when collapsed
 - ✅ Client dashboard tables paginated (8 rows/page, 4 tables)
 - ✅ Profile dropdown z-index fixed on all pages — no longer hidden behind stat cards
+
+---
+
+### 🐛 Session 8 — Additional Fixes (Order & Queue Management)
+
+#### 🔤 Mojibake Emoji Fix — `order-management.html` & `queue-management.html`
+**Status:** ✅ Completed
+
+Both admin/owner-facing management pages had corrupted emoji characters due to encoding issues. All fixed:
+
+| Before | After | Location |
+|--------|-------|----------|
+| `â˜°` | `☰` | Menu toggle button |
+| `ðŸš—` | removed (dynamic) | Sidebar logo |
+| `ðŸ"­` | `🔭` | Empty state message |
+| `ðŸ§¾` | `🧾` | Order/Reservation number |
+| `ðŸ"…` | `📅` | Date label |
+| `ðŸ'°` | `💰` | Total label |
+| `ðŸ'³` | `💳` | Payment label |
+| `ðŸ"¦` | `📦` | Items label |
+| `Ã—` | `×` | Quantity multiplier |
+| `ðŸ"§` | `🔧` | Service label |
+| `ðŸ"` | `📍` | Location label |
+| `ðŸš—` | `🚗` | Vehicle label |
+
+#### 🎨 Card Animations — Order & Queue Management
+**Status:** ✅ Completed
+
+- `.order-card` and `.queue-card` now have `animation: fadeSlideIn 0.45s ease both` in their page-scoped `<style>` blocks
+- Each card gets a staggered `animation-delay` based on render index (`i * 0.06s`) for a cascading entrance effect when the list loads or refreshes
+- Cards also retain their hover lift effect (`translateY(-3px)`) independently from the load animation
+
+#### 🧹 Code Cleanup — Both Pages
+- Removed hardcoded `ðŸš—` from `sidebarLogo` span — now empty and populated dynamically by `menu.js`
+- Removed `body { background: white }` override in `queue-management.html` that was conflicting with theme system
+- Fixed `reservations-list` container ID (was `α3-list` in compressed form, now correctly `reservations-list`)
+- `All Reservations` filter button text fixed (was `All α24` in compressed form)
+
+#### Files Modified:
+- ✅ `frontend/order-management.html` — full rewrite: mojibake fixed, animations added, cleanup
+- ✅ `frontend/queue-management.html` — full rewrite: mojibake fixed, animations added, cleanup

@@ -792,3 +792,15 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 | Session 9 | V2.5 | Client shopping experience overhaul | 🔜 Next |
 | Phase 3 | V3.x | PWA, advanced dashboard, WebSockets, mobile UX | ⬜ Planned |
 | Phase 4 | V4.x | Next.js migration, AI, multi-location, security, payments | ⬜ Future |
+
+---
+
+### 🐛 Session 8 — Additional Fixes (Order & Queue Management)
+
+#### Mojibake & Animation Fix
+- [x] `order-management.html` — all emoji artifact text fixed (`🔭`, `🧾`, `📅`, `💰`, `💳`, `📦`, `×`, etc.)
+- [x] `queue-management.html` — same emoji fixes + `All Reservations` button text corrected
+- [x] `.order-card` and `.queue-card` now animate with `fadeSlideIn` + staggered delays on load
+- [x] Hardcoded sidebar logo emoji removed from both pages (now dynamic via `menu.js`)
+- [x] `body { background: white }` override removed from queue page (was breaking theme system)
+- [x] Container ID corrected in queue page (`reservations-list`)
