@@ -15,6 +15,7 @@ async function loadServices() {
                 </div>
             </div>
         `).join('');
+        permissionManager.hideElementsWithoutPermission();
     } catch (error) {
         console.error('Failed to load services:', error);
     }

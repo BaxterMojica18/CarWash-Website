@@ -255,6 +255,10 @@ function selectPredefinedLogo() {
     const emoji = document.getElementById('logoSelect').value;
     if (emoji === 'none') {
         document.getElementById('currentLogo').textContent = '';
+        document.getElementById('currentLogo').innerHTML = '';
+        // Clear the file input too
+        const fileInput = document.getElementById('logoFile');
+        if (fileInput) fileInput.value = '';
         localStorage.removeItem('logo');
         localStorage.setItem('logoType', 'none');
     } else {
@@ -262,10 +266,7 @@ function selectPredefinedLogo() {
         localStorage.setItem('logo', emoji);
         localStorage.setItem('logoType', 'emoji');
     }
-    // Refresh sidebar if menu.js functions are available
-    if (typeof applyBrandingFromStorage === 'function') {
-        applyBrandingFromStorage();
-    }
+    if (typeof applyBrandingFromStorage === 'function') applyBrandingFromStorage();
 }
 
 function previewLogo() {
@@ -288,10 +289,11 @@ function previewLogo() {
 
 document.getElementById('businessForm').addEventListener('submit', async function(e) {
     e.preventDefault();
+    const logoType = localStorage.getItem('logoType') || 'none';
     const data = {
         business_name: document.getElementById('businessName').value,
-        logo: localStorage.getItem('logo'),
-        logo_type: localStorage.getItem('logoType'),
+        logo: logoType === 'none' ? null : localStorage.getItem('logo'),
+        logo_type: logoType,
         address: document.getElementById('businessAddress').value,
         phone: document.getElementById('businessPhone').value
     };

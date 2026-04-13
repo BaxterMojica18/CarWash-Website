@@ -2,6 +2,8 @@ let locations = [];
 let products = [];
 let allInvoices = [];
 let filteredInvoices = [];
+let invoicePage = 1;
+const INVOICE_PAGE_SIZE = 10;
 
 async function loadInvoices() {
     try {
@@ -23,8 +25,17 @@ async function loadInvoices() {
 }
 
 function displayInvoices(invoices) {
+    filteredInvoices = invoices;
+    invoicePage = 1;
+    renderInvoicePage();
+}
+
+function renderInvoicePage() {
     const tbody = document.getElementById('invoiceTable');
-    tbody.innerHTML = invoices.map(inv => `
+    const start = (invoicePage - 1) * INVOICE_PAGE_SIZE;
+    const slice = filteredInvoices.slice(start, start + INVOICE_PAGE_SIZE);
+
+    tbody.innerHTML = slice.map(inv => `
         <tr>
             <td>${inv.id}</td>
             <td>${inv.invoice_number}</td>
@@ -38,6 +49,34 @@ function displayInvoices(invoices) {
             </td>
         </tr>
     `).join('');
+
+    const totalPages = Math.ceil(filteredInvoices.length / INVOICE_PAGE_SIZE);
+    let bar = document.getElementById('invoicePagination');
+    if (!bar) return;
+    bar.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const prev = document.createElement('button');
+    prev.textContent = '‹';
+    prev.className = 'page-btn';
+    prev.disabled = invoicePage === 1;
+    prev.onclick = () => { invoicePage--; renderInvoicePage(); };
+    bar.appendChild(prev);
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = 'page-btn' + (i === invoicePage ? ' active' : '');
+        btn.onclick = ((p) => () => { invoicePage = p; renderInvoicePage(); })(i);
+        bar.appendChild(btn);
+    }
+
+    const next = document.createElement('button');
+    next.textContent = '›';
+    next.className = 'page-btn';
+    next.disabled = invoicePage === totalPages;
+    next.onclick = () => { invoicePage++; renderInvoicePage(); };
+    bar.appendChild(next);
 }
 
 function filterInvoices() {

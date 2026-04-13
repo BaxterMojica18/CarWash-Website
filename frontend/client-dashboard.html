@@ -127,76 +127,88 @@
             }
         }
 
+        const PAGE_SIZE = 8;
+
+        // Generic paginator — renders a table + pagination bar into containerId
+        function paginate(containerId, rows, renderRow, headers) {
+            const container = document.getElementById(containerId);
+            let page = 1;
+
+            function draw() {
+                const total = Math.ceil(rows.length / PAGE_SIZE);
+                const slice = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+                let paginationHtml = '';
+                if (total > 1) {
+                    const prevDisabled = page === 1 ? 'disabled' : '';
+                    const nextDisabled = page === total ? 'disabled' : '';
+                    const pageButtons = Array.from({ length: total }, (_, i) =>
+                        `<button class="page-btn${i + 1 === page ? ' active' : ''}" onclick="__pg_${containerId}(${i + 1})">${i + 1}</button>`
+                    ).join('');
+                    paginationHtml = `
+                        <div class="pagination-bar">
+                            <button class="page-btn" onclick="__pg_${containerId}(${page - 1})" ${prevDisabled}>&lsaquo;</button>
+                            ${pageButtons}
+                            <button class="page-btn" onclick="__pg_${containerId}(${page + 1})" ${nextDisabled}>&rsaquo;</button>
+                        </div>`;
+                }
+
+                container.innerHTML = `
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+                            <tbody>${slice.map(renderRow).join('')}</tbody>
+                        </table>
+                    </div>
+                    ${paginationHtml}`;
+            }
+
+            window[`__pg_${containerId}`] = (p) => { page = p; draw(); };
+            draw();
+        }
+
         function renderOrders(containerId, orders) {
             const container = document.getElementById(containerId);
-            
             if (orders.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No orders found.</p>';
                 return;
             }
-
-            container.innerHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Order #</th>
-                            <th>Status</th>
-                            <th>Total</th>
-                            <th>Items</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${orders.map(order => `
-                            <tr>
-                                <td><strong>${order.order_number}</strong></td>
-                                <td><span class="badge ${order.status}">${order.status}</span></td>
-                                <td>$${order.total_amount.toFixed(2)}</td>
-                                <td>${order.items?.length || 0}</td>
-                                <td>${new Date(order.created_at).toLocaleString()}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+            paginate(
+                containerId,
+                orders,
+                order => `
+                    <tr>
+                        <td><strong>${order.order_number}</strong></td>
+                        <td><span class="badge ${order.status}">${order.status}</span></td>
+                        <td>$${order.total_amount.toFixed(2)}</td>
+                        <td>${order.items?.length || 0}</td>
+                        <td>${new Date(order.created_at).toLocaleString()}</td>
+                    </tr>`,
+                ['Order #', 'Status', 'Total', 'Items', 'Date']
+            );
         }
 
         function renderReservations(containerId, reservations) {
             const container = document.getElementById(containerId);
-            
             if (reservations.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No reservations found.</p>';
                 return;
             }
-
-            container.innerHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Reservation #</th>
-                            <th>Service</th>
-                            <th>Location</th>
-                            <th>Vehicle</th>
-                            <th>Status</th>
-                            <th>Queue</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${reservations.map(res => `
-                            <tr>
-                                <td><strong>${res.reservation_number}</strong></td>
-                                <td>${res.service.name}</td>
-                                <td>${res.location.name}</td>
-                                <td>${res.vehicle_plate}</td>
-                                <td><span class="badge ${res.status}">${res.status}</span></td>
-                                <td>${res.queue_position ? `<strong>#${res.queue_position}</strong>` : '-'}</td>
-                                <td>${new Date(res.created_at).toLocaleString()}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+            paginate(
+                containerId,
+                reservations,
+                res => `
+                    <tr>
+                        <td><strong>${res.reservation_number}</strong></td>
+                        <td>${res.service.name}</td>
+                        <td>${res.location.name}</td>
+                        <td>${res.vehicle_plate}</td>
+                        <td><span class="badge ${res.status}">${res.status}</span></td>
+                        <td>${res.queue_position ? `<strong>#${res.queue_position}</strong>` : '-'}</td>
+                        <td>${new Date(res.created_at).toLocaleString()}</td>
+                    </tr>`,
+                ['Reservation #', 'Service', 'Location', 'Vehicle', 'Status', 'Queue', 'Date']
+            );
         }
 
         function toggleProfileMenu() {
@@ -261,6 +273,9 @@
         loadDashboard();
         loadCurrentBusiness();
         setInterval(loadDashboard, 30000);
+
+        // Trigger layout recalc after sidebar transition settles on load
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 450);
     </script>
 </body>
 </html>

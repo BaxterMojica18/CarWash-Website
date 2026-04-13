@@ -61,24 +61,59 @@ async function generateReport() {
     }
 }
 
-function displayReport(data) {
-    document.getElementById('reportResults').style.display = 'block';
-    document.getElementById('totalSales').textContent = `₱${data.total_sales.toFixed(2)}`;
-    document.getElementById('totalInvoices').textContent = data.total_invoices;
-    
+let reportInvoices = [];
+let reportPage = 1;
+const REPORT_PAGE_SIZE = 10;
+
+function renderReportPage() {
     const tbody = document.getElementById('reportTableBody');
-    tbody.innerHTML = '';
-    
-    data.invoices.forEach(invoice => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
+    const start = (reportPage - 1) * REPORT_PAGE_SIZE;
+    const slice = reportInvoices.slice(start, start + REPORT_PAGE_SIZE);
+    tbody.innerHTML = slice.map(invoice => `
+        <tr>
             <td>${invoice.invoice_number}</td>
             <td>${new Date(invoice.date).toLocaleDateString()}</td>
             <td>${invoice.customer_name}</td>
             <td>₱${invoice.total_amount.toFixed(2)}</td>
-        `;
-        tbody.appendChild(row);
-    });
+        </tr>
+    `).join('');
+
+    const totalPages = Math.ceil(reportInvoices.length / REPORT_PAGE_SIZE);
+    const bar = document.getElementById('reportPagination');
+    bar.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const prev = document.createElement('button');
+    prev.textContent = '‹';
+    prev.className = 'page-btn';
+    prev.disabled = reportPage === 1;
+    prev.onclick = () => { reportPage--; renderReportPage(); };
+    bar.appendChild(prev);
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = 'page-btn' + (i === reportPage ? ' active' : '');
+        btn.onclick = ((p) => () => { reportPage = p; renderReportPage(); })(i);
+        bar.appendChild(btn);
+    }
+
+    const next = document.createElement('button');
+    next.textContent = '›';
+    next.className = 'page-btn';
+    next.disabled = reportPage === totalPages;
+    next.onclick = () => { reportPage++; renderReportPage(); };
+    bar.appendChild(next);
+}
+
+function displayReport(data) {
+    document.getElementById('reportResults').style.display = 'block';
+    document.getElementById('totalSales').textContent = `₱${data.total_sales.toFixed(2)}`;
+    document.getElementById('totalInvoices').textContent = data.total_invoices;
+
+    reportInvoices = data.invoices || [];
+    reportPage = 1;
+    renderReportPage();
     
     if (data.chart_data && data.chart_data.labels && data.chart_data.labels.length > 0) {
         renderLineChart(data.chart_data);

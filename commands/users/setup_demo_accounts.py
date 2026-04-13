@@ -98,7 +98,16 @@ def setup_staff_demo(db, roles, owner):
     # Clear and set role to 'user' (staff)
     staff.roles.clear()
     staff.roles.append(roles["user"])
-    
+
+    # Explicitly set user (staff) role permissions — no manage_products
+    user_role = roles["user"]
+    staff_perms = ["view_locations", "manage_invoices", "view_invoices", "view_reports"]
+    user_role.permissions.clear()
+    for perm_name in staff_perms:
+        perm = db.query(Permission).filter(Permission.name == perm_name).first()
+        if perm:
+            user_role.permissions.append(perm)
+
     db.commit()
     db.refresh(staff)
     print(f"  ✅ staff@carwash.com → user (staff), business={OWNER_BUSINESS_NUMBER}")

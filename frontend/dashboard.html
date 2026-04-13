@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">â˜°</button>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
             <span id="sidebarLogo"></span>
@@ -44,12 +44,12 @@
         <div style="margin-bottom: 25px; display: flex; align-items: center; gap: 12px;">
             <label for="dashboardFilter" style="font-weight: 600; color: #2c3e50; font-size: 15px;">Filter by:</label>
             <select id="dashboardFilter" onchange="filterDashboard()" class="filter-select">
-                <option value="weekly">ðŸ“… Weekly</option>
-                <option value="biweekly">ðŸ“… Bi-Weekly</option>
-                <option value="monthly">ðŸ“… Monthly</option>
-                <option value="quarterly">ðŸ“… Quarterly</option>
-                <option value="semiannually">ðŸ“… Semi-Annually</option>
-                <option value="annually">ðŸ“… Annually</option>
+                <option value="weekly">📅 Weekly</option>
+                <option value="biweekly">📅 Bi-Weekly</option>
+                <option value="monthly">📅 Monthly</option>
+                <option value="quarterly">📅 Quarterly</option>
+                <option value="semiannually">📅 Semi-Annually</option>
+                <option value="annually">📅 Annually</option>
             </select>
         </div>
         <div class="stats-grid">
@@ -121,7 +121,7 @@
     </div>
     
     <button id="floatingEditBtn" onclick="window.location.href='edit-dashboard.html'" style="display: none; position: fixed; right: 20px; bottom: 20px; width: 60px; height: 60px; border-radius: 50%; background: #667eea; color: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; font-size: 24px; z-index: 1000; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-        âœï¸
+        ✏️
     </button>
     
     <script src="js/api.js"></script>
@@ -129,5 +129,3 @@
     <script src="js/dashboard.js"></script>
 </body>
 </html>
-
-

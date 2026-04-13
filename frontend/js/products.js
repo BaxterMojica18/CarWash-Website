@@ -19,6 +19,7 @@ async function loadProducts() {
                 </div>
             </div>
         `).join('');
+        permissionManager.hideElementsWithoutPermission();
     } catch (error) {
         console.error('Failed to load products:', error);
     }

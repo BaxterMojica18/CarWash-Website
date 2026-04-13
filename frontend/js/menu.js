@@ -64,6 +64,21 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebar.insertBefore(closeBtn, sidebar.firstChild);
         updateToggleButton();
         
+        // Inject mobile edge tab to open sidebar
+        if (window.innerWidth <= 768) {
+            const edgeTab = document.createElement('button');
+            edgeTab.className = 'sidebar-edge-tab';
+            edgeTab.setAttribute('aria-label', 'Open menu');
+            edgeTab.onclick = toggleMenu;
+            document.body.appendChild(edgeTab);
+
+            // Hide edge tab when sidebar opens, show when it closes
+            const observer = new MutationObserver(() => {
+                edgeTab.style.display = sidebar.classList.contains('active') ? 'none' : '';
+            });
+            observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+        }
+        
         // Use sidebar click to expand if collapsed
         sidebar.onclick = (e) => {
             if (sidebar.classList.contains('collapsed')) {
@@ -142,10 +157,9 @@ function normalizeSidebarIcons() {
 // Close menu when clicking outside on mobile
 document.addEventListener('click', function(event) {
     const sidebar = document.getElementById('sidebar');
-    const menuToggle = document.querySelector('.menu-toggle');
     
     if (sidebar && sidebar.classList.contains('active')) {
-        if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+        if (!sidebar.contains(event.target)) {
             sidebar.classList.remove('active');
         }
     }
@@ -359,20 +373,24 @@ function renderTabs(sidebarUl, data, currentPath, normalizedPath) {
     });
 
     // 2. Add Admin/Owner specific modules
-    if (!isClient) {
-        if (roles.includes('superadmin')) {
-            const li = document.createElement('li');
-            const isActive = (currentPath === 'permissions-management.html' || normalizedPath === '/permissions-management.html') ? 'class="active"' : '';
-            li.innerHTML = `<a href="permissions-management.html" ${isActive}><span class="icon"></span> Permissions</a>`;
-            sidebarUl.appendChild(li);
-        }
+    if (!isClient && (roles.includes('superadmin') || roles.includes('admin') || roles.includes('owner'))) {
+        const isPermActive = currentPath === 'permissions-management.html';
+        const isSidebarActive = currentPath === 'sidebar-management.html';
+        const isGroupActive = isPermActive || isSidebarActive;
 
-        if (roles.includes('superadmin') || roles.includes('admin') || roles.includes('owner')) {
-            const li = document.createElement('li');
-            const isActive = (currentPath === 'sidebar-management.html' || normalizedPath === '/sidebar-management.html') ? 'class="active"' : '';
-            li.innerHTML = `<a href="sidebar-management.html" ${isActive}><span class="icon"></span> Sidebar Tabs</a>`;
-            sidebarUl.appendChild(li);
-        }
+        const li = document.createElement('li');
+        li.className = 'nav-group' + (isGroupActive ? ' open' : '');
+        li.innerHTML = `
+            <div class="nav-group-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                <span class="nav-text">User Management</span>
+                <span class="nav-group-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px"><path d="M6 9l6 6 6-6"/></svg></span>
+            </div>
+            <ul class="nav-sub">
+                ${roles.includes('superadmin') ? `<li><a href="permissions-management.html" ${isPermActive ? 'class="active"' : ''}><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><span class="nav-text">Permissions</span></a></li>` : ''}
+                <li><a href="sidebar-management.html" ${isSidebarActive ? 'class="active"' : ''}><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></span><span class="nav-text">Sidebar Tabs</span></a></li>
+            </ul>`;
+        sidebarUl.appendChild(li);
     }
 
     // 3. Add Logout (Always last)

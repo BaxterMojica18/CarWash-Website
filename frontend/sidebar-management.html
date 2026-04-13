@@ -123,6 +123,8 @@
             "Permissions", "Sidebar Tabs", "Shop", "Cart", "Reserve"
         ];
         
+        let currentUserId = null;
+
         async function loadUsers() {
             try {
                 const meResponse = await fetch(`${API_BASE}/auth/me/permissions`, {
@@ -130,7 +132,8 @@
                 });
                 const meData = await meResponse.json();
                 const myRoles = meData.roles || [];
-                
+                currentUserId = meData.user_id || null;
+
                 if (!myRoles.includes('superadmin') && !myRoles.includes('owner') && !myRoles.includes('admin')) {
                     document.getElementById('rolesGrid').innerHTML = '<div class="no-data">Access denied. Admin or Owner only.</div>';
                     return;
@@ -174,24 +177,25 @@
 
             grid.innerHTML = users.map(user => {
                 const rolesDisplay = user.roles && user.roles.length > 0 ? user.roles.join(', ') : 'No Role';
+                const isSelf = user.user_id === currentUserId;
                 return `
-                    <div class="role-card">
+                    <div class="role-card" ${isSelf ? 'style="border: 2px solid #667eea;"' : ''}>
                         <div class="role-header" style="flex-direction: column; align-items: flex-start; gap: 5px;">
-                            <div>Account: <span style="color: #667eea">${user.email}</span></div>
+                            <div>Account: <span style="color: #667eea">${user.email}</span>${isSelf ? ' <span style="font-size:11px;color:#667eea;">(you)</span>' : ''}</div>
                             <div style="font-size: 13px; color: #888; font-weight: normal;">Roles: ${rolesDisplay}</div>
                         </div>
+                        ${isSelf ? '<p style="font-size:12px;color:#888;margin-bottom:12px;">&#9888;&#65039; Sidebar tabs are always unlocked for your own account.</p>' : ''}
                         <div class="tabs-list">
                             ${ALL_TABS.map(tab => {
-                                // Default to visible if not explicitly set to false
                                 const isVisible = user.sidebar_settings[tab] !== false;
                                 return `
                                 <div class="tab-item">
                                     <div class="tab-label">${tab}</div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" 
-                                            ${isVisible ? 'checked' : ''} 
-                                            onchange="toggleTabVisibility(${user.user_id}, '${tab}', this.checked)">
-                                        <span class="slider"></span>
+                                    <label class="toggle-switch" ${isSelf ? 'title="Cannot modify your own sidebar tabs"' : ''}>
+                                        <input type="checkbox"
+                                            ${isVisible ? 'checked' : ''}
+                                            ${isSelf ? 'disabled' : `onchange="toggleTabVisibility(${user.user_id}, '${tab}', this.checked)"`}>
+                                        <span class="slider" style="${isSelf ? 'opacity:0.45;cursor:not-allowed;' : ''}"></span>
                                     </label>
                                 </div>
                                 `;
@@ -203,6 +207,7 @@
         }
 
         async function toggleTabVisibility(userId, tabName, isVisible) {
+            if (userId === currentUserId) return;
             try {
                 const response = await fetch(`${API_BASE}/auth/users/${userId}/sidebar`, {
                     method: 'PUT',

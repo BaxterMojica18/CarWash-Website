@@ -22,28 +22,11 @@ body {
 }
 
 .menu-toggle {
-    display: none; /* Hide by default on desktop */
+    display: none !important;
 }
 
 @media (max-width: 768px) {
-    .menu-toggle {
-        display: flex;
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        z-index: 1002;
-        background: white;
-        color: var(--sidebar-color);
-        border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 20px;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
+    /* menu-toggle stays hidden on mobile — tap-edge opens sidebar */
 }
 
 .login-page {
@@ -196,6 +179,7 @@ body.login-page .login-container:has(.carousel-container) {
     align-items: center;
     gap: 10px;
     margin-bottom: 30px;
+    padding-right: 36px;
 }
 
 .sidebar .logo #sidebarLogo {
@@ -283,6 +267,7 @@ header {
 
 .profile-dropdown {
     position: relative;
+    z-index: 500;
 }
 
 .profile-icon {
@@ -297,7 +282,7 @@ header {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     min-width: 220px;
-    z-index: 1000;
+    z-index: 1500;
     padding: 15px;
 }
 
@@ -371,6 +356,7 @@ header h1 {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
+    isolation: isolate;
 }
 
 .stat-card {
@@ -415,6 +401,7 @@ header h1 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 20px;
+    isolation: isolate;
 }
 
 .chart-card {
@@ -688,6 +675,7 @@ th {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
+    isolation: isolate;
 }
 
 .product-card {
@@ -752,6 +740,7 @@ th {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 15px;
     margin-top: 15px;
+    isolation: isolate;
 }
 
 .bay-card {
@@ -874,8 +863,9 @@ th {
         flex-direction: column;
     }
 
+    /* hamburger hidden — sidebar opens by tapping the edge strip */
     .menu-toggle {
-        display: block;
+        display: none !important;
     }
 
     .sidebar {
@@ -885,6 +875,18 @@ th {
         z-index: 1000;
         transform: translateX(-100%);
         box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+    }
+
+    /* Visible tap-edge strip when sidebar is hidden */
+    .sidebar:not(.active)::after {
+        content: '';
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 18px;
+        height: 100vh;
+        z-index: 1001;
+        cursor: pointer;
     }
 
     .sidebar.active {
@@ -898,7 +900,7 @@ th {
     }
 
     .content {
-        padding: 70px 15px 15px 15px;
+        padding: 20px 15px 15px 15px;
         margin-left: 0;
     }
 
@@ -1167,4 +1169,297 @@ th {
 
 .carousel-nav.right {
     right: 10px;
+}
+
+/* ── Nav Group (collapsible sidebar submodule) ── */
+.nav-group {
+    margin-bottom: 10px;
+}
+
+.nav-group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    transition: background 0.3s;
+    user-select: none;
+}
+
+.nav-group-header:hover {
+    background: var(--sidebar-active-color);
+}
+
+.nav-group-header .icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.nav-group-header .icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: currentColor;
+}
+
+.nav-group-arrow {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.25s ease;
+}
+
+.nav-group.open .nav-group-arrow {
+    transform: rotate(180deg);
+}
+
+.nav-sub {
+    list-style: none;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+    padding-left: 12px;
+}
+
+.nav-group.open .nav-sub {
+    max-height: 200px;
+}
+
+.nav-sub li {
+    margin-bottom: 4px;
+}
+
+.nav-sub li a {
+    padding: 9px 12px;
+    font-size: 13px;
+    opacity: 0.85;
+    border-radius: 5px;
+}
+
+.nav-sub li a:hover,
+.nav-sub li a.active {
+    background: var(--sidebar-active-color);
+    opacity: 1;
+}
+
+/* Hide group text + arrow when sidebar is collapsed */
+.sidebar.collapsed .nav-group-header .nav-text,
+.sidebar.collapsed .nav-group-arrow {
+    display: none !important;
+}
+
+.sidebar.collapsed .nav-group-header {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.sidebar.collapsed .nav-sub {
+    display: none !important;
+}
+
+/* ── Pagination ── */
+.pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px 0 4px;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: white;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.page-btn.active {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+    font-weight: 600;
+}
+
+.page-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* ── Page Load Float-Fade Animation ── */
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-card,
+.chart-card,
+.settings-section,
+.table-container,
+.product-card,
+.bay-card,
+.user-card,
+.role-card,
+.permissions-grid > div,
+.roles-grid > div {
+    animation: fadeSlideIn 0.45s ease both;
+}
+
+/* Stagger children inside grids */
+.stats-grid .stat-card:nth-child(1)  { animation-delay: 0.05s; }
+.stats-grid .stat-card:nth-child(2)  { animation-delay: 0.12s; }
+.stats-grid .stat-card:nth-child(3)  { animation-delay: 0.19s; }
+.stats-grid .stat-card:nth-child(4)  { animation-delay: 0.26s; }
+.stats-grid .stat-card:nth-child(5)  { animation-delay: 0.33s; }
+.stats-grid .stat-card:nth-child(6)  { animation-delay: 0.40s; }
+
+.charts-section .chart-card:nth-child(1) { animation-delay: 0.20s; }
+.charts-section .chart-card:nth-child(2) { animation-delay: 0.32s; }
+
+.products-grid .product-card:nth-child(1)  { animation-delay: 0.05s; }
+.products-grid .product-card:nth-child(2)  { animation-delay: 0.12s; }
+.products-grid .product-card:nth-child(3)  { animation-delay: 0.19s; }
+.products-grid .product-card:nth-child(4)  { animation-delay: 0.26s; }
+.products-grid .product-card:nth-child(5)  { animation-delay: 0.33s; }
+.products-grid .product-card:nth-child(6)  { animation-delay: 0.40s; }
+.products-grid .product-card:nth-child(n+7) { animation-delay: 0.46s; }
+
+.bays-grid .bay-card:nth-child(1)  { animation-delay: 0.05s; }
+.bays-grid .bay-card:nth-child(2)  { animation-delay: 0.12s; }
+.bays-grid .bay-card:nth-child(3)  { animation-delay: 0.19s; }
+.bays-grid .bay-card:nth-child(4)  { animation-delay: 0.26s; }
+.bays-grid .bay-card:nth-child(n+5) { animation-delay: 0.33s; }
+
+.permissions-grid > div:nth-child(1) { animation-delay: 0.05s; }
+.permissions-grid > div:nth-child(2) { animation-delay: 0.13s; }
+.permissions-grid > div:nth-child(3) { animation-delay: 0.21s; }
+.permissions-grid > div:nth-child(n+4) { animation-delay: 0.29s; }
+
+.roles-grid > div:nth-child(1) { animation-delay: 0.05s; }
+.roles-grid > div:nth-child(2) { animation-delay: 0.13s; }
+.roles-grid > div:nth-child(3) { animation-delay: 0.21s; }
+.roles-grid > div:nth-child(n+4) { animation-delay: 0.29s; }
+
+/* Settings sections stagger */
+.settings-section:nth-child(1) { animation-delay: 0.05s; }
+.settings-section:nth-child(2) { animation-delay: 0.13s; }
+.settings-section:nth-child(3) { animation-delay: 0.21s; }
+.settings-section:nth-child(4) { animation-delay: 0.29s; }
+.settings-section:nth-child(n+5) { animation-delay: 0.36s; }
+
+.table-container { animation-delay: 0.10s; }
+
+/* Header fades in slightly faster */
+header {
+    animation: fadeSlideIn 0.35s ease both;
+    animation-delay: 0.02s;
+}
+
+/* ── Fix: stat-card and header must NOT use transform animation
+   because transform creates a stacking context that puts cards
+   above the profile dropdown regardless of z-index values ── */
+@keyframes fadeInOnly {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.stat-card {
+    animation: fadeInOnly 0.45s ease both !important;
+}
+
+header {
+    animation: fadeInOnly 0.35s ease both !important;
+    animation-delay: 0.02s !important;
+}
+
+/* ── Mobile sidebar edge tab (replaces hamburger) ── */
+@media (max-width: 768px) {
+    .sidebar-edge-tab {
+        display: flex;
+        position: fixed;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 1002;
+        background: var(--sidebar-color);
+        color: white;
+        border: none;
+        border-radius: 0 6px 6px 0;
+        width: 18px;
+        height: 56px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+        transition: width 0.2s ease;
+        padding: 0;
+    }
+
+    .sidebar-edge-tab::after {
+        content: '›';
+        font-size: 16px;
+        line-height: 1;
+    }
+
+    .sidebar-edge-tab:hover {
+        width: 24px;
+    }
+
+    /* Hide tab when sidebar is open */
+    .sidebar.active ~ * .sidebar-edge-tab,
+    .sidebar.active + .content .sidebar-edge-tab {
+        display: none;
+    }
+}
+
+/* Hidden on desktop */
+@media (min-width: 769px) {
+    .sidebar-edge-tab {
+        display: none !important;
+    }
+}
+
+/* Hide sidebar greeting when collapsed */
+.sidebar.collapsed .welcome-section {
+    display: none !important;
+}
+
+/* ── Profile dropdown always on top ── */
+/* Any animated card (transform) creates its own stacking context.
+   Making header a stacking context with high z-index ensures the
+   profile dropdown is always above all cards on every page. */
+header {
+    position: relative;
+    z-index: 200;
+}
+
+.profile-dropdown {
+    position: relative;
+    z-index: 201;
+}
+
+.profile-menu {
+    z-index: 202 !important;
 }

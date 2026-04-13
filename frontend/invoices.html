@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">â˜°</button>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
             <span id="sidebarLogo"></span>
@@ -33,13 +33,13 @@
                             <div>
                                 <strong id="profileName">User</strong>
                                 <p id="profileRole" style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Role</p>
-                            <p id="profileBiz" style="font-size: 11px; margin-top: 5px; color: #667eea; background: rgba(102, 126, 234, 0.1); padding: 2px 5px; border-radius: 4px; display: none; font-weight: bold;"></p>
+                                <p id="profileBiz" style="font-size: 11px; margin-top: 5px; color: #667eea; background: rgba(102, 126, 234, 0.1); padding: 2px 5px; border-radius: 4px; display: none; font-weight: bold;"></p>
                             </div>
                         </div>
                         <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
-                    <a href="#" onclick="showEditProfile(); return false;">✏️ Edit Profile</a>
-                    <a href="settings.html">⚙️ Settings</a>
-                    <a href="login.html" onclick="logout()">🚪 Logout</a>
+                        <a href="#" onclick="showEditProfile(); return false;">✏️ Edit Profile</a>
+                        <a href="settings.html">⚙️ Settings</a>
+                        <a href="login.html" onclick="logout()">🚪 Logout</a>
                     </div>
                 </div>
             </div>
@@ -47,7 +47,7 @@
         <div class="table-container">
             <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
                 <div style="position: relative; flex: 1; max-width: 400px;">
-                    <input type="text" id="searchInvoice" placeholder="ðŸ” Search by invoice number, customer name..." onkeyup="searchInvoices()" style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                    <input type="text" id="searchInvoice" placeholder="🔍 Search by invoice number, customer name..." onkeyup="searchInvoices()" style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
                 </div>
                 <select id="invoiceFilter" onchange="filterInvoices()" style="padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: white; cursor: pointer; transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'">
                     <option value="all">All Time</option>
@@ -57,23 +57,23 @@
                     <option value="annually">This Year</option>
                 </select>
             </div>
-            <div style="max-height: 500px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Invoice #</th>
-                        <th>Reference</th>
-                        <th>Customer</th>
-                        <th>Date</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="invoiceTable">
-                </tbody>
-            </table>
+            <div style="overflow-x: auto; border: 1px solid #e0e0e0; border-radius: 8px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Reference</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceTable"></tbody>
+                </table>
             </div>
+            <div id="invoicePagination" class="pagination-bar"></div>
         </div>
         <div id="createInvoiceModal" class="modal">
             <div class="modal-content">
@@ -155,5 +155,3 @@
     <script src="js/profile.js"></script>
 </body>
 </html>
-
-

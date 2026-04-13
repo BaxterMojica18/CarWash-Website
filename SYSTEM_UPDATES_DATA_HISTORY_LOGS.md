@@ -1470,3 +1470,179 @@ For issues or questions:
 - ✅ Fixed tab name mismatches that caused silent toggle failures
 - ✅ Removed `/auth/roles/{role_id}/sidebar` endpoints, replaced with `/auth/users/{user_id}/sidebar`
 - ✅ README updated to V2.3
+
+---
+
+## ✅ Completed in Session 8 (April 2026)
+
+> **Version:** 6.4.0 (Public: V2.4) | **Branch:** `main`
+
+---
+
+### 🔐 Feature 1: Staff Product/Service Permissions Fix
+**Status:** ✅ Completed
+
+#### Problem Solved:
+Staff (`user` role) had `manage_products` permission allowing them to add, edit, and delete products/services. The frontend was not respecting this — Edit/Delete buttons were always visible because `hideElementsWithoutPermission()` ran on `DOMContentLoaded` before cards were dynamically rendered.
+
+#### Changes Made:
+- **`frontend/js/products.js`** — Added `permissionManager.hideElementsWithoutPermission()` call after `grid.innerHTML` is set in `loadProducts()` so dynamically injected Edit/Delete buttons are hidden for staff
+- **`frontend/js/services.js`** — Same fix after `grid.innerHTML` in `loadServices()`
+- **`commands/users/setup_demo_accounts.py`** — Explicitly sets `user` (staff) role permissions to `[view_locations, manage_invoices, view_invoices, view_reports]`, ensuring `manage_products` is never inherited
+- **`commands/database/seed_data.py`** — Already correct (staff only had `add_invoice` + `view_reports`), no change needed
+
+#### Result:
+| Button | Superadmin | Admin | Staff | Client |
+|--------|-----------|-------|-------|--------|
+| + Add Product/Service | ✅ | ✅ | ❌ hidden | ❌ hidden |
+| Edit (per card) | ✅ | ✅ | ❌ hidden | ❌ hidden |
+| Delete (per card) | ✅ | ✅ | ❌ hidden | ❌ hidden |
+
+---
+
+### 👥 User Management Submodules in Sidebar
+**Status:** ✅ Completed
+
+#### Changes:
+- **`frontend/js/menu.js`** — Replaced standalone "Permissions" and "Sidebar Tabs" sidebar links with a collapsible "User Management" nav group containing both as sub-items
+  - Clicking the parent toggles `.open` class → slides sub-items in/out via CSS `max-height` transition
+  - Auto-opens if current page is `permissions-management.html` or `sidebar-management.html`
+  - "Permissions" sub-item only shows for `superadmin`
+  - "Sidebar Tabs" sub-item shows for `superadmin`, `admin`, `owner`
+- **`frontend/css/style.css`** — Added `.nav-group`, `.nav-group-header`, `.nav-group-arrow`, `.nav-sub` styles with smooth slide animation and collapsed-sidebar hiding
+
+---
+
+### 🔒 Owner Self-Protection in Permissions & Sidebar Management
+**Status:** ✅ Completed
+
+#### `permissions-management.html`:
+- `currentUserId` stored from `meData.user_id` on load
+- Owner's own card gets blue border + `(you)` label + warning message
+- All permission toggles `disabled` + `opacity: 0.45` + `cursor: not-allowed`
+- Delete 🗑️ button replaced with 🔒 `Owner` badge
+- `togglePermission()` and `deleteUser()` both have early-return guards for self
+
+#### `sidebar-management.html`:
+- Same `currentUserId` pattern
+- Owner's own card locked with disabled toggles and warning message
+- `toggleTabVisibility()` has early-return guard for self
+
+---
+
+### 🐛 Bug Fixes
+**Status:** ✅ Completed
+
+#### Reports page — Broken emoji characters:
+- Fixed mojibake in `reports.html`: `ðŸ"Š` → `📊`, `ðŸ"¦` → `📦`, `ðŸ"§` → `🔧`, `â˜°` → `☰`, `ðŸš—` → `🚗`, `â‚±` → `₱`
+- Same fixes applied to `dashboard.html` filter dropdown options (`ðŸ"…` → `📅`) and floating edit button (`âœï¸` → `✏️`)
+- Same fixes applied to `invoices.html` search placeholder
+
+#### Dashboard filter dropdown:
+- All 6 filter options now correctly show `📅` emoji
+- `semiannually` option value restored correctly
+
+---
+
+### 📄 Pagination — Reports & Invoices
+**Status:** ✅ Completed
+
+#### `frontend/js/reports.js`:
+- Added `reportInvoices`, `reportPage`, `REPORT_PAGE_SIZE = 10` state
+- `renderReportPage()` slices 10 rows per page, renders prev/number/next buttons into `#reportPagination`
+- `displayReport()` now sets state and calls `renderReportPage()`
+
+#### `frontend/js/invoices.js`:
+- Added `invoicePage`, `INVOICE_PAGE_SIZE = 10` state
+- `renderInvoicePage()` handles slicing and pagination bar into `#invoicePagination`
+- `displayInvoices()` delegates to `renderInvoicePage()`
+
+#### HTML:
+- `reports.html` — added `<div id="reportPagination" class="pagination-bar">` after report table
+- `invoices.html` — added `<div id="invoicePagination" class="pagination-bar">` after invoice table, removed fixed-height scroll wrapper
+
+#### `frontend/css/style.css`:
+- Added `.pagination-bar`, `.page-btn`, `.page-btn.active`, `.page-btn:disabled` styles
+
+---
+
+### 🎨 Page Load Float-Fade Animation
+**Status:** ✅ Completed
+
+- Added `@keyframes fadeSlideIn` (opacity 0→1 + translateY 18px→0) to `style.css`
+- Applied to: `.stat-card`, `.chart-card`, `.settings-section`, `.table-container`, `.product-card`, `.bay-card`, `.user-card`, `.role-card`, `.permissions-grid > div`, `.roles-grid > div`, `header`
+- Staggered delays per nth-child for cascading entrance effect
+- `stat-card` and `header` use opacity-only `fadeInOnly` animation (no transform) to prevent stacking context from breaking profile dropdown z-index
+
+---
+
+### 🔧 Settings — No Logo Fix
+**Status:** ✅ Completed
+
+- **`frontend/js/settings.js`** — `selectPredefinedLogo()` now clears `innerHTML` AND resets the file input value when "No Logo" is selected
+- `businessForm` submit sends `logo: null` when `logoType === 'none'` instead of passing the string `"null"`
+
+---
+
+### 📱 Mobile — Hamburger Removed, Edge Tab Added
+**Status:** ✅ Completed
+
+- `.menu-toggle { display: none !important }` — hamburger hidden on all screen sizes
+- **`frontend/js/menu.js`** — injects a `sidebar-edge-tab` button on mobile (18px wide, vertically centered on left edge, matches sidebar color)
+- `MutationObserver` hides the tab when sidebar is open, shows it when closed
+- Click-outside handler updated to remove null reference to `.menu-toggle`
+- Mobile content padding reduced from `70px` → `20px` (no hamburger taking space)
+
+---
+
+### 🖼️ Sidebar — Logo Area & Close Button Overlap Fix
+**Status:** ✅ Completed
+
+- Added `padding-right: 36px` to `.sidebar .logo` so business name text doesn't run under the absolute-positioned close button
+
+---
+
+### 👋 Sidebar — Welcome Greeting Hidden When Collapsed
+**Status:** ✅ Completed
+
+- Added `.sidebar.collapsed .welcome-section { display: none !important }` to `style.css`
+- Client dashboard greeting disappears cleanly when sidebar collapses
+
+---
+
+### 📊 Client Dashboard — Pagination on All Tables
+**Status:** ✅ Completed
+
+- Added reusable `paginate(containerId, rows, renderRow, headers)` helper in `client-dashboard.html`
+- All 4 tables paginated at 8 rows/page: `active-orders`, `order-history`, `active-reservations`, `reservation-history`
+- Each table's pagination is independent via `window.__pg_<containerId>` function
+- Pagination bar only renders when total pages > 1
+- Added `setTimeout(() => window.dispatchEvent(new Event('resize')), 450)` on load to fix table width compression after sidebar transition
+
+---
+
+### 🔝 Profile Dropdown Z-Index Fix (All Pages)
+**Status:** ✅ Completed
+
+- Root cause: animated cards with `transform` create stacking contexts that override `z-index` from outside
+- Fix: `header { position: relative; z-index: 200 }` makes header a stacking context above all animated cards
+- `.profile-dropdown { z-index: 201 }`, `.profile-menu { z-index: 202 !important }`
+- `stat-card` and `header` animations changed to `fadeInOnly` (opacity only, no transform) to prevent stacking context creation
+
+---
+
+## Change Log
+
+### Version 6.4.0 / V2.4 (April 2026)
+- ✅ Staff product/service permissions fixed — Edit/Delete buttons hidden after dynamic render
+- ✅ User Management collapsible submodule in sidebar (Permissions + Sidebar Tabs)
+- ✅ Owner self-protection in Permissions Management and Sidebar Management
+- ✅ Mojibake emoji fixed in reports.html, dashboard.html, invoices.html
+- ✅ Pagination added to Reports invoices table and Invoices page (10 rows/page)
+- ✅ Page load float-fade animation on all cards and sections
+- ✅ Settings No Logo fix — clears file input and sends null to backend
+- ✅ Hamburger button removed on mobile, replaced with left-edge tap tab
+- ✅ Sidebar logo area padding fix — close button no longer overlaps business name
+- ✅ Sidebar welcome greeting hidden when collapsed
+- ✅ Client dashboard tables paginated (8 rows/page, 4 tables)
+- ✅ Profile dropdown z-index fixed on all pages — no longer hidden behind stat cards

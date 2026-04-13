@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,10 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">â˜°</button>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
-            <span id="sidebarLogo">ðŸš—</span>
+            <span id="sidebarLogo">🚗</span>
             <h2 id="sidebarName">CarWash</h2>
         </div>
         <ul>
@@ -47,15 +47,15 @@
         
         <div class="stats-grid" style="margin-bottom: 20px;">
             <div class="stat-card" onclick="showSalesReport()" style="cursor: pointer;">
-                <h3>ðŸ“Š Sales Report</h3>
+                <h3>📊 Sales Report</h3>
                 <p style="font-size: 14px; margin-top: 10px;">View overall sales statistics</p>
             </div>
             <div class="stat-card" onclick="showProductStats()" style="cursor: pointer;">
-                <h3>ðŸ“¦ Product Statistics</h3>
+                <h3>📦 Product Statistics</h3>
                 <p style="font-size: 14px; margin-top: 10px;">Analyze product performance</p>
             </div>
             <div class="stat-card" onclick="showServiceStats()" style="cursor: pointer;">
-                <h3>ðŸ”§ Service Statistics</h3>
+                <h3>🔧 Service Statistics</h3>
                 <p style="font-size: 14px; margin-top: 10px;">Track service metrics</p>
             </div>
         </div>
@@ -168,7 +168,7 @@
             <div class="stats-grid" style="margin-bottom: 20px;">
                 <div class="stat-card">
                     <h3>Total Sales</h3>
-                    <p class="stat-value" id="totalSales">â‚±0.00</p>
+                    <p class="stat-value" id="totalSales">₱0.00</p>
                 </div>
                 <div class="stat-card">
                     <h3>Total Invoices</h3>
@@ -202,9 +202,9 @@
                             <th>Amount</th>
                         </tr>
                     </thead>
-                    <tbody id="reportTableBody">
-                    </tbody>
+                    <tbody id="reportTableBody"></tbody>
                 </table>
+                <div id="reportPagination" class="pagination-bar"></div>
             </div>
         </div>
         
@@ -338,5 +338,3 @@
     <script src="js/profile.js"></script>
 </body>
 </html>
-
-

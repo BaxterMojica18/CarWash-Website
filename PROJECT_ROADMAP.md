@@ -552,3 +552,77 @@ Redesign the client-facing shopping experience (`shop.html`, `cart.html`) to mat
 - [ ] `frontend/cart.html` — full redesign
 - [ ] `frontend/checkout.html` — minor layout improvements
 - [ ] `frontend/css/shop.css` — NEW dedicated shop stylesheet
+
+---
+
+## ✅ Completed in Session 8 (April 2026)
+
+### 🔐 Feature 1: Staff Product/Service Permissions Fix
+- [x] `hideElementsWithoutPermission()` called after dynamic card render in `products.js` and `services.js`
+- [x] `setup_demo_accounts.py` explicitly sets staff role to `[view_locations, manage_invoices, view_invoices, view_reports]`
+- [x] Edit/Delete buttons correctly hidden for staff on Products and Services pages
+
+### 👥 User Management Sidebar Submodules
+- [x] "Permissions" and "Sidebar Tabs" moved under collapsible "User Management" nav group in sidebar
+- [x] Smooth slide animation, auto-opens on active page, collapsed-sidebar safe
+- [x] `.nav-group`, `.nav-sub` CSS added to `style.css`
+
+### 🔒 Owner Self-Protection
+- [x] `permissions-management.html` — owner's own card locked (no delete, no permission toggles)
+- [x] `sidebar-management.html` — owner's own sidebar tabs locked (no toggles)
+- [x] Both pages have JS-level guards in addition to UI locks
+
+### 🐛 Mojibake Emoji Fixes
+- [x] `reports.html` — fixed `📊`, `📦`, `🔧`, `☰`, `🚗`, `₱`
+- [x] `dashboard.html` — fixed `📅` filter options, `✏️` floating button
+- [x] `invoices.html` — fixed `🔍` search placeholder
+
+### 📄 Pagination
+- [x] Reports invoices table — 10 rows/page with `reportPagination` bar
+- [x] Invoices page — 10 rows/page with `invoicePagination` bar
+- [x] `.pagination-bar` + `.page-btn` CSS added to `style.css`
+
+### 🎨 Page Load Animation
+- [x] `@keyframes fadeSlideIn` applied to all major card/section types
+- [x] Staggered delays for cascading entrance effect
+- [x] `stat-card` and `header` use opacity-only animation to avoid stacking context issues
+
+### 🔧 Settings No Logo Fix
+- [x] File input cleared when "No Logo" selected
+- [x] `businessForm` sends `logo: null` correctly
+
+### 📱 Mobile UX
+- [x] Hamburger button removed (`display: none !important`)
+- [x] Left-edge tap tab injected via JS — opens sidebar on mobile
+- [x] Mobile content padding reduced from 70px → 20px
+
+### 🖼️ Sidebar Fixes
+- [x] `padding-right: 36px` on `.sidebar .logo` — close button no longer overlaps business name
+- [x] `.sidebar.collapsed .welcome-section { display: none }` — greeting hidden when collapsed
+
+### 📊 Client Dashboard Pagination
+- [x] Reusable `paginate()` helper added
+- [x] All 4 tables paginated at 8 rows/page
+- [x] Resize dispatch on load fixes table width compression
+
+### 🔝 Profile Dropdown Z-Index
+- [x] `header { position: relative; z-index: 200 }` — header stacking context above animated cards
+- [x] Profile dropdown always visible on all pages for all account types
+
+### 📊 Current Version: 6.4.0 (Public: V2.4)
+
+## 🔄 Updated Phase 2 Status (April 2026 — Session 8)
+
+| Feature | Status |
+|---------|--------|
+| Staff Permissions Fix | ✅ Done |
+| User Management Sidebar Submodules | ✅ Done |
+| Owner Self-Protection | ✅ Done |
+| Pagination (Reports + Invoices + Client Dashboard) | ✅ Done |
+| Page Load Animations | ✅ Done |
+| Mobile Edge Tab (no hamburger) | ✅ Done |
+| Profile Dropdown Z-Index Fix | ✅ Done |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| SMS Notifications (Twilio) | ⬜ Pending |
+| React + Next.js Frontend | ⬜ Pending |
+| Client Shopping Experience Overhaul | ⬜ Pending (Session 9) |
