@@ -629,45 +629,54 @@ Redesign the client-facing shopping experience (`shop.html`, `cart.html`) to mat
 
 ---
 
-## 🔜 Planned — Session 9
+## ✅ Completed — Session 9 *(April 15, 2026)*
 
 ### 🛍️ Feature 1: Client Shopping Experience Overhaul (Lazada/Shopee/TikTok Shop Style)
-**Target Version:** V2.5 | **Priority:** High
+**Version:** V2.5 | **Priority:** High ✅
 
 #### Goal:
 Full redesign of the client-facing shopping experience to match modern e-commerce UX — product cards with images, category filters, quantity selectors, sticky cart, and smooth checkout flow.
 
-#### Planned Changes:
+#### Changes Implemented:
 
-**`frontend/shop.html`:**
-- [ ] Responsive product card grid (2 cols mobile, 3-4 cols desktop)
-- [ ] Product cards — image thumbnail, name, price, "Add to Cart" button, stock badge
-- [ ] Category filter bar — horizontal scrollable tabs (All, Products, Services, Featured)
-- [ ] Live search/filter by name
-- [ ] Flash sale banner (configurable by owner)
-- [ ] Sort options — Price Low→High / High→Low, Newest
-- [ ] Illustrated empty state when no products match filter
-- [ ] Floating sticky cart button (bottom-right) with item count badge
+**`frontend/shop.html`:** ✅
+- [x] Responsive product card grid (2 cols mobile → 5 cols desktop)
+- [x] Product cards — emoji/image thumbnail, name, description, price, Add to Cart / Reserve button, type badge
+- [x] Category filter bar — horizontal scrollable tabs (All, Products, Services, Featured)
+- [x] Live search/filter by name and description
+- [x] Flash sale countdown banner with live timer
+- [x] Sort options — Best Match, Price Low→High / High→Low, Name A-Z
+- [x] Illustrated empty state when no products match filter
+- [x] Floating sticky cart button (bottom-right) with item count badge
+- [x] Sticky top header with search bar (Lazada-style)
+- [x] Promo top bar with free delivery messaging
+- [x] Voucher collection row (UI)
+- [x] Cart nudge toast on Add to Cart
+- [x] Mobile bottom navigation bar
+- [x] Skeleton loading cards while fetching
 
-**`frontend/cart.html`:**
-- [ ] Cart item cards — image, name, unit price, quantity stepper (+/-), subtotal, remove
-- [ ] Sticky order summary panel — subtotal, fees, total
-- [ ] Voucher/promo code field (UI only)
-- [ ] Visual payment method selector cards (Cash, QR, Stripe)
-- [ ] Prominent "Place Order" CTA with total amount
-- [ ] Illustrated empty cart state with "Continue Shopping" link
+**`frontend/cart.html`:** ✅
+- [x] Cart item rows — thumbnail, name, type badge, FREE SHIPPING tag, unit price, qty stepper (+/-), remove button
+- [x] Per-item and Select All checkboxes (Lazada-style)
+- [x] Sticky right-side order summary panel (desktop)
+- [x] Voucher/promo code input with hardcoded test codes (SAVE10, CARWASH50, PROMO20)
+- [x] Visual payment method selector cards (loaded from backend + fallback defaults)
+- [x] Prominent "Check Out (N)" CTA button with total amount
+- [x] Stripe "Pay with Card" secondary CTA
+- [x] Illustrated empty cart state with "Continue Shopping" link
+- [x] Mobile sticky bottom checkout bar with total + checkout button
 
 **`frontend/checkout.html`:**
-- [ ] Cleaner layout matching new shop theme
-- [ ] Order summary visible alongside Stripe payment form
+- [ ] Cleaner layout matching new shop theme *(pending)*
 
-**`frontend/css/shop.css` (NEW):**
-- [ ] Mobile-first responsive grid
-- [ ] Card hover effects, shadows, smooth transitions
-- [ ] Skeleton loading states for product cards
-- [ ] Brand-color accent system
+- [x] **Standardized Mobile Headers** — Implemented rigid 3-column flex layout (Back/Title/Actions) for consistency across pages.
+- [x] **Corner Button Anchoring** — Fixed width containers (44px) for side buttons to prevent centering/stacking issues.
+- [x] **Advanced Search Integration** — Unified real-time filtering for both Cart (by Name) and Vouchers (Text + Category).
+- [x] **UX Spacing Polish** — Increased header padding (24px) for better visual alignment on narrow displays.
+- [x] **Cart Logic Refinement** — Removed global trash buttons; implemented safer per-item row deletion.
 
-**Backend:** No changes needed — existing `/api/settings/products`, `/api/cart`, `/api/orders` endpoints are sufficient.
+**Backend:** No changes needed — existing `/api/settings/products`, `/api/cart`, `/api/orders` endpoints sufficient.
+
 
 ---
 
@@ -789,9 +798,10 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 |-------|--------|-----------------|--------|
 | Phase 1 | ✅ Done | Auth, email, Firebase, sidebar, deployment | ✅ Complete |
 | Phase 2 | ✅ Done | Multi-tenant, Stripe, e-commerce, user sidebar, V2.4 | ✅ Complete |
-| Session 9 | V2.5 | Client shopping experience overhaul | 🔜 Next |
-| Phase 3 | V3.x | PWA, advanced dashboard, WebSockets, mobile UX | ⬜ Planned |
-| Phase 4 | V4.x | Next.js migration, AI, multi-location, security, payments | ⬜ Future |
+| Session 9 | V2.5 | Client shopping experience overhaul | ✅ Done |
+| Session 10 | V2.6 | Admin Side: Voucher CRUD, Flash Sales, Order UI | ⏳ Next |
+| Phase 3 | V3.x | PWA, advanced dashboard, WebSockets, mobile UX | 📅 Planned |
+| Phase 4 | V4.x | Next.js migration, AI, multi-location, security, payments | 🚀 Future |
 
 ---
 

@@ -1,6 +1,6 @@
 # 🚗 Car Wash Management System
 
-> **Version 2.3** — Full-stack car wash management platform with e-commerce, multi-tenant support, Stripe payments, user-based sidebar visibility control, and live production deployment.
+> **Version 2.5** — Full-stack car wash management platform with e-commerce, multi-tenant support, Stripe payments, user-based sidebar visibility control, and live production deployment.
 
 [![Frontend](https://img.shields.io/badge/Frontend-Vercel-black?logo=vercel)](https://car-wash-website-khaki.vercel.app)
 [![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render)](https://carwash-website-jzr2.onrender.com)

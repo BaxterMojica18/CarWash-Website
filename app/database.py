@@ -311,6 +311,24 @@ class UserSidebarSetting(Base):
     is_visible = Column(Boolean, default=True)
     business_number = Column(String, default="__global__")
 
+class Coupon(Base):
+    __tablename__ = "coupons"
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String, unique=True, nullable=False, index=True)
+    description = Column(String, nullable=True)
+    discount_type = Column(String, default="percentage")   # "percentage" or "fixed"
+    discount_value = Column(Float, nullable=False)
+    min_spend = Column(Float, default=0)
+    max_uses = Column(Integer, nullable=True)               # None = unlimited
+    uses_count = Column(Integer, default=0)
+    stock = Column(Integer, nullable=True)                  # remaining voucher stock
+    expires_at = Column(DateTime, nullable=True)
+    is_active = Column(Boolean, default=True)
+    business_number = Column(String, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    deleted_at = Column(DateTime, nullable=True)           # soft delete
+
+
 def create_tables():
     try:
         Base.metadata.create_all(bind=engine)

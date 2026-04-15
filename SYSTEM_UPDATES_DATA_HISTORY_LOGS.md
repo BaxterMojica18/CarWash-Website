@@ -1687,3 +1687,133 @@ Both admin/owner-facing management pages had corrupted emoji characters due to e
 #### Files Modified:
 - ✅ `frontend/order-management.html` — full rewrite: mojibake fixed, animations added, cleanup
 - ✅ `frontend/queue-management.html` — full rewrite: mojibake fixed, animations added, cleanup
+
+---
+
+## Session 9 � April 15, 2026
+
+### ??? V2.5 � Client Shopping Experience Overhaul (Lazada-Style)
+
+#### frontend/shop.html � Full Redesign
+- Dark top promo bar: Free delivery threshold message with cart link
+- Sticky header: back link, store name (from API), Lazada-style search bar + cart badge
+- Flash sale countdown banner with live JS timer
+- Two voucher collection cards (First Order 10%, Free Shipping ?50 � UI only)
+- Horizontal scrollable category filter bar: All, Products, Services, Featured
+- Sort bar: Best Match, Price Low?High, Price High?Low, Name A-Z with live result count
+- Product grid: 2 cols (mobile) ? 3 ? 4 ? 5 (desktop) with responsive breakpoints
+- Product cards: image/emoji thumb, type badge, name, description, price (in ?), Add to Cart / Reserve CTA
+- Cart nudge toast: shows item name on Add to Cart
+- Floating cart button bottom-right with item count badge
+- Mobile bottom navigation bar: Home, Shop (active), Reserve, Cart, Account
+- Skeleton loading cards while data is fetching
+- Rich empty state with illustrated icon and CTA
+
+#### frontend/cart.html � Full Redesign
+- Sticky header with back button, "View my voucher" link, search icon, clear all icon
+- Two-column layout on desktop: cart items left, sticky order summary right
+- Select All checkbox + per-item checkboxes (Lazada-style)
+- Cart item rows: thumbnail (image/emoji), name, variant, FREE SHIPPING badge, price, qty stepper, delete
+- Voucher/promo code input (SAVE10, CARWASH50, PROMO20 test codes)
+- Order summary panel: subtotal, shipping fee (FREE), voucher discount, total
+- Payment method selector loaded from backend with visual card UI + fallback (Cash, QR)
+- Primary "Check Out (N)" CTA + secondary Stripe "Pay with Card" button
+- Mobile sticky bottom bar: shows total + checkout count + action button
+- Illustrated empty cart state with "Continue Shopping" CTA
+
+#### Files Modified:
+- ? frontend/shop.html � complete Lazada-style overhaul
+- ? frontend/cart.html � complete Lazada-style overhaul
+- ? PROJECT_ROADMAP.md � Session 9 marked complete
+
+### ?? Session 9 - Part 2: Header Standardization & Search Polish
+- [x] **Header UI Standardization** - Enforced rigid 3-column flex layout (Left: Back, Center: Title/Search, Right: Actions) in cart.html and ouchers.html.
+- [x] **Corner Button Anchoring** - Fixed 44px containers for side buttons to ensure perfect centering and prevent vertical stacking.
+- [x] **Advanced Filtering** - Implemented real-time name-based search in Cart and unified Text+Category search in Vouchers.
+- [x] **Navigation Consistency** - Fixed mobile bottom navbar visibility (768px breakpoint) and increased header padding (24px) for better UX.
+- [x] **Cart Logic Cleanup** - Removed global trash icons; implemented safe per-item deletion in cart rows.
+
+#### Files Modified:
+- ? rontend/cart.html - Header standardization, search filter, layout fixes.
+- ? rontend/vouchers.html - Search integration, category bar fixes, header layout.
+- ? PROJECT_ROADMAP.md - Session 9 marked DONE, Session 10 defined.
+
+#### Next Session Goals (Session 10):
+1. **Admin/Owner side update** to incorporate UI for Voucher CRUD.
+2. **Flash Sale Management** for admins/owners.
+3. **Order Handling** UI improvements on the owner side.
+
+---
+
+## Latest Updates (April 15, 2026 — Session 9)
+
+> **Version:** 6.5.0 (Public: V2.5) | **Branch:** `feature/lazada-style-shop-overhaul`
+
+---
+
+### 🛍️ Client Shopping Experience Overhaul — Lazada/Shopee/TikTok Style
+**Status:** ✅ Completed | **Verified working**
+
+#### `frontend/shop.html` — Full Redesign
+- Dark top promo bar with free delivery threshold message and cart link
+- Sticky header: back link, store name (from API), search bar + cart badge
+- Flash sale countdown banner with live JS timer
+- Two voucher collection cards (First Order 10%, Free Shipping — UI only)
+- Horizontal scrollable category filter bar: All, Products, Services, Featured
+- Sort bar: Best Match, Price Low→High, Price High→Low, Name A-Z with live result count
+- Product grid: 2 cols (mobile) → 3 → 4 → 5 (desktop) with responsive breakpoints
+- Product cards: image/emoji thumb, type badge, name, description, price (in ₱), Add to Cart / Reserve CTA
+- Cart nudge toast on Add to Cart
+- Floating cart button bottom-right with item count badge
+- Mobile bottom navigation bar: Home, Shop (active), Reserve, Cart, Account
+- Skeleton loading cards while data fetches
+- Rich empty state with illustrated icon and CTA
+
+#### `frontend/cart.html` — Full Redesign
+- Sticky header with back button, "View my voucher" link, search icon, clear all icon
+- Two-column layout on desktop: cart items left, sticky order summary right
+- Select All checkbox + per-item checkboxes (Lazada-style)
+- Cart item rows: thumbnail, name, FREE SHIPPING badge, price, qty stepper, delete
+- Voucher/promo code input (SAVE10, CARWASH50, PROMO20 test codes)
+- Order summary panel: subtotal, shipping fee (FREE), voucher discount, total
+- Payment method selector loaded from backend with visual card UI
+- Primary "Check Out (N)" CTA + secondary Stripe "Pay with Card" button
+- Mobile sticky bottom bar: shows total + checkout count + action button
+- Illustrated empty cart state with "Continue Shopping" CTA
+
+#### Session 9 Part 2 — Header Standardization & Search Polish
+- Enforced rigid 3-column flex layout (Left: Back, Center: Title/Search, Right: Actions) in `cart.html` and `vouchers.html`
+- Fixed 44px containers for side buttons — perfect centering, no vertical stacking
+- Real-time name-based search in Cart
+- Unified Text + Category search in Vouchers
+- Fixed mobile bottom navbar visibility (768px breakpoint)
+- Increased header padding (24px) for better UX
+- Removed global trash icons — safe per-item deletion only
+
+#### New Files:
+- ✅ `frontend/vouchers.html` — NEW voucher browsing page
+- ✅ `frontend/coupons.html` — NEW coupons page
+- ✅ `app/routers/coupons.py` — NEW coupons API router
+
+#### Files Modified:
+- ✅ `frontend/shop.html` — complete Lazada-style overhaul
+- ✅ `frontend/cart.html` — complete Lazada-style overhaul
+- ✅ `frontend/reserve.html` — updated to match new shop nav
+- ✅ `frontend/js/menu.js` — updated client nav links
+- ✅ `frontend/sidebar-management.html` — updated tab references
+- ✅ `app/database.py` — added coupon/voucher models
+- ✅ `app/main.py` — registered coupons router
+
+---
+
+## Change Log
+
+### Version 6.5.0 / V2.5 (April 15, 2026)
+- ✅ `shop.html` fully redesigned — Lazada/Shopee/TikTok-style product grid, flash sale banner, category filters, sort bar, floating cart, mobile bottom nav, skeleton loaders
+- ✅ `cart.html` fully redesigned — item checkboxes, qty stepper, voucher input, sticky order summary, payment selector, mobile sticky checkout bar
+- ✅ `vouchers.html` — new voucher browsing page with search and category filter
+- ✅ `coupons.html` — new coupons page
+- ✅ `coupons.py` — new backend router for coupon management
+- ✅ Header standardized across cart and voucher pages (3-column flex layout)
+- ✅ Mobile bottom navbar fixed at 768px breakpoint
+- ✅ README updated to V2.5
