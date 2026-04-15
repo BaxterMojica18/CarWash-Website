@@ -1817,3 +1817,48 @@ Both admin/owner-facing management pages had corrupted emoji characters due to e
 - ✅ Header standardized across cart and voucher pages (3-column flex layout)
 - ✅ Mobile bottom navbar fixed at 768px breakpoint
 - ✅ README updated to V2.5
+
+---
+
+## 🚨 Hotfix — Render Production Login 500 Error (April 2026)
+
+> **Version:** 6.4.1 | **Branch:** `main` | **Commit:** `4b746f1`
+
+---
+
+### 🔥 Issue: `column users.is_active does not exist` — 500 on Login
+**Status:** ✅ Fixed
+
+#### Root Cause:
+The Render PostgreSQL `users` table was missing two columns that exist in the SQLAlchemy `User` model:
+- `is_active BOOLEAN DEFAULT TRUE`
+- `deleted_at TIMESTAMP WITHOUT TIME ZONE`
+
+These columns are added by `commands/database/add_user_soft_delete_columns.py`, but that script was **never included in `start.sh`** — so every Render deploy silently skipped it. The columns existed locally (Docker creates them via `create_tables()`) but were never applied to the production database.
+
+#### Error:
+```
+psycopg2.errors.UndefinedColumn: column users.is_active does not exist
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn)
+POST /api/auth/login → 500 Internal Server Error
+```
+
+#### Fix — `start.sh`:
+Two additions:
+
+1. Added the missing migration script call:
+```sh
+python commands/database/add_user_soft_delete_columns.py || true
+```
+
+2. Added inline `IF NOT EXISTS` ALTER TABLE statements as a permanent safety net:
+```sql
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITHOUT TIME ZONE;
+```
+
+#### Files Modified:
+- ✅ `start.sh` — added `add_user_soft_delete_columns.py` call + inline column migrations
+
+#### Why `IF NOT EXISTS` matters:
+Using `IF NOT EXISTS` in the inline block means the migration is **idempotent** — it can run on every deploy without failing if the column already exists. This prevents the same class of bug from recurring for any future column additions.
