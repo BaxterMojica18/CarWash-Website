@@ -8,7 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
             <span id="sidebarLogo"></span>
@@ -37,9 +36,9 @@
                             </div>
                         </div>
                         <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
-                        <a href="#" onclick="showEditProfile(); return false;">✏️ Edit Profile</a>
-                        <a href="settings.html">⚙️ Settings</a>
-                        <a href="login.html" onclick="logout()">🚪 Logout</a>
+                        <a href="#" onclick="showEditProfile(); return false;">&#9999;&#65039; Edit Profile</a>
+                        <a href="settings.html">&#9881;&#65039; Settings</a>
+                        <a href="login.html" onclick="logout()">&#128682; Logout</a>
                     </div>
                 </div>
             </div>
@@ -47,7 +46,7 @@
         <div class="table-container">
             <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
                 <div style="position: relative; flex: 1; max-width: 400px;">
-                    <input type="text" id="searchInvoice" placeholder="🔍 Search by invoice number, customer name..." onkeyup="searchInvoices()" style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                    <input type="text" id="searchInvoice" placeholder="&#128269; Search by invoice number, customer name..." onkeyup="searchInvoices()" style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'" onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
                 </div>
                 <select id="invoiceFilter" onchange="filterInvoices()" style="padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: white; cursor: pointer; transition: all 0.3s ease;" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'">
                     <option value="all">All Time</option>
@@ -123,7 +122,7 @@
             </div>
         </div>
     </main>
-    
+
     <div id="editProfileModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeEditProfile()">&times;</span>
@@ -148,7 +147,7 @@
             </form>
         </div>
     </div>
-    
+
     <script src="js/api.js"></script>
     <script src="js/menu.js"></script>
     <script src="js/invoices.js"></script>

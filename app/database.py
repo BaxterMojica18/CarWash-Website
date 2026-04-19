@@ -329,6 +329,32 @@ class Coupon(Base):
     deleted_at = Column(DateTime, nullable=True)           # soft delete
 
 
+class FlashSale(Base):
+    __tablename__ = "flash_sales"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    discount_type = Column(String, default="percentage")   # "percentage" or "fixed"
+    discount_value = Column(Float, nullable=False)
+    starts_at = Column(DateTime, nullable=False)
+    ends_at = Column(DateTime, nullable=False)
+    is_active = Column(Boolean, default=True)
+    business_number = Column(String, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    deleted_at = Column(DateTime, nullable=True)
+
+    items = relationship("FlashSaleItem", back_populates="flash_sale")
+
+
+class FlashSaleItem(Base):
+    __tablename__ = "flash_sale_items"
+    id = Column(Integer, primary_key=True, index=True)
+    flash_sale_id = Column(Integer, ForeignKey("flash_sales.id"), nullable=False)
+    product_service_id = Column(Integer, ForeignKey("products_services.id"), nullable=False)
+    flash_sale = relationship("FlashSale", back_populates="items")
+    product_service = relationship("ProductService")
+
+
 def create_tables():
     try:
         Base.metadata.create_all(bind=engine)

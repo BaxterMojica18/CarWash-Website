@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Sale Management</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+        .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:24px; }
+        .stat-card { background:var(--card-bg,#fff); border-radius:12px; padding:20px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+        .stat-card .num { font-size:28px; font-weight:700; color:var(--primary,#667eea); }
+        .stat-card .lbl { font-size:13px; color:#888; margin-top:4px; }
+        .toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+        .toolbar input, .toolbar select { padding:8px 12px; border:1px solid #ddd; border-radius:8px; font-size:14px; }
+        .toolbar input { flex:1; min-width:180px; }
+        .sale-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:16px; }
+        .sale-card { background:var(--card-bg,#fff); border-radius:14px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,.07); border-top:4px solid #e74c3c; position:relative; transition:transform .2s; }
+        .sale-card:hover { transform:translateY(-2px); }
+        .sale-card.inactive { border-top-color:#ccc; opacity:.75; }
+        .sale-card.upcoming { border-top-color:#f39c12; }
+        .sale-card.ended { border-top-color:#95a5a6; opacity:.65; }
+        .sale-title { font-size:17px; font-weight:700; color:#2c3e50; }
+        .sale-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; margin-left:6px; }
+        .badge-live { background:#fdecea; color:#e74c3c; }
+        .badge-upcoming { background:#fef9e7; color:#f39c12; }
+        .badge-ended { background:#f2f3f4; color:#888; }
+        .badge-inactive { background:#f2f3f4; color:#888; }
+        .sale-discount { font-size:22px; font-weight:800; color:#e74c3c; margin:8px 0 4px; }
+        .sale-desc { font-size:13px; color:#666; margin-bottom:10px; }
+        .sale-dates { font-size:12px; color:#888; display:flex; flex-direction:column; gap:3px; }
+        .sale-dates span strong { color:#555; }
+        .countdown { font-size:13px; font-weight:600; color:#e74c3c; margin-top:8px; }
+        .products-list { margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
+        .product-tag { background:#f0f4ff; color:#667eea; padding:3px 10px; border-radius:20px; font-size:12px; }
+        .sale-actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+        .btn-sm { padding:6px 14px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:opacity .2s; }
+        .btn-edit { background:var(--primary,#667eea); color:#fff; }
+        .btn-toggle { background:#f0f0f0; color:#555; }
+        .btn-delete { background:#fdecea; color:#e74c3c; }
+        .btn-sm:hover { opacity:.85; }
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center; }
+        .modal-overlay.open { display:flex; }
+        .modal { background:#fff; border-radius:16px; padding:28px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+        .modal h3 { margin:0 0 20px; font-size:18px; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-size:13px; font-weight:600; color:#555; margin-bottom:6px; }
+        .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:14px; box-sizing:border-box; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .product-checkboxes { max-height:180px; overflow-y:auto; border:1px solid #ddd; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px; }
+        .product-checkboxes label { display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; }
+        .product-checkboxes input[type=checkbox] { width:auto; }
+        .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+        .btn-primary { background:var(--primary,#667eea); color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
+        .btn-secondary { background:#f0f0f0; color:#555; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
+        .empty-state { text-align:center; padding:60px 20px; color:#aaa; }
+        .empty-state .icon { font-size:48px; margin-bottom:12px; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <div id="sidebar-container"></div>
+    <div class="content">
+        <div id="header-container"></div>
+
+        <div class="page-header">
+            <div>
+                <h1 style="margin:0;font-size:24px;">⚡ Flash Sale Management</h1>
+                <p style="margin:4px 0 0;color:#888;font-size:14px;">Create time-limited discount events for your products and services</p>
+            </div>
+            <button class="btn-primary" onclick="openModal()">+ New Flash Sale</button>
+        </div>
+
+        <div class="stats-row" id="statsRow"></div>
+
+        <div class="toolbar">
+            <input type="text" id="searchInput" placeholder="🔍 Search by title..." oninput="renderSales()">
+            <select id="filterStatus" onchange="renderSales()">
+                <option value="all">All Status</option>
+                <option value="live">Live Now</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="ended">Ended</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+
+        <div class="sale-grid" id="saleGrid">
+            <div class="empty-state"><div class="icon">⏳</div><p>Loading flash sales...</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <h3 id="modalTitle">New Flash Sale</h3>
+        <form id="saleForm" onsubmit="saveSale(event)">
+            <input type="hidden" id="saleId">
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="saleTitle" placeholder="e.g. Weekend Flash Sale" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <input type="text" id="saleDesc" placeholder="e.g. Huge discounts this weekend only!">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Discount Type *</label>
+                    <select id="discountType">
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="fixed">Fixed Amount (₱)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Discount Value *</label>
+                    <input type="number" id="discountValue" placeholder="e.g. 30" min="0" step="0.01" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Starts At *</label>
+                    <input type="datetime-local" id="startsAt" required>
+                </div>
+                <div class="form-group">
+                    <label>Ends At *</label>
+                    <input type="datetime-local" id="endsAt" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Apply to Products/Services (optional)</label>
+                <div class="product-checkboxes" id="productCheckboxes">
+                    <em style="color:#aaa;font-size:13px;">Loading products...</em>
+                </div>
+            </div>
+            <div class="form-group">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" id="isActive" checked style="width:auto;">
+                    Active (visible to clients)
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-primary" id="saveBtn">Create Flash Sale</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/profile.js"></script>
+<script>
+    let allSales = [];
+    let allProducts = [];
+
+    function getSaleStatus(s) {
+        const now = new Date();
+        const start = new Date(s.starts_at);
+        const end = new Date(s.ends_at);
+        if (!s.is_active) return 'inactive';
+        if (now < start) return 'upcoming';
+        if (now > end) return 'ended';
+        return 'live';
+    }
+
+    function formatCountdown(endsAt) {
+        const diff = new Date(endsAt) - new Date();
+        if (diff <= 0) return 'Ended';
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        if (h > 24) return `${Math.floor(h/24)}d ${h%24}h remaining`;
+        return `${h}h ${m}m ${s}s remaining`;
+    }
+
+    async function loadData() {
+        const [salesRes, productsRes] = await Promise.all([
+            fetch(`${API_BASE}/flash-sales`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+            fetch(`${API_BASE}/settings/products`, { headers: { 'Authorization': `Bearer ${getToken()}` } })
+        ]);
+        allSales = await salesRes.json();
+        allProducts = await productsRes.json();
+        renderStats();
+        renderSales();
+    }
+
+    function renderStats() {
+        const live = allSales.filter(s => getSaleStatus(s) === 'live').length;
+        const upcoming = allSales.filter(s => getSaleStatus(s) === 'upcoming').length;
+        const ended = allSales.filter(s => getSaleStatus(s) === 'ended').length;
+        document.getElementById('statsRow').innerHTML = `
+            <div class="stat-card"><div class="num">${allSales.length}</div><div class="lbl">Total Sales</div></div>
+            <div class="stat-card"><div class="num" style="color:#e74c3c">${live}</div><div class="lbl">🔴 Live Now</div></div>
+            <div class="stat-card"><div class="num" style="color:#f39c12">${upcoming}</div><div class="lbl">⏰ Upcoming</div></div>
+            <div class="stat-card"><div class="num" style="color:#95a5a6">${ended}</div><div class="lbl">Ended</div></div>
+        `;
+    }
+
+    function renderSales() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const filter = document.getElementById('filterStatus').value;
+
+        let filtered = allSales.filter(s => {
+            const matchSearch = s.title.toLowerCase().includes(search) || (s.description || '').toLowerCase().includes(search);
+            const status = getSaleStatus(s);
+            const matchStatus = filter === 'all' || status === filter;
+            return matchSearch && matchStatus;
+        });
+
+        if (!filtered.length) {
+            document.getElementById('saleGrid').innerHTML = `<div class="empty-state"><div class="icon">⚡</div><p>No flash sales found</p></div>`;
+            return;
+        }
+
+        document.getElementById('saleGrid').innerHTML = filtered.map(s => {
+            const status = getSaleStatus(s);
+            const badgeMap = { live: '<span class="sale-badge badge-live">🔴 Live</span>', upcoming: '<span class="sale-badge badge-upcoming">⏰ Upcoming</span>', ended: '<span class="sale-badge badge-ended">Ended</span>', inactive: '<span class="sale-badge badge-inactive">Inactive</span>' };
+            const discountLabel = s.discount_type === 'percentage' ? `${s.discount_value}% OFF` : `₱${s.discount_value} OFF`;
+            const productTags = (s.product_ids || []).map(pid => {
+                const p = allProducts.find(x => x.id === pid);
+                return p ? `<span class="product-tag">${p.name}</span>` : '';
+            }).join('');
+            const countdown = status === 'live' ? `<div class="countdown">⏱ ${formatCountdown(s.ends_at)}</div>` : '';
+            return `
+            <div class="sale-card ${status !== 'live' ? status : ''}">
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+                    <span class="sale-title">${s.title}</span>${badgeMap[status]}
+                </div>
+                <div class="sale-discount">${discountLabel}</div>
+                <div class="sale-desc">${s.description || '<em>No description</em>'}</div>
+                <div class="sale-dates">
+                    <span>Start: <strong>${new Date(s.starts_at).toLocaleString()}</strong></span>
+                    <span>End: <strong>${new Date(s.ends_at).toLocaleString()}</strong></span>
+                </div>
+                ${countdown}
+                ${productTags ? `<div class="products-list">${productTags}</div>` : '<div style="font-size:12px;color:#aaa;margin-top:8px;">Applies to all products</div>'}
+                <div class="sale-actions">
+                    <button class="btn-sm btn-edit" onclick="editSale(${s.id})">✏️ Edit</button>
+                    <button class="btn-sm btn-toggle" onclick="toggleSale(${s.id})">${s.is_active ? '⏸ Deactivate' : '▶ Activate'}</button>
+                    <button class="btn-sm btn-delete" onclick="deleteSale(${s.id})">🗑 Delete</button>
+                </div>
+            </div>`;
+        }).join('');
+
+        // Refresh countdowns every second for live sales
+        if (filtered.some(s => getSaleStatus(s) === 'live')) {
+            setTimeout(renderSales, 1000);
+        }
+    }
+
+    function populateProductCheckboxes(selectedIds = []) {
+        document.getElementById('productCheckboxes').innerHTML = allProducts.length
+            ? allProducts.map(p => `
+                <label>
+                    <input type="checkbox" value="${p.id}" ${selectedIds.includes(p.id) ? 'checked' : ''}>
+                    ${p.name} <span style="color:#888;font-size:11px;">(${p.type})</span>
+                </label>`).join('')
+            : '<em style="color:#aaa;font-size:13px;">No products found</em>';
+    }
+
+    function openModal(sale = null) {
+        document.getElementById('saleForm').reset();
+        document.getElementById('saleId').value = '';
+        document.getElementById('isActive').checked = true;
+        document.getElementById('modalTitle').textContent = sale ? 'Edit Flash Sale' : 'New Flash Sale';
+        document.getElementById('saveBtn').textContent = sale ? 'Save Changes' : 'Create Flash Sale';
+        populateProductCheckboxes(sale ? sale.product_ids : []);
+
+        if (sale) {
+            document.getElementById('saleId').value = sale.id;
+            document.getElementById('saleTitle').value = sale.title;
+            document.getElementById('saleDesc').value = sale.description || '';
+            document.getElementById('discountType').value = sale.discount_type;
+            document.getElementById('discountValue').value = sale.discount_value;
+            document.getElementById('startsAt').value = sale.starts_at.slice(0, 16);
+            document.getElementById('endsAt').value = sale.ends_at.slice(0, 16);
+            document.getElementById('isActive').checked = sale.is_active;
+        }
+        document.getElementById('modalOverlay').classList.add('open');
+    }
+
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+    function editSale(id) { openModal(allSales.find(s => s.id === id)); }
+
+    function getSelectedProductIds() {
+        return [...document.querySelectorAll('#productCheckboxes input[type=checkbox]:checked')].map(el => parseInt(el.value));
+    }
+
+    async function saveSale(e) {
+        e.preventDefault();
+        const id = document.getElementById('saleId').value;
+        const payload = {
+            title: document.getElementById('saleTitle').value,
+            description: document.getElementById('saleDesc').value || null,
+            discount_type: document.getElementById('discountType').value,
+            discount_value: parseFloat(document.getElementById('discountValue').value),
+            starts_at: new Date(document.getElementById('startsAt').value).toISOString(),
+            ends_at: new Date(document.getElementById('endsAt').value).toISOString(),
+            is_active: document.getElementById('isActive').checked,
+            product_ids: getSelectedProductIds(),
+        };
+        const url = id ? `${API_BASE}/flash-sales/${id}` : `${API_BASE}/flash-sales`;
+        const method = id ? 'PUT' : 'POST';
+        try {
+            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify(payload) });
+            if (!res.ok) { const err = await res.json(); alert(err.detail || 'Error saving flash sale'); return; }
+            closeModal();
+            loadData();
+        } catch { alert('Failed to save flash sale'); }
+    }
+
+    async function toggleSale(id) {
+        await fetch(`${API_BASE}/flash-sales/${id}/toggle`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${getToken()}` } });
+        loadData();
+    }
+
+    async function deleteSale(id) {
+        if (!confirm('Delete this flash sale? This cannot be undone.')) return;
+        await fetch(`${API_BASE}/flash-sales/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } });
+        loadData();
+    }
+
+    document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+    loadData();
+</script>
+</body>
+</html>

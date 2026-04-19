@@ -8,11 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
-            <span id="sidebarLogo">🚗</span>
-            <h2 id="sidebarName">CarWash</h2>
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
         </div>
         <ul>
             <!-- Tabs are dynamically generated in menu.js -->
@@ -38,24 +37,24 @@
                         </div>
                     </div>
                     <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
-                    <a href="#" onclick="showEditProfile(); return false;">✏️ Edit Profile</a>
-                    <a href="settings.html">⚙️ Settings</a>
-                    <a href="login.html" onclick="logout()">🚪 Logout</a>
+                    <a href="#" onclick="showEditProfile(); return false;">&#9999;&#65039; Edit Profile</a>
+                    <a href="settings.html">&#9881;&#65039; Settings</a>
+                    <a href="login.html" onclick="logout()">&#128682; Logout</a>
                 </div>
             </div>
         </header>
-        
+
         <div class="stats-grid" style="margin-bottom: 20px;">
             <div class="stat-card" onclick="showSalesReport()" style="cursor: pointer;">
-                <h3>📊 Sales Report</h3>
+                <h3>&#128202; Sales Report</h3>
                 <p style="font-size: 14px; margin-top: 10px;">View overall sales statistics</p>
             </div>
             <div class="stat-card" onclick="showProductStats()" style="cursor: pointer;">
-                <h3>📦 Product Statistics</h3>
+                <h3>&#128230; Product Statistics</h3>
                 <p style="font-size: 14px; margin-top: 10px;">Analyze product performance</p>
             </div>
             <div class="stat-card" onclick="showServiceStats()" style="cursor: pointer;">
-                <h3>🔧 Service Statistics</h3>
+                <h3>&#128295; Service Statistics</h3>
                 <p style="font-size: 14px; margin-top: 10px;">Track service metrics</p>
             </div>
         </div>
@@ -89,18 +88,12 @@
             <div id="monthFilter" class="form-group" style="display: none;">
                 <label for="filterMonth">Select Month</label>
                 <select id="filterMonth">
-                    <option value="1">January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May</option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
+                    <option value="1">January</option><option value="2">February</option>
+                    <option value="3">March</option><option value="4">April</option>
+                    <option value="5">May</option><option value="6">June</option>
+                    <option value="7">July</option><option value="8">August</option>
+                    <option value="9">September</option><option value="10">October</option>
+                    <option value="11">November</option><option value="12">December</option>
                 </select>
                 <label for="filterMonthYear" style="margin-top: 10px;">Year</label>
                 <input type="number" id="filterMonthYear" min="2020" max="2100" value="2025">
@@ -109,33 +102,21 @@
             <div id="monthRangeFilter" class="form-group" style="display: none;">
                 <label for="startMonth">Start Month</label>
                 <select id="startMonth">
-                    <option value="1">January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May</option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
+                    <option value="1">January</option><option value="2">February</option>
+                    <option value="3">March</option><option value="4">April</option>
+                    <option value="5">May</option><option value="6">June</option>
+                    <option value="7">July</option><option value="8">August</option>
+                    <option value="9">September</option><option value="10">October</option>
+                    <option value="11">November</option><option value="12">December</option>
                 </select>
                 <label for="endMonth" style="margin-top: 10px;">End Month</label>
                 <select id="endMonth">
-                    <option value="1">January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May</option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
+                    <option value="1">January</option><option value="2">February</option>
+                    <option value="3">March</option><option value="4">April</option>
+                    <option value="5">May</option><option value="6">June</option>
+                    <option value="7">July</option><option value="8">August</option>
+                    <option value="9">September</option><option value="10">October</option>
+                    <option value="11">November</option><option value="12">December</option>
                 </select>
                 <label for="rangeYear" style="margin-top: 10px;">Year</label>
                 <input type="number" id="rangeYear" min="2020" max="2100" value="2025">
@@ -168,7 +149,7 @@
             <div class="stats-grid" style="margin-bottom: 20px;">
                 <div class="stat-card">
                     <h3>Total Sales</h3>
-                    <p class="stat-value" id="totalSales">₱0.00</p>
+                    <p class="stat-value" id="totalSales">&#8369;0.00</p>
                 </div>
                 <div class="stat-card">
                     <h3>Total Invoices</h3>
@@ -186,7 +167,7 @@
                     <canvas id="pieChart" style="max-height: 300px;"></canvas>
                 </div>
             </div>
-            
+
             <div class="settings-section" style="margin-top: 20px;">
                 <h3>Product Category Sales</h3>
                 <canvas id="productPieChart" style="max-height: 300px;"></canvas>
@@ -207,7 +188,7 @@
                 <div id="reportPagination" class="pagination-bar"></div>
             </div>
         </div>
-        
+
         <div id="productStatsSection" class="settings-section" style="display: none;">
             <h2>Product Statistics</h2>
             <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
@@ -220,43 +201,20 @@
                     <option value="annually">This Year</option>
                 </select>
             </div>
-            
             <div id="productStatsContent" style="display: none;">
                 <div class="stats-grid" style="margin-bottom: 20px;">
-                    <div class="stat-card">
-                        <h3>Total Products Sold</h3>
-                        <p class="stat-value" id="totalProductsSold">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Revenue</h3>
-                        <p class="stat-value" id="productsRevenue">$0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Top Product</h3>
-                        <p class="stat-value" style="font-size: 18px;" id="topProductName">N/A</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Average per Sale</h3>
-                        <p class="stat-value" id="avgProductSale">$0</p>
-                    </div>
+                    <div class="stat-card"><h3>Total Products Sold</h3><p class="stat-value" id="totalProductsSold">0</p></div>
+                    <div class="stat-card"><h3>Total Revenue</h3><p class="stat-value" id="productsRevenue">$0</p></div>
+                    <div class="stat-card"><h3>Top Product</h3><p class="stat-value" style="font-size: 18px;" id="topProductName">N/A</p></div>
+                    <div class="stat-card"><h3>Average per Sale</h3><p class="stat-value" id="avgProductSale">$0</p></div>
                 </div>
-                
                 <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Product Name</th>
-                                <th>Units Sold</th>
-                                <th>Revenue</th>
-                                <th>Avg Price</th>
-                            </tr>
-                        </thead>
-                        <tbody id="productStatsTable"></tbody>
-                    </table>
+                    <table><thead><tr><th>Product Name</th><th>Units Sold</th><th>Revenue</th><th>Avg Price</th></tr></thead>
+                    <tbody id="productStatsTable"></tbody></table>
                 </div>
             </div>
         </div>
-        
+
         <div id="serviceStatsSection" class="settings-section" style="display: none;">
             <h2>Service Statistics</h2>
             <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
@@ -269,57 +227,28 @@
                     <option value="annually">This Year</option>
                 </select>
             </div>
-            
             <div id="serviceStatsContent" style="display: none;">
                 <div class="stats-grid" style="margin-bottom: 20px;">
-                    <div class="stat-card">
-                        <h3>Total Services Performed</h3>
-                        <p class="stat-value" id="totalServicesPerformed">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Revenue</h3>
-                        <p class="stat-value" id="servicesRevenue">$0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Top Service</h3>
-                        <p class="stat-value" style="font-size: 18px;" id="topServiceName">N/A</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Average per Service</h3>
-                        <p class="stat-value" id="avgServicePrice">$0</p>
-                    </div>
+                    <div class="stat-card"><h3>Total Services Performed</h3><p class="stat-value" id="totalServicesPerformed">0</p></div>
+                    <div class="stat-card"><h3>Total Revenue</h3><p class="stat-value" id="servicesRevenue">$0</p></div>
+                    <div class="stat-card"><h3>Top Service</h3><p class="stat-value" style="font-size: 18px;" id="topServiceName">N/A</p></div>
+                    <div class="stat-card"><h3>Average per Service</h3><p class="stat-value" id="avgServicePrice">$0</p></div>
                 </div>
-                
                 <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Service Name</th>
-                                <th>Times Performed</th>
-                                <th>Revenue</th>
-                                <th>Avg Price</th>
-                            </tr>
-                        </thead>
-                        <tbody id="serviceStatsTable"></tbody>
-                    </table>
+                    <table><thead><tr><th>Service Name</th><th>Times Performed</th><th>Revenue</th><th>Avg Price</th></tr></thead>
+                    <tbody id="serviceStatsTable"></tbody></table>
                 </div>
             </div>
         </div>
     </main>
-    
+
     <div id="editProfileModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeEditProfile()">&times;</span>
             <h2>Edit Profile</h2>
             <form id="profileForm">
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" id="editName" required>
-                </div>
-                <div class="form-group">
-                    <label>Role</label>
-                    <input type="text" id="editRole" required>
-                </div>
+                <div class="form-group"><label>Name</label><input type="text" id="editName" required></div>
+                <div class="form-group"><label>Role</label><input type="text" id="editRole" required></div>
                 <div class="form-group">
                     <label>Profile Photo</label>
                     <input type="file" id="editPhoto" accept="image/*">
@@ -331,7 +260,7 @@
             </form>
         </div>
     </div>
-    
+
     <script src="js/api.js"></script>
     <script src="js/menu.js"></script>
     <script src="js/reports.js"></script>

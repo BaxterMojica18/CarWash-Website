@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
             <span id="sidebarLogo"></span>
@@ -35,21 +34,21 @@
                         </div>
                     </div>
                     <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
-                    <a href="#" onclick="showEditProfile(); return false;">✏️ Edit Profile</a>
-                    <a href="settings.html">⚙️ Settings</a>
-                    <a href="login.html" onclick="logout()">🚪 Logout</a>
+                    <a href="#" onclick="showEditProfile(); return false;">&#9999;&#65039; Edit Profile</a>
+                    <a href="settings.html">&#9881;&#65039; Settings</a>
+                    <a href="login.html" onclick="logout()">&#128682; Logout</a>
                 </div>
             </div>
         </header>
         <div style="margin-bottom: 25px; display: flex; align-items: center; gap: 12px;">
             <label for="dashboardFilter" style="font-weight: 600; color: #2c3e50; font-size: 15px;">Filter by:</label>
             <select id="dashboardFilter" onchange="filterDashboard()" class="filter-select">
-                <option value="weekly">📅 Weekly</option>
-                <option value="biweekly">📅 Bi-Weekly</option>
-                <option value="monthly">📅 Monthly</option>
-                <option value="quarterly">📅 Quarterly</option>
-                <option value="semiannually">📅 Semi-Annually</option>
-                <option value="annually">📅 Annually</option>
+                <option value="weekly">&#128197; Weekly</option>
+                <option value="biweekly">&#128197; Bi-Weekly</option>
+                <option value="monthly">&#128197; Monthly</option>
+                <option value="quarterly">&#128197; Quarterly</option>
+                <option value="semiannually">&#128197; Semi-Annually</option>
+                <option value="annually">&#128197; Annually</option>
             </select>
         </div>
         <div class="stats-grid">
@@ -94,7 +93,7 @@
             </div>
         </div>
     </main>
-    
+
     <div id="editProfileModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeEditProfile()">&times;</span>
@@ -119,11 +118,11 @@
             </form>
         </div>
     </div>
-    
+
     <button id="floatingEditBtn" onclick="window.location.href='edit-dashboard.html'" style="display: none; position: fixed; right: 20px; bottom: 20px; width: 60px; height: 60px; border-radius: 50%; background: #667eea; color: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; font-size: 24px; z-index: 1000; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-        ✏️
+        &#9999;&#65039;
     </button>
-    
+
     <script src="js/api.js"></script>
     <script src="js/menu.js"></script>
     <script src="js/dashboard.js"></script>

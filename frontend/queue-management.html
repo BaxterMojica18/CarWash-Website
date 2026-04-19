@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
             <span id="sidebarLogo"></span>
@@ -34,13 +33,13 @@
                         </div>
                     </div>
                     <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
-                    <a href="#" onclick="showEditProfile(); return false;">✏️ Edit Profile</a>
-                    <a href="settings.html">⚙️ Settings</a>
-                    <a href="login.html" onclick="logout()">🚪 Logout</a>
+                    <a href="#" onclick="showEditProfile(); return false;">&#9999;&#65039; Edit Profile</a>
+                    <a href="settings.html">&#9881;&#65039; Settings</a>
+                    <a href="login.html" onclick="logout()">&#128682; Logout</a>
                 </div>
             </div>
         </header>
-        
+
         <div class="filters" style="display: flex; gap: 10px; margin-bottom: 30px; padding: 15px; border-radius: 15px; flex-wrap: wrap; background: white; border: 1px solid #e0e0e0; justify-content: center;">
             <button onclick="filterReservations('all')" class="filter-btn active" data-filter="all" style="padding: 12px 20px; border: 2px solid #667eea; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: #667eea; color: white; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">All Reservations</button>
             <button onclick="filterReservations('pending')" class="filter-btn" data-filter="pending" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Pending</button>
@@ -56,20 +55,14 @@
 
         <div id="reservations-list"></div>
     </main>
-    
+
     <div id="editProfileModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeEditProfile()">&times;</span>
             <h2>Edit Profile</h2>
             <form id="profileForm">
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" id="editName" required>
-                </div>
-                <div class="form-group">
-                    <label>Role</label>
-                    <input type="text" id="editRole" required>
-                </div>
+                <div class="form-group"><label>Name</label><input type="text" id="editName" required></div>
+                <div class="form-group"><label>Role</label><input type="text" id="editRole" required></div>
                 <div class="form-group">
                     <label>Profile Photo</label>
                     <input type="file" id="editPhoto" accept="image/*">
@@ -147,7 +140,7 @@
                 : allReservations.filter(r => r.status === currentFilter);
 
             if (filtered.length === 0) {
-                container.innerHTML = '<div class="empty-state">🔭 No reservations found</div>';
+                container.innerHTML = '<div class="empty-state">&#128301; No reservations found</div>';
                 return;
             }
 
@@ -155,8 +148,8 @@
                 <div class="queue-card" style="animation-delay: ${i * 0.06}s">
                     <div class="card-header">
                         <div class="order-info">
-                            <h3>🧾 ${res.reservation_number}</h3>
-                            <p class="order-date">📅 ${new Date(res.created_at).toLocaleString()}</p>
+                            <h3>&#128221; ${res.reservation_number}</h3>
+                            <p class="order-date">&#128197; ${new Date(res.created_at).toLocaleString()}</p>
                             ${res.queue_position ? `<p style="color: white; margin: 5px 0 0 0; font-weight: bold;">Queue Position: #${res.queue_position}</p>` : ''}
                         </div>
                         <span class="status-badge status-${res.status}">${res.status.replace('_', ' ').toUpperCase()}</span>
@@ -164,15 +157,15 @@
                     <div class="card-body">
                         <div class="order-details">
                             <div class="detail-item">
-                                <span class="detail-label">🔧 Service:</span>
+                                <span class="detail-label">&#128295; Service:</span>
                                 <span class="detail-value">${res.service.name}</span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">📍 Location:</span>
+                                <span class="detail-label">&#128205; Location:</span>
                                 <span class="detail-value">${res.location.name}</span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">🚗 Vehicle:</span>
+                                <span class="detail-label">&#128663; Vehicle:</span>
                                 <span class="detail-value">${res.vehicle_plate}</span>
                             </div>
                         </div>
@@ -224,15 +217,7 @@
     </script>
 
     <style>
-        .queue-card {
-            background: white;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeSlideIn 0.45s ease both;
-        }
+        .queue-card { background: white; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeSlideIn 0.45s ease both; }
         .queue-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
         .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .order-info h3 { color: white; margin: 0 0 8px 0; font-size: 1.3rem; }

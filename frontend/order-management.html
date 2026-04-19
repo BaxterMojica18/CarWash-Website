@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav class="sidebar" id="sidebar">
         <div class="logo">
             <span id="sidebarLogo"></span>
@@ -34,13 +33,13 @@
                         </div>
                     </div>
                     <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
-                    <a href="#" onclick="showEditProfile(); return false;">✏️ Edit Profile</a>
-                    <a href="settings.html">⚙️ Settings</a>
-                    <a href="login.html" onclick="logout()">🚪 Logout</a>
+                    <a href="#" onclick="showEditProfile(); return false;">&#9999;&#65039; Edit Profile</a>
+                    <a href="settings.html">&#9881;&#65039; Settings</a>
+                    <a href="login.html" onclick="logout()">&#128682; Logout</a>
                 </div>
             </div>
         </header>
-        
+
         <div class="filters" style="display: flex; gap: 10px; margin-bottom: 30px; padding: 15px; border-radius: 15px; flex-wrap: wrap; background: white; border: 1px solid #e0e0e0; justify-content: center;">
             <button onclick="filterOrders('all')" class="filter-btn active" data-filter="all" style="padding: 12px 20px; border: 2px solid #667eea; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: #667eea; color: white; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">All Orders</button>
             <button onclick="filterOrders('pending')" class="filter-btn" data-filter="pending" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Pending</button>
@@ -56,20 +55,14 @@
 
         <div id="orders-list"></div>
     </main>
-    
+
     <div id="editProfileModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeEditProfile()">&times;</span>
             <h2>Edit Profile</h2>
             <form id="profileForm">
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" id="editName" required>
-                </div>
-                <div class="form-group">
-                    <label>Role</label>
-                    <input type="text" id="editRole" required>
-                </div>
+                <div class="form-group"><label>Name</label><input type="text" id="editName" required></div>
+                <div class="form-group"><label>Role</label><input type="text" id="editRole" required></div>
                 <div class="form-group">
                     <label>Profile Photo</label>
                     <input type="file" id="editPhoto" accept="image/*">
@@ -150,7 +143,7 @@
             }
 
             if (filtered.length === 0) {
-                container.innerHTML = '<div class="empty-state">🔭 No orders found</div>';
+                container.innerHTML = '<div class="empty-state">&#128301; No orders found</div>';
                 return;
             }
 
@@ -158,29 +151,29 @@
                 <div class="order-card" style="animation-delay: ${i * 0.06}s">
                     <div class="card-header">
                         <div class="order-info">
-                            <h3>🧾 ${order.order_number}</h3>
-                            <p class="order-date">📅 ${new Date(order.created_at).toLocaleString()}</p>
+                            <h3>&#128221; ${order.order_number}</h3>
+                            <p class="order-date">&#128197; ${new Date(order.created_at).toLocaleString()}</p>
                         </div>
                         <span class="status-badge status-${order.status}">${order.status.toUpperCase()}</span>
                     </div>
                     <div class="card-body">
                         <div class="order-details">
                             <div class="detail-item">
-                                <span class="detail-label">💰 Total:</span>
+                                <span class="detail-label">&#128176; Total:</span>
                                 <span class="detail-value">$${order.total_amount.toFixed(2)}</span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">💳 Payment:</span>
+                                <span class="detail-label">&#128179; Payment:</span>
                                 <span class="detail-value">${order.payment_method || 'N/A'}</span>
                             </div>
                         </div>
                         <div class="order-items">
-                            <p class="items-title">📦 Items:</p>
+                            <p class="items-title">&#128230; Items:</p>
                             <ul>
                                 ${(order.items || []).map(item => `
                                     <li>
                                         <span>${item.product_service?.name || 'Unknown Product'}</span>
-                                        <span class="item-qty">×${item.quantity}</span>
+                                        <span class="item-qty">x${item.quantity}</span>
                                         <span class="item-price">$${item.subtotal.toFixed(2)}</span>
                                     </li>
                                 `).join('')}
@@ -234,15 +227,7 @@
     </script>
 
     <style>
-        .order-card {
-            background: white;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeSlideIn 0.45s ease both;
-        }
+        .order-card { background: white; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeSlideIn 0.45s ease both; }
         .order-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
         .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .order-info h3 { color: white; margin: 0 0 8px 0; font-size: 1.3rem; }
