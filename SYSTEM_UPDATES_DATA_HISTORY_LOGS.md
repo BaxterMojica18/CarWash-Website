@@ -1862,3 +1862,95 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITHOUT TIME ZON
 
 #### Why `IF NOT EXISTS` matters:
 Using `IF NOT EXISTS` in the inline block means the migration is **idempotent** — it can run on every deploy without failing if the column already exists. This prevents the same class of bug from recurring for any future column additions.
+
+---
+
+## Latest Updates (Session 10)
+
+> **Version:** 6.6.0 (Public: V2.6) | **Branch:** `feature/admin-coupon-flashsale-management`
+
+---
+
+### ⚡ Flash Sale Management — Admin CRUD
+**Status:** ✅ Completed | **Verified pushed to main**
+
+#### Backend (`app/routers/flash_sales.py`) — NEW:
+- `GET /flash-sales` — list all flash sales (managers see all; clients see only live ones)
+- `POST /flash-sales` — create flash sale with product/service targeting
+- `PUT /flash-sales/{id}` — update flash sale details and product list
+- `PATCH /flash-sales/{id}/toggle` — toggle active/inactive instantly
+- `DELETE /flash-sales/{id}` — soft delete (sets `deleted_at`, deactivates)
+
+#### Database (`app/database.py`):
+- Added `FlashSale` model — title, description, discount_type, discount_value, starts_at, ends_at, is_active, business_number, soft delete
+- Added `FlashSaleItem` model — links flash sales to specific products/services
+
+#### Frontend (`frontend/flash-sale-management.html`) — NEW:
+- Stats row: Total, Live Now, Upcoming, Ended
+- Search + filter by status (Live, Upcoming, Ended, Inactive)
+- Sale cards with live countdown timer (refreshes every second for active sales)
+- Status badges: 🔴 Live, ⏰ Upcoming, Ended, Inactive
+- Product/service multi-select checkboxes in create/edit modal
+- Toggle active/inactive, soft delete with confirmation
+
+---
+
+### 🎟️ Coupon Management — Admin CRUD
+**Status:** ✅ Completed | **Verified pushed to main**
+
+#### Frontend (`frontend/coupon-management.html`) — NEW:
+- Stats row: Total Coupons, Active, Expired, Total Uses
+- Search by code/description + filter by status and discount type
+- Coupon cards: code (monospace), discount badge (% or ₱), status badge, meta info
+- Create/Edit modal: code, description, discount type/value, min spend, max uses, stock, expiry, active toggle
+- Toggle active/inactive, soft delete with confirmation
+- Code field locked to read-only on edit (codes are immutable)
+
+#### Backend (existing `app/routers/coupons.py` — already complete from V2.5):
+- All CRUD endpoints already in place: `GET/POST /coupons`, `PUT/DELETE /coupons/{id}`, `POST /coupons/validate`
+
+---
+
+### 🐛 Mojibake Fix — 7 Frontend Pages
+**Status:** ✅ Completed
+
+All corrupted emoji characters (Windows-1252 misread as UTF-8) fixed across:
+
+| File | Fixed |
+|---|---|
+| `dashboard.html` | ✏️ Edit Profile, ⚙️ Settings, 🚪 Logout, 📅 filter options, ✏️ floating button |
+| `invoices.html` | ✏️ Edit Profile, ⚙️ Settings, 🚪 Logout, 🔍 search placeholder |
+| `reports.html` | ✏️ Edit Profile, ⚙️ Settings, 🚪 Logout, 📊 📦 🔧 stat card headers, ₱ currency |
+| `order-management.html` | ✏️ Edit Profile, ⚙️ Settings, 🚪 Logout, all card emojis, × quantity symbol |
+| `queue-management.html` | ✏️ Edit Profile, ⚙️ Settings, 🚪 Logout, all card emojis |
+| `sidebar-management.html` | 🚗 sidebar logo, 🗂️ header title |
+| `products.html` / `services.html` | 🚗 sidebar logo |
+
+All emoji replaced with HTML entities (e.g. `&#9999;&#65039;` for ✏️) to avoid encoding issues.
+
+#### Files Created/Modified:
+- ✅ `app/database.py` — FlashSale + FlashSaleItem models
+- ✅ `app/routers/flash_sales.py` — NEW flash sales router
+- ✅ `app/main.py` — registered flash_sales router
+- ✅ `frontend/flash-sale-management.html` — NEW
+- ✅ `frontend/coupon-management.html` — NEW
+- ✅ `frontend/dashboard.html` — mojibake fixed
+- ✅ `frontend/invoices.html` — mojibake fixed (full rewrite)
+- ✅ `frontend/reports.html` — mojibake fixed (full rewrite)
+- ✅ `frontend/order-management.html` — mojibake fixed (full rewrite)
+- ✅ `frontend/queue-management.html` — mojibake fixed (full rewrite)
+- ✅ `frontend/sidebar-management.html` — mojibake fixed (full rewrite)
+- ✅ `frontend/products.html` — sidebar logo fixed
+- ✅ `frontend/services.html` — sidebar logo fixed
+
+---
+
+## Change Log
+
+### Version 6.6.0 / V2.6 (Session 10)
+- ✅ Flash sale management page for admin/owner with live countdown timers
+- ✅ FlashSale + FlashSaleItem database models
+- ✅ Full flash sale CRUD API: create, update, toggle, soft delete
+- ✅ Coupon management page for admin/owner with stats and filtering
+- ✅ Mojibake emoji encoding fixed across 7 frontend pages
+- ✅ All emoji now use HTML entities for cross-platform compatibility

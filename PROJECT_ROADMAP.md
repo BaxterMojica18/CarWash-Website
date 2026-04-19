@@ -814,3 +814,42 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 - [x] Hardcoded sidebar logo emoji removed from both pages (now dynamic via `menu.js`)
 - [x] `body { background: white }` override removed from queue page (was breaking theme system)
 - [x] Container ID corrected in queue page (`reservations-list`)
+
+---
+
+## ✅ Completed in Session 10
+
+### ⚡ Flash Sale Management (Admin/Owner)
+- [x] `FlashSale` + `FlashSaleItem` models in `database.py`
+- [x] `app/routers/flash_sales.py` — GET, POST, PUT, PATCH toggle, DELETE (soft)
+- [x] `frontend/flash-sale-management.html` — stats row, live countdown, product multi-select, create/edit modal, toggle, soft delete
+- [x] Registered in `main.py`
+
+### 🎟️ Coupon Management (Admin/Owner)
+- [x] `frontend/coupon-management.html` — stats row, search/filter by status & type, coupon cards, create/edit modal, toggle, soft delete
+- [x] Backend already complete from V2.5 (`coupons.py`)
+
+### 🐛 Mojibake Fix
+- [x] Fixed corrupted emoji in 7 frontend pages: `dashboard.html`, `invoices.html`, `reports.html`, `order-management.html`, `queue-management.html`, `sidebar-management.html`, `products.html`, `services.html`
+- [x] All emoji replaced with HTML entities for encoding safety
+
+### 📊 Current Version: 6.6.0 (Public: V2.6)
+
+## 🔄 Updated Phase 2 / Session 10 Status
+
+| Feature | Status |
+|---------|--------|
+| Flash Sale Management (Admin) | ✅ Done |
+| Coupon Management (Admin) | ✅ Done |
+| Mojibake Fix (7 pages) | ✅ Done |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| SMS Notifications (Twilio) | ⬜ Pending |
+| React + Next.js Frontend | ⬜ Pending |
+
+## 🔜 Next Session (Session 11) — V2.7
+
+### Planned:
+- [ ] Link flash sales to shop.html — show sale price/badge on product cards when a flash sale is active
+- [ ] Link coupons to cart.html — validate coupon code against backend on apply
+- [ ] Admin order UI improvements — bulk status update, order search/filter
+- [ ] Add `coupon-management.html` and `flash-sale-management.html` to admin sidebar navigation
