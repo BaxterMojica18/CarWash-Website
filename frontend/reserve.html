@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -643,7 +643,7 @@
         }
 
         @media (max-width: 680px) {
-            .mobile-bottom-nav { display: block; }
+            .mobile-bottom-nav { display: none !important; }
             .floating-cart { bottom: 80px; right: 14px; width: 48px; height: 48px; font-size: 20px; }
             .flash-banner { padding: 12px 14px; gap: 10px; }
             .flash-text { display: none; }
@@ -787,25 +787,8 @@
 </button>
 
 <!-- Mobile Bottom Nav -->
-<nav class="mobile-bottom-nav">
-    <div class="nav-items">
-        <a href="/client-dashboard.html" class="nav-item">
-            <span class="ni">🏠</span><span>Home</span>
-        </a>
-        <a href="/shop.html" class="nav-item">
-            <span class="ni">🛍️</span><span>Shop</span>
-        </a>
-        <a href="/reserve.html" class="nav-item active">
-            <span class="ni">📅</span><span>Reserve</span>
-        </a>
-        <a href="/cart.html" class="nav-item">
-            <span class="ni">🛒 <span class="nb hide" id="mobileNavBadge">0</span></span><span>Cart</span>
-        </a>
-        <a href="/client-dashboard.html" class="nav-item">
-            <span class="ni">👤</span><span>Account</span>
-        </a>
-    </div>
-</nav>
+<!-- Mobile Bottom Nav - replaced by client-nav.js -->
+<nav class="mobile-bottom-nav style=display:none;></nav>
 
 <!-- Reservation Modal -->
 <div class="modal-overlay" id="reserveModal" onclick="if(event.target===this) closeReserveModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 16px;">
