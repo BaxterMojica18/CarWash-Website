@@ -326,7 +326,11 @@ async function applySidebarSettings() {
     const cachedData = localStorage.getItem('user_sidebar_data');
     if (cachedData) {
         try {
-            renderTabs(sidebarUl, JSON.parse(cachedData), currentPath, normalizedPath);
+            const parsedData = JSON.parse(cachedData);
+            const roles = parsedData.roles || [];
+            const isClient = roles.includes('client') && !roles.includes('admin') && !roles.includes('staff') && !roles.includes('superadmin') && !roles.includes('owner');
+            enforcePageAccess(isClient, roles);
+            renderTabs(sidebarUl, parsedData, currentPath, normalizedPath);
         } catch (e) { console.error("Cached sidebar error", e); }
     }
 
@@ -342,10 +346,52 @@ async function applySidebarSettings() {
         
         // Update storage and re-render if needed
         localStorage.setItem('user_sidebar_data', JSON.stringify(data));
+        const roles = data.roles || [];
+        const isClient = roles.includes('client') && !roles.includes('admin') && !roles.includes('staff') && !roles.includes('superadmin') && !roles.includes('owner');
+        enforcePageAccess(isClient, roles);
         renderTabs(sidebarUl, data, currentPath, normalizedPath);
 
     } catch (e) {
         console.error("Failed to load sidebar settings", e);
+    }
+}
+
+function enforcePageAccess(isClient, roles) {
+    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    if (!currentPath || currentPath === 'login.html' || currentPath === 'index.html') return;
+
+    const clientOnlyPages = [
+        'client-dashboard.html', 'client-orders.html', 'shop.html', 
+        'cart.html', 'reserve.html', 'vouchers.html', 'checkout.html'
+    ];
+    
+    const staffAdminPages = [
+        'dashboard.html', 'invoices.html', 'order-management.html', 
+        'queue-management.html', 'products.html', 'services.html', 
+        'reports.html', 'coupons.html', 'settings.html', 
+        'permissions-management.html', 'sidebar-management.html', 
+        'coupon-management.html', 'flash-sale-management.html'
+    ];
+    
+    // Restrict Client access to Staff pages
+    if (staffAdminPages.includes(currentPath) && isClient) {
+        window.location.replace('/client-dashboard.html');
+        return;
+    }
+    
+    // Restrict Staff access to Client pages
+    if (clientOnlyPages.includes(currentPath) && !isClient) {
+        window.location.replace('/dashboard.html');
+        return;
+    }
+    
+    // Restrict Staff from Admin-only pages
+    const isOwnerOrAdmin = roles.includes('admin') || roles.includes('superadmin') || roles.includes('owner');
+    const adminOnlyPages = ['settings.html', 'permissions-management.html', 'sidebar-management.html', 'coupons.html', 'coupon-management.html', 'flash-sale-management.html'];
+    
+    if (adminOnlyPages.includes(currentPath) && !isOwnerOrAdmin && !isClient) {
+        window.location.replace('/dashboard.html');
+        return;
     }
 }
 
@@ -405,6 +451,13 @@ function renderTabs(sidebarUl, data, currentPath, normalizedPath) {
 
     // Finalize icons
     normalizeSidebarIcons();
+
+    // Inject client bottom nav on mobile for client accounts
+    if (isClient && window.innerWidth <= 768 && !document.querySelector('.client-bottom-nav')) {
+        const s = document.createElement('script');
+        s.src = '/js/client-nav.js';
+        document.body.appendChild(s);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', applySidebarSettings);

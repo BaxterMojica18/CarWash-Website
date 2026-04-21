@@ -1463,3 +1463,101 @@ header {
 .profile-menu {
     z-index: 202 !important;
 }
+
+/* ── Client Mobile Bottom Navbar (Facebook-style, mobile only) ── */
+@media (max-width: 768px) {
+    /* Hide sidebar on mobile for client pages */
+    body.client-page .sidebar {
+        display: none !important;
+    }
+
+    body.client-page .content {
+        margin-left: 0 !important;
+        padding: 16px 16px 80px 16px;
+    }
+
+    /* Bottom nav bar */
+    .client-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: white;
+        border-top: 1px solid #e8e8e8;
+        z-index: 2000;
+        padding: 6px 0 env(safe-area-inset-bottom, 8px);
+        box-shadow: 0 -2px 12px rgba(0,0,0,.08);
+    }
+
+    .client-bottom-nav a {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        font-size: 10px;
+        font-weight: 600;
+        color: #888;
+        text-decoration: none;
+        padding: 6px 4px;
+        transition: color .2s;
+        position: relative;
+    }
+
+    .client-bottom-nav a.active {
+        color: var(--primary-color, #667eea);
+    }
+
+    .client-bottom-nav a svg {
+        width: 24px;
+        height: 24px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .client-bottom-nav a.active svg {
+        stroke-width: 2.5;
+    }
+
+    /* Active indicator dot */
+    .client-bottom-nav a.active::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--primary-color, #667eea);
+    }
+
+    /* Cart badge */
+    .client-nav-badge {
+        position: absolute;
+        top: 2px;
+        right: calc(50% - 20px);
+        background: #e53e3e;
+        color: white;
+        border-radius: 10px;
+        min-width: 16px;
+        height: 16px;
+        font-size: 10px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        line-height: 1;
+    }
+
+    .client-nav-badge.hidden { display: none; }
+}
+
+/* Hide bottom nav on desktop */
+@media (min-width: 769px) {
+    .client-bottom-nav { display: none !important; }
+}
