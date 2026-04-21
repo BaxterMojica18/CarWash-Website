@@ -18,9 +18,9 @@
         }
 
         :root {
-            --brand: #f02d55;
-            --brand-dark: #c4002b;
-            --brand-light: #fff0f3;
+            --brand: var(--primary-color, #667eea);
+            --brand-dark: var(--sidebar-color, #2c3e50);
+            --brand-light: rgba(102,126,234,.08);
             --yellow: #fbbf24;
             --text-primary: #111;
             --text-secondary: #555;
@@ -678,7 +678,16 @@
     </style>
 </head>
 <body>
-
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
+        </div>
+        <ul>
+            <!-- Tabs are dynamically generated in menu.js -->
+        </ul>
+    </nav>
+    <div class="content" style="padding: 0;">
 <!-- Top Promo Bar -->
 <div class="top-bar">🚗 Free delivery on orders over ₱500 · <a href="/cart.html">View cart</a></div>
 
@@ -777,26 +786,8 @@
     <span class="floating-cart-badge hide" id="floatingBadge">0</span>
 </button>
 
-<!-- Mobile Bottom Nav -->
-<nav class="mobile-bottom-nav">
-    <div class="nav-items">
-        <a href="/client-dashboard.html" class="nav-item">
-            <span class="ni">🏠</span><span>Home</span>
-        </a>
-        <a href="/shop.html" class="nav-item active">
-            <span class="ni">🛍️</span><span>Shop</span>
-        </a>
-        <a href="/reserve.html" class="nav-item">
-            <span class="ni">📅</span><span>Reserve</span>
-        </a>
-        <a href="/cart.html" class="nav-item">
-            <span class="ni">🛒 <span class="nb hide" id="mobileNavBadge">0</span></span><span>Cart</span>
-        </a>
-        <a href="/client-dashboard.html" class="nav-item">
-            <span class="ni">👤</span><span>Account</span>
-        </a>
-    </div>
-</nav>
+<!-- Mobile Bottom Nav — replaced by client-nav.js -->
+<nav class="mobile-bottom-nav" style="display:none;"></nav>
 
 <script src="/js/api.js"></script>
 <script src="/js/toast.js"></script>
@@ -1076,5 +1067,8 @@
 
     init();
 </script>
+    <script src="/js/menu.js"></script>
+    <script src="/js/client-nav.js"></script>
+    </div>
 </body>
 </html>

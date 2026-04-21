@@ -18,9 +18,9 @@
         }
 
         :root {
-            --brand: #8b5cf6;
-            --brand-dark: #7c3aed;
-            --brand-light: #f5f3ff;
+            --brand: var(--primary-color, #667eea);
+            --brand-dark: var(--sidebar-color, #2c3e50);
+            --brand-light: rgba(102,126,234,.08);
             --yellow: #fbbf24;
             --text-primary: #111;
             --text-secondary: #555;
@@ -678,7 +678,16 @@
     </style>
 </head>
 <body>
-
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
+        </div>
+        <ul>
+            <!-- Tabs are dynamically generated in menu.js -->
+        </ul>
+    </nav>
+    <div class="content" style="padding: 0;">
 <!-- Top Promo Bar -->
 <div class="top-bar">🚗 Free delivery on orders over ₱500 · <a href="/cart.html">View cart</a></div>
 
@@ -1147,5 +1156,8 @@
 
     init();
 </script>
+    <script src="/js/menu.js"></script>
+    <script src="/js/client-nav.js"></script>
+    </div>
 </body>
 </html>

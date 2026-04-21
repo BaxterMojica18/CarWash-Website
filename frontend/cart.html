@@ -18,9 +18,9 @@
         }
 
         :root {
-            --brand:       #f02d55;
-            --brand-dark:  #c4002b;
-            --brand-light: #fff0f3;
+            --brand:       var(--primary-color, #667eea);
+            --brand-dark:  var(--sidebar-color, #2c3e50);
+            --brand-light: rgba(102,126,234,.08);
             --yellow:      #fbbf24;
             --green:       #16a34a;
             --text-primary:   #111;
@@ -159,6 +159,12 @@
         }
         @media (min-width: 900px) {
             .page-body { grid-template-columns: 1fr 360px; align-items: start; }
+
+        /* Desktop: ensure cart content fills space next to sidebar correctly */
+        @media (min-width: 769px) {
+            .content { min-width: 0; overflow-x: hidden; }
+            .page-body { max-width: 960px; margin: 0 auto; }
+        }
         }
 
         /* ─── SECTION CARD ──────────────────────────────── */
@@ -614,7 +620,16 @@
     </style>
 </head>
 <body>
-
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
+        </div>
+        <ul>
+            <!-- Tabs are dynamically generated in menu.js -->
+        </ul>
+    </nav>
+    <div class="content" style="padding: 0;">
 <!-- Sticky Header -->
 <header class="cart-header">
     <div class="header-inner">
@@ -1073,5 +1088,8 @@
 
     init();
 </script>
+    <script src="/js/menu.js"></script>
+    <script src="/js/client-nav.js"></script>
+    </div>
 </body>
 </html>
