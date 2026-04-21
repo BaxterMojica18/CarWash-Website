@@ -16,6 +16,35 @@
 7. [Setup Instructions](#setup-instructions)
 8. [API Documentation](#api-documentation)
 
+## Latest Updates (April 20, 2026 — Session 10 Continuation)
+### 🔒 RBAC Isolation & 📱 UI Responsiveness Overhaul
+**Status:** ✅ Completed
+
+#### Features Added:
+- **Role-Based Access Control (RBAC) System:**
+  - **Frontend Page Guards**: Added `enforcePageAccess` in `menu.js` which validates user roles against a whitelist of permitted HTML files. Attempts to access unauthorized pages results in an immediate redirection to the correct dashboard.
+  - **Backend API Security**: Implemented `is_client` and `is_staff_or_admin` dependencies in `app/permissions.py`. These prevent cross-role data leaks by ensuring staff cannot access client endpoints (like cart/client-dashboard) and vice-versa.
+  
+- **UI Responsiveness & Layout Standardization:**
+  - Standardized the dashboard layout across all major modules:
+    - Admin: `coupon-management.html`, `flash-sale-management.html`.
+    - Client: `shop.html`, `reserve.html`, `cart.html`, `vouchers.html`.
+  - Removed legacy `.layout` containers and synchronized them with the modern `.sidebar` + `.content` framework.
+  - Improved mobile hamburger menu persistence and sidebar toggle functionality.
+  - Added clickable "Active Orders" tiles on the client dashboard for improved navigation flow.
+
+- **Admin Feature Completion:**
+  - Completed CRUD for **Voucher Management** and **Flash Sales** with full desktop responsiveness.
+  - Fixed mojibake encoding issues on 7+ administrative pages.
+
+#### Files Modified:
+- ✅ `app/permissions.py` — Added role-specific backend dependencies.
+- ✅ `app/routers/client.py`, `app/routers/cart.py` — Enforced `is_client` protection.
+- ✅ `frontend/js/menu.js` — Implemented `enforcePageAccess` frontend guard.
+- ✅ `frontend/shop.html`, `frontend/reserve.html`, `frontend/vouchers.html`, `frontend/cart.html` — Layout refactoring.
+- ✅ `frontend/flash-sale-management.html`, `frontend/coupon-management.html` — Layout & logic cleanup.
+- ✅ `PROJECT_ROADMAP.md` — Updated to Version 6.7.0.
+
 ---
 
 ## Latest Updates (April 7, 2026)
@@ -1954,3 +1983,130 @@ All emoji replaced with HTML entities (e.g. `&#9999;&#65039;` for ✏️) to avo
 - ✅ Coupon management page for admin/owner with stats and filtering
 - ✅ Mojibake emoji encoding fixed across 7 frontend pages
 - ✅ All emoji now use HTML entities for cross-platform compatibility
+
+---
+
+## ✅ Completed in Session 9 (April 2026)
+
+> **Version:** 6.5.0 (Public: V2.5) | **Branch:** `main`
+
+---
+
+### 🏷️ Admin Coupon UI — Theme Color Integration
+**Status:** ✅ Completed
+
+#### Problem:
+`coupons.html` used hardcoded `#f02d55` (red/pink) for all buttons, stat values, code badges, and focus rings — completely ignoring the owner's theme settings.
+
+#### Changes:
+All hardcoded colors replaced with CSS variables:
+
+| Before | After | Used for |
+|--------|-------|----------|
+| `#f02d55` | `var(--sidebar-color, #2c3e50)` | Add/Save buttons |
+| `#c4002b` | `opacity: .85` hover | Button hover |
+| `#f02d55` | `var(--primary-color, #667eea)` | Stat values, code badges, focus rings |
+| `#fff0f3` | `rgba(102,126,234,.08)` | Light badge backgrounds |
+| `accent-color: #f02d55` | `accent-color: var(--primary-color)` | Checkbox |
+
+#### Files Modified:
+- ✅ `frontend/coupons.html` — all hardcoded colors replaced with CSS variables
+
+---
+
+### 📱 Client Mobile Facebook-Style Bottom Navbar
+**Status:** ✅ Completed
+
+#### Goal:
+Replace the old emoji-based `mobile-bottom-nav` on all client pages with a unified Facebook-style bottom navigation bar — SVG icons, active indicator dot, cart badge — only on mobile (≤768px). Desktop retains the existing sidebar.
+
+#### New File — `frontend/js/client-nav.js`:
+- Self-contained IIFE script
+- Adds `client-page` class to `<body>`
+- Injects `<nav class="client-bottom-nav">` with 5 tabs: Home, Shop, Reserve, Cart (with badge), Orders
+- Uses SVG icons matching the existing sidebar icon set
+- Highlights active tab based on current page URL
+- Fetches cart count from `/api/cart` and shows red badge on Cart tab
+- Uses `var(--primary-color)` for active tab color — matches owner's theme
+- Loaded dynamically by `menu.js` only for client accounts on mobile
+
+#### CSS — `frontend/css/style.css`:
+- `body.client-page .sidebar { display: none }` on mobile — hides sidebar for clients
+- `body.client-page .content` — removes left margin, adds `80px` bottom padding
+- `.client-bottom-nav` — fixed bottom bar, white background, border-top, safe-area padding
+- Active tab indicator dot, cart badge, SVG icon sizing
+- `display: none !important` on desktop (≥769px)
+
+#### `frontend/js/menu.js`:
+- Dynamically loads `client-nav.js` after `renderTabs()` when user is a client on mobile
+- Only injects once (checks for existing `.client-bottom-nav`)
+
+#### Files Modified:
+- ✅ `frontend/js/client-nav.js` — NEW unified client bottom nav script
+- ✅ `frontend/css/style.css` — client-page mobile styles added
+- ✅ `frontend/js/menu.js` — dynamic client-nav.js injection
+
+---
+
+### 🎨 Theme Colors — `shop.html`, `reserve.html`, `cart.html`
+**Status:** ✅ Completed
+
+All three client-facing pages had hardcoded brand colors replaced with CSS variables:
+
+| Page | Before | After |
+|------|--------|-------|
+| `shop.html` | `--brand: #f02d55` (red) | `var(--primary-color, #667eea)` |
+| `reserve.html` | `--brand: #8b5cf6` (purple) | `var(--primary-color, #667eea)` |
+| `cart.html` | `--brand: #f02d55` (red) | `var(--primary-color, #667eea)` |
+
+All three pages now automatically match the owner's theme settings.
+
+---
+
+### 🗑️ Old Emoji Mobile Nav Removed — `shop.html`, `reserve.html`, `cart.html`
+**Status:** ✅ Completed
+
+#### Problem:
+All three pages had their own hardcoded `<nav class="mobile-bottom-nav">` with emoji icons (🏠🛍️📅🛒👤). Additionally, a CSS rule inside `@media (max-width: 680px)` was re-enabling the nav with `display: block`, overriding the `style="display:none;"` fix.
+
+#### Fix:
+1. Old emoji nav HTML replaced with `<nav class="mobile-bottom-nav" style="display:none;"></nav>` placeholder in all three pages
+2. CSS rule changed from `display: block` → `display: none !important` in all three pages
+3. `client-nav.js` now injects the new unified SVG nav cleanly
+
+#### Files Modified:
+- ✅ `frontend/shop.html` — old nav removed, CSS suppressed, `client-nav.js` added
+- ✅ `frontend/reserve.html` — old nav removed, CSS suppressed, `client-nav.js` added
+- ✅ `frontend/cart.html` — old nav removed, CSS suppressed, `client-nav.js` added, desktop layout fixed
+
+---
+
+### 🖥️ Cart Desktop Layout Fix
+**Status:** ✅ Completed
+
+Added desktop-specific CSS to `cart.html`:
+```css
+@media (min-width: 769px) {
+    .content { min-width: 0; overflow-x: hidden; }
+    .page-body { max-width: 960px; margin: 0 auto; }
+}
+```
+Prevents the cart content from stretching awkwardly when the sidebar is visible on desktop.
+
+---
+
+### 🚨 Hotfix — Render Production Login 500 (Logged separately above)
+**Status:** ✅ Fixed | **Commit:** `4b746f1`
+
+---
+
+## Change Log
+
+### Version 6.5.0 / V2.5 (April 2026)
+- ✅ Admin coupon UI now uses `var(--primary-color)` and `var(--sidebar-color)` — matches owner theme
+- ✅ Client mobile bottom navbar — Facebook-style, SVG icons, active dot, cart badge
+- ✅ `client-nav.js` — new shared script, injected dynamically by `menu.js` for client accounts on mobile
+- ✅ `shop.html`, `reserve.html`, `cart.html` — all brand colors now use CSS variables
+- ✅ Old emoji mobile navs removed from all three client pages
+- ✅ Cart desktop layout fixed — constrained to 960px centered
+- ✅ Render hotfix — `is_active` and `deleted_at` columns added to `start.sh` migrations

@@ -829,11 +829,20 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 - [x] `frontend/coupon-management.html` — stats row, search/filter by status & type, coupon cards, create/edit modal, toggle, soft delete
 - [x] Backend already complete from V2.5 (`coupons.py`)
 
+### 📱 UI Responsiveness & UX Standardization
+- [x] **Desktop Layout Stabilization**: Migrated `coupon-management.html`, `flash-sale-management.html`, `shop.html`, `reserve.html`, `cart.html`, and `vouchers.html` to a unified sidebar-and-content layout.
+- [x] **Dashboard Interactions**: Added clickable active orders tile on client dashboard linking to `client-orders.html`.
+- [x] **Mobile Adjustments**: Standardized hamburger menu and sidebar behavior for mobile view across all dashboard modules.
+
+### 🔒 Role-Based Access Control (RBAC) Isolation
+- [x] **Frontend Route Guards**: Implemented `enforcePageAccess` in `menu.js` to block unauthorized role redirection (e.g., Staff accessing Client pages via direct URL).
+- [x] **Backend Security Hardening**: Added `is_client` and `is_staff_or_admin` dependencies in `app/permissions.py` and enforced them on sensitive endpoints (`client/dashboard`, `cart/`, etc.).
+
 ### 🐛 Mojibake Fix
 - [x] Fixed corrupted emoji in 7 frontend pages: `dashboard.html`, `invoices.html`, `reports.html`, `order-management.html`, `queue-management.html`, `sidebar-management.html`, `products.html`, `services.html`
 - [x] All emoji replaced with HTML entities for encoding safety
 
-### 📊 Current Version: 6.6.0 (Public: V2.6)
+### 📊 Current Version: 6.7.0 (Public: V2.6)
 
 ## 🔄 Updated Phase 2 / Session 10 Status
 
@@ -853,3 +862,52 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 - [ ] Link coupons to cart.html — validate coupon code against backend on apply
 - [ ] Admin order UI improvements — bulk status update, order search/filter
 - [ ] Add `coupon-management.html` and `flash-sale-management.html` to admin sidebar navigation
+
+---
+
+## ✅ Completed in Session 9 (April 2026)
+
+### 🏷️ Admin Coupon UI — Theme Colors
+- [x] `coupons.html` — all hardcoded `#f02d55` replaced with `var(--primary-color)` and `var(--sidebar-color)`
+- [x] Buttons, stat values, code badges, focus rings, checkbox accent all use CSS variables
+- [x] Coupon management page now matches owner's theme automatically
+
+### 📱 Client Mobile Facebook-Style Bottom Navbar
+- [x] `frontend/js/client-nav.js` — NEW shared script injecting unified SVG bottom nav
+- [x] 5 tabs: Home, Shop, Reserve, Cart (with badge), Orders
+- [x] Active tab highlighted with `var(--primary-color)` + indicator dot
+- [x] Cart badge fetches live count from `/api/cart`
+- [x] `menu.js` dynamically loads `client-nav.js` for client accounts on mobile only
+- [x] Desktop: sidebar retained as-is (no change)
+- [x] `style.css` — `body.client-page` hides sidebar on mobile, adds bottom padding
+
+### 🎨 Theme Colors — Client Pages
+- [x] `shop.html` — `--brand: #f02d55` → `var(--primary-color, #667eea)`
+- [x] `reserve.html` — `--brand: #8b5cf6` → `var(--primary-color, #667eea)`
+- [x] `cart.html` — `--brand: #f02d55` → `var(--primary-color, #667eea)`
+- [x] All three pages now match owner's theme settings automatically
+
+### 🗑️ Old Emoji Mobile Nav Removed
+- [x] `shop.html` — old emoji nav HTML removed, CSS `display: none !important`
+- [x] `reserve.html` — old emoji nav HTML removed, CSS `display: none !important`
+- [x] `cart.html` — old emoji nav HTML removed, CSS `display: none !important`
+
+### 🖥️ Cart Desktop Layout Fix
+- [x] `cart.html` — `.page-body { max-width: 960px; margin: 0 auto }` on desktop
+
+### 🚨 Render Hotfix
+- [x] `start.sh` — added `add_user_soft_delete_columns.py` + inline `ALTER TABLE IF NOT EXISTS` for `is_active` and `deleted_at` columns
+
+### 📊 Current Version: 6.5.0 (Public: V2.5)
+
+## 🔄 Updated Phase 2 Status (April 2026 — Session 9)
+
+| Feature | Status |
+|---------|--------|
+| Client Shopping Experience Overhaul | ✅ Done (theme + mobile nav) |
+| Admin Coupon UI Theme Integration | ✅ Done |
+| Facebook-style Mobile Bottom Nav | ✅ Done |
+| Render Production Hotfix (is_active) | ✅ Done |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| SMS Notifications (Twilio) | ⬜ Pending |
+| React + Next.js Frontend | ⬜ Pending (Phase 4) |
