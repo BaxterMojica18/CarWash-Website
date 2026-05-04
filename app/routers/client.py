@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app import schemas, crud, database
 from app.dependencies import get_current_user
+from app.permissions import is_client
 
 router = APIRouter()
 
 @router.get("/dashboard", response_model=schemas.ClientDashboard)
-def get_client_dashboard(db: Session = Depends(database.get_db), current_user = Depends(get_current_user)):
+def get_client_dashboard(db: Session = Depends(database.get_db), current_user = Depends(is_client)):
     orders = crud.get_orders(db, current_user.id)
     reservations = crud.get_reservations(db, current_user.id)
     

@@ -911,3 +911,54 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 | Real-time WebSockets for Queue | ⬜ Pending |
 | SMS Notifications (Twilio) | ⬜ Pending |
 | React + Next.js Frontend | ⬜ Pending (Phase 4) |
+
+---
+
+## ✅ Completed in Session 11
+
+### 🔝 Top Navbar
+- [x] `injectTopNavbar()` in `menu.js` — global injection, no per-page HTML needed
+- [x] Business logo + name in top navbar (synced with branding API)
+- [x] Search field with slide-in animation
+- [x] Notification bell with badge
+- [x] Settings gear icon shortcut
+- [x] Profile dropdown (role name, Settings, Logout)
+- [x] Click-outside closes dropdown
+- [x] Sidebar branding (`sidebarLogo`/`sidebarName`) replaced with `topNavbarLogo`/`topNavbarName`
+- [x] Sidebar logo area hidden — branding lives in top navbar only
+- [x] Collapse sidebar button at bottom of sidebar with chevron + label
+- [x] Logout removed from sidebar tab list
+
+### 📊 Dashboard Stat Cards
+- [x] 8 stat cards (was 4): Today's Revenue, Monthly Revenue, Cars Washed, Active Bays, Pending Invoices, Completed Orders, Average Rating, Total Clients
+- [x] SVG icons per card, colored accent top border, hover lift
+- [x] 4-column responsive grid (2-col at 1200px, 1-col at 768px)
+
+### 🎟️ Coupon Management UI
+- [x] Migrated to standard sidebar + `<main class="content">` layout
+- [x] Desktop row-list (ticket-stub style) + mobile card grid (responsive toggle at 900px)
+- [x] All emoji replaced with HTML entities
+- [x] Stats row uses theme variables (no hardcoded colors)
+
+### 📊 Current Version: 6.7.0 (Public: V2.7)
+
+## 🔄 Updated Status (Session 11)
+
+| Feature | Status |
+|---------|--------|
+| Top Navbar (global injection) | ✅ Done |
+| Dashboard stat card redesign | ✅ Done |
+| Coupon management UI overhaul | ✅ Done |
+| Flash sale linked to shop.html | ⬜ Pending |
+| Coupon validation in cart.html | ⬜ Pending |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| SMS Notifications (Twilio) | ⬜ Pending |
+| React + Next.js Frontend | ⬜ Pending |
+
+## 🔜 Next Session (Session 12) — V2.8
+
+### Planned:
+- [ ] Connect flash sales to `shop.html` — show sale badge + discounted price on product cards when a flash sale is active
+- [ ] Connect coupon validation to `cart.html` — call `POST /coupons/validate` on apply, show discount in order summary
+- [ ] Add `coupon-management.html` and `flash-sale-management.html` to admin sidebar navigation
+- [ ] Apply top navbar to remaining pages that haven't been updated yet

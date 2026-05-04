@@ -6,59 +6,125 @@
     <title>Coupon Management</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
-        .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:24px; }
-        .stat-card { background:var(--card-bg,#fff); border-radius:12px; padding:20px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.06); }
-        .stat-card .num { font-size:28px; font-weight:700; color:var(--primary,#667eea); }
-        .stat-card .lbl { font-size:13px; color:#888; margin-top:4px; }
-        .toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
-        .toolbar input, .toolbar select { padding:8px 12px; border:1px solid #ddd; border-radius:8px; font-size:14px; }
-        .toolbar input { flex:1; min-width:180px; }
-        .coupon-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
-        .coupon-card { background:var(--card-bg,#fff); border-radius:14px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,.07); border-left:4px solid var(--primary,#667eea); position:relative; transition:transform .2s; }
-        .coupon-card:hover { transform:translateY(-2px); }
-        .coupon-card.inactive { border-left-color:#ccc; opacity:.7; }
-        .coupon-card.expired { border-left-color:#e74c3c; }
-        .coupon-code { font-size:18px; font-weight:700; letter-spacing:2px; color:var(--primary,#667eea); font-family:monospace; }
-        .coupon-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; margin-left:8px; }
-        .badge-pct { background:#e8f4fd; color:#2980b9; }
-        .badge-fixed { background:#fef9e7; color:#f39c12; }
-        .badge-active { background:#eafaf1; color:#27ae60; }
-        .badge-inactive { background:#f2f3f4; color:#888; }
-        .badge-expired { background:#fdecea; color:#e74c3c; }
-        .coupon-desc { font-size:13px; color:#666; margin:8px 0; }
-        .coupon-meta { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:12px; font-size:12px; color:#888; }
-        .coupon-meta span strong { color:#444; }
-        .coupon-actions { display:flex; gap:8px; margin-top:14px; }
-        .btn-sm { padding:6px 14px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:opacity .2s; }
-        .btn-edit { background:var(--primary,#667eea); color:#fff; }
-        .btn-toggle { background:#f0f0f0; color:#555; }
-        .btn-delete { background:#fdecea; color:#e74c3c; }
-        .btn-sm:hover { opacity:.85; }
-        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center; }
-        .modal-overlay.open { display:flex; }
-        .modal { background:#fff; border-radius:16px; padding:28px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.2); }
-        .modal h3 { margin:0 0 20px; font-size:18px; }
-        .form-group { margin-bottom:16px; }
-        .form-group label { display:block; font-size:13px; font-weight:600; color:#555; margin-bottom:6px; }
-        .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:14px; box-sizing:border-box; }
-        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-        .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
-        .btn-primary { background:var(--primary,#667eea); color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
-        .btn-secondary { background:#f0f0f0; color:#555; padding:10px 20px; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
-        .empty-state { text-align:center; padding:60px 20px; color:#aaa; }
-        .empty-state .icon { font-size:48px; margin-bottom:12px; }
+        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+        /* stats */
+        .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px;}
+        .stat-card{background:var(--card-bg,#fff);border-radius:14px;padding:22px 20px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:transform .2s;}
+        .stat-card:hover{transform:translateY(-2px);}
+        .stat-card .num{font-size:30px;font-weight:800;color:var(--sidebar-color,#2c3e50);}
+        .stat-card .lbl{font-size:12px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-top:6px;}
+        /* toolbar */
+        .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;}
+        .toolbar input,.toolbar select{padding:9px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;background:#fff;outline:none;transition:border-color .2s;}
+        .toolbar input:focus,.toolbar select:focus{border-color:var(--sidebar-color,#2c3e50);}
+        .toolbar input{flex:1;min-width:200px;}
+        /* badges */
+        .coupon-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+        .badge-pct{background:#e8f4fd;color:#2980b9;}
+        .badge-fixed{background:#fef9e7;color:#f39c12;}
+        .badge-active{background:#eafaf1;color:#27ae60;}
+        .badge-inactive{background:#f2f3f4;color:#888;}
+        .badge-expired{background:#fdecea;color:#e74c3c;}
+        /* mobile card grid */
+        .coupon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+        .coupon-card{background:var(--card-bg,#fff);border-radius:14px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.07);border-left:4px solid var(--sidebar-color,#2c3e50);transition:transform .2s;}
+        .coupon-card:hover{transform:translateY(-2px);}
+        .coupon-card.inactive{border-left-color:#ccc;opacity:.7;}
+        .coupon-card.expired{border-left-color:#e74c3c;}
+        .coupon-code{font-size:18px;font-weight:700;letter-spacing:2px;color:var(--sidebar-color,#2c3e50);font-family:monospace;}
+        .coupon-desc{font-size:13px;color:#666;margin:8px 0;}
+        .coupon-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px;font-size:12px;color:#888;}
+        .coupon-meta span strong{color:#444;}
+        .coupon-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+        /* desktop row list */
+        .coupon-list{display:none;flex-direction:column;gap:12px;}
+        .coupon-row{background:var(--card-bg,#fff);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.06);display:grid;grid-template-columns:210px 1fr auto;align-items:stretch;overflow:hidden;transition:box-shadow .2s,transform .2s;border:1.5px solid transparent;}
+        .coupon-row:hover{box-shadow:0 6px 24px rgba(0,0,0,.08);transform:translateY(-1px);border-color:var(--sidebar-color,#2c3e50);}
+        .coupon-row.row-inactive{opacity:.72;}
+        .coupon-row.row-expired{opacity:.6;}
+        /* stub left */
+        .crow-stub{background:var(--sidebar-color,#2c3e50);color:#fff;padding:20px 22px;display:flex;flex-direction:column;justify-content:center;gap:4px;position:relative;}
+        .crow-stub::after{content:'';position:absolute;right:-12px;top:50%;transform:translateY(-50%);width:24px;height:24px;background:var(--bg,#f5f6fa);border-radius:50%;z-index:1;}
+        .crow-code{font-family:monospace;font-size:15px;font-weight:800;letter-spacing:2px;word-break:break-all;}
+        .crow-discount{font-size:26px;font-weight:900;}
+        .crow-type{font-size:11px;opacity:.75;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+        /* middle body */
+        .crow-body{padding:16px 24px 16px 30px;display:flex;flex-direction:column;justify-content:center;gap:10px;}
+        .crow-desc{font-size:14px;color:#444;font-weight:500;}
+        .crow-stats{display:flex;gap:20px;flex-wrap:wrap;}
+        .crow-stat{display:flex;flex-direction:column;gap:2px;}
+        .crow-stat-label{font-size:10px;color:#bbb;text-transform:uppercase;font-weight:700;letter-spacing:.5px;}
+        .crow-stat-val{font-size:14px;font-weight:700;color:#333;}
+        /* right actions */
+        .crow-actions{padding:16px 20px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:10px;border-left:1px solid #f0f0f0;min-width:155px;}
+        .btn-row{display:flex;gap:6px;}
+        /* switch */
+        @media(min-width:900px){.coupon-grid{display:none;}.coupon-list{display:flex;}}
+        /* action buttons */
+        .btn-sm{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;}
+        .btn-edit{background:var(--sidebar-color,#2c3e50);color:#fff;}
+        .btn-edit:hover{opacity:0.9;}
+        .btn-toggle{background:#f5f5f5;color:#555;}
+        .btn-toggle:hover{background:#e8e8e8;}
+        .btn-delete{background:#fdecea;color:#e74c3c;}
+        .btn-delete:hover{background:#f8d7d5;}
+        /* modal */
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
+        .modal-overlay.open{display:flex;}
+        .modal{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+        .modal h3{margin:0 0 20px;font-size:18px;}
+        .form-group{margin-bottom:16px;}
+        .form-group label{display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:6px;}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1.5px solid #e8e8e8;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;transition:border-color .2s;}
+        .form-group input:focus,.form-group select:focus{border-color:var(--sidebar-color,#2c3e50);}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+        .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+        .btn-primary{background:var(--sidebar-color,#2c3e50);color:#fff;padding:10px 22px;border:none;border-radius:10px;font-weight:600;cursor:pointer;}
+        .btn-secondary{background:#f0f0f0;color:#555;padding:10px 22px;border:none;border-radius:10px;font-weight:600;cursor:pointer;}
+        /* empty */
+        .empty-state{text-align:center;padding:60px 20px;color:#bbb;}
+        .empty-state .icon{font-size:52px;margin-bottom:14px;}
     </style>
+
 </head>
 <body>
-<div class="layout">
-    <div id="sidebar-container"></div>
-    <div class="content">
-        <div id="header-container"></div>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
+        </div>
+        <ul>
+            <!-- Tabs are dynamically generated in menu.js -->
+        </ul>
+    </nav>
+    <main class="content">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h1 style="display: none;">Coupon Management</h1>
+            <div style="flex:1"></div>
+            <div class="profile-dropdown">
+                <div class="profile-icon" onclick="toggleProfileMenu()">
+                    <img id="profilePhoto" src="" alt="Profile">
+                </div>
+                <div class="profile-menu" id="profileMenu" style="display: none;">
+                    <div class="profile-info">
+                        <img id="menuProfilePhoto" src="" alt="Profile" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #667eea;">
+                        <div>
+                            <strong id="profileName">Demo User</strong>
+                            <p id="profileRole" style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Admin</p>
+                            <p id="profileBiz" style="font-size: 11px; margin-top: 5px; color: #667eea; background: rgba(102, 126, 234, 0.1); padding: 2px 5px; border-radius: 4px; display: none; font-weight: bold;"></p>
+                        </div>
+                    </div>
+                    <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
+                    <a href="#" onclick="showEditProfile(); return false;">&#9999;&#65039; Edit Profile</a>
+                    <a href="settings.html">&#9881;&#65039; Settings</a>
+                    <a href="login.html" onclick="logout()">&#128682; Logout</a>
+                </div>
+            </div>
+        </header>
 
         <div class="page-header">
             <div>
-                <h1 style="margin:0;font-size:24px;">🎟️ Coupon Management</h1>
+                <h1 style="margin:0;font-size:24px;">Coupon Management</h1>
                 <p style="margin:4px 0 0;color:#888;font-size:14px;">Create and manage discount coupons for your clients</p>
             </div>
             <button class="btn-primary" onclick="openModal()">+ New Coupon</button>
@@ -67,7 +133,7 @@
         <div class="stats-row" id="statsRow"></div>
 
         <div class="toolbar">
-            <input type="text" id="searchInput" placeholder="🔍 Search by code or description..." oninput="renderCoupons()">
+            <input type="text" id="searchInput" placeholder="Search by code or description..." oninput="renderCoupons()">
             <select id="filterStatus" onchange="renderCoupons()">
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -84,8 +150,12 @@
         <div class="coupon-grid" id="couponGrid">
             <div class="empty-state"><div class="icon">⏳</div><p>Loading coupons...</p></div>
         </div>
-    </div>
-</div>
+
+        <!-- Desktop row-list (shown at ≥900px) -->
+        <div class="coupon-list" id="couponList">
+            <div class="empty-state"><div class="icon">⏳</div><p>Loading coupons...</p></div>
+        </div>
+    </main>
 
 <!-- Create/Edit Modal -->
 <div class="modal-overlay" id="modalOverlay">
@@ -172,9 +242,9 @@
         const totalUses = allCoupons.reduce((s, c) => s + (c.uses_count || 0), 0);
         document.getElementById('statsRow').innerHTML = `
             <div class="stat-card"><div class="num">${allCoupons.length}</div><div class="lbl">Total Coupons</div></div>
-            <div class="stat-card"><div class="num" style="color:#27ae60">${active}</div><div class="lbl">Active</div></div>
-            <div class="stat-card"><div class="num" style="color:#e74c3c">${expired}</div><div class="lbl">Expired</div></div>
-            <div class="stat-card"><div class="num" style="color:#f39c12">${totalUses}</div><div class="lbl">Total Uses</div></div>
+            <div class="stat-card"><div class="num">${active}</div><div class="lbl">Active</div></div>
+            <div class="stat-card"><div class="num">${expired}</div><div class="lbl">Expired</div></div>
+            <div class="stat-card"><div class="num">${totalUses}</div><div class="lbl">Total Uses</div></div>
         `;
     }
 
@@ -192,16 +262,20 @@
             return matchSearch && matchStatus && matchType;
         });
 
+        const emptyCard = `<div class="empty-state"><div class="icon">🎟️</div><p>No coupons found</p></div>`;
+
         if (!filtered.length) {
-            document.getElementById('couponGrid').innerHTML = `<div class="empty-state"><div class="icon">🎟️</div><p>No coupons found</p></div>`;
+            document.getElementById('couponGrid').innerHTML = emptyCard;
+            document.getElementById('couponList').innerHTML = emptyCard;
             return;
         }
 
+        // ── Mobile card grid ────────────────────────────────────────────────
         document.getElementById('couponGrid').innerHTML = filtered.map(c => {
             const isExpired = c.expires_at && new Date(c.expires_at) <= now;
             const cardClass = isExpired ? 'expired' : (!c.is_active ? 'inactive' : '');
             const statusBadge = isExpired ? '<span class="coupon-badge badge-expired">Expired</span>' : (c.is_active ? '<span class="coupon-badge badge-active">Active</span>' : '<span class="coupon-badge badge-inactive">Inactive</span>');
-            const typeBadge = c.discount_type === 'percentage' ? `<span class="coupon-badge badge-pct">${c.discount_value}% OFF</span>` : `<span class="coupon-badge badge-fixed">₱${c.discount_value} OFF</span>`;
+            const typeBadge = c.discount_type === 'percentage' ? `<span class="coupon-badge badge-pct">${c.discount_value}% OFF</span>` : `<span class="coupon-badge badge-fixed">&#8369;${c.discount_value} OFF</span>`;
             return `
             <div class="coupon-card ${cardClass}">
                 <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
@@ -210,15 +284,66 @@
                 </div>
                 <div class="coupon-desc">${c.description || '<em>No description</em>'}</div>
                 <div class="coupon-meta">
-                    <span>Min Spend: <strong>₱${c.min_spend || 0}</strong></span>
+                    <span>Min Spend: <strong>&#8369;${c.min_spend || 0}</strong></span>
                     <span>Uses: <strong>${c.uses_count || 0}${c.max_uses ? '/' + c.max_uses : ''}</strong></span>
-                    <span>Stock: <strong>${c.stock != null ? c.stock : '∞'}</strong></span>
+                    <span>Stock: <strong>${c.stock != null ? c.stock : '&#8734;'}</strong></span>
                     <span>Expires: <strong>${c.expires_at ? new Date(c.expires_at).toLocaleDateString() : 'Never'}</strong></span>
                 </div>
                 <div class="coupon-actions">
-                    <button class="btn-sm btn-edit" onclick="editCoupon(${c.id})">✏️ Edit</button>
-                    <button class="btn-sm btn-toggle" onclick="toggleCoupon(${c.id})">${c.is_active ? '⏸ Deactivate' : '▶ Activate'}</button>
-                    <button class="btn-sm btn-delete" onclick="deleteCoupon(${c.id})">🗑 Delete</button>
+                    <button class="btn-sm btn-edit" onclick="editCoupon(${c.id})">&#9998; Edit</button>
+                    <button class="btn-sm btn-toggle" onclick="toggleCoupon(${c.id})">${c.is_active ? '&#9208; Deactivate' : '&#9654; Activate'}</button>
+                    <button class="btn-sm btn-delete" onclick="deleteCoupon(${c.id})">&#128465; Delete</button>
+                </div>
+            </div>`;
+        }).join('');
+
+        // ── Desktop row-list ────────────────────────────────────────────────
+        document.getElementById('couponList').innerHTML = filtered.map(c => {
+            const isExpired = c.expires_at && new Date(c.expires_at) <= now;
+            const rowClass = isExpired ? 'row-expired' : (!c.is_active ? 'row-inactive' : '');
+            const statusBadge = isExpired
+                ? '<span class="coupon-badge badge-expired">Expired</span>'
+                : (c.is_active ? '<span class="coupon-badge badge-active">&#10003; Active</span>' : '<span class="coupon-badge badge-inactive">Inactive</span>');
+            const discountDisplay = c.discount_type === 'percentage'
+                ? `${c.discount_value}% OFF`
+                : `&#8369;${c.discount_value} OFF`;
+            const typeLabel = c.discount_type === 'percentage' ? 'Percentage Discount' : 'Fixed Amount Discount';
+            const expiryDisplay = c.expires_at ? new Date(c.expires_at).toLocaleDateString('en-PH', {month:'short',day:'numeric',year:'numeric'}) : 'No expiry';
+            return `
+            <div class="coupon-row ${rowClass}">
+                <div class="crow-stub">
+                    <div class="crow-code">${c.code}</div>
+                    <div class="crow-discount">${discountDisplay}</div>
+                    <div class="crow-type">${typeLabel}</div>
+                </div>
+                <div class="crow-body">
+                    <div class="crow-desc">${c.description || '<em style="color:#bbb">No description</em>'}</div>
+                    <div class="crow-stats">
+                        <div class="crow-stat">
+                            <span class="crow-stat-label">Min. Spend</span>
+                            <span class="crow-stat-val">&#8369;${Number(c.min_spend || 0).toLocaleString()}</span>
+                        </div>
+                        <div class="crow-stat">
+                            <span class="crow-stat-label">Uses</span>
+                            <span class="crow-stat-val">${c.uses_count || 0}${c.max_uses ? ' / ' + c.max_uses : ' / &#8734;'}</span>
+                        </div>
+                        <div class="crow-stat">
+                            <span class="crow-stat-label">Stock</span>
+                            <span class="crow-stat-val">${c.stock != null ? c.stock : '&#8734;'}</span>
+                        </div>
+                        <div class="crow-stat">
+                            <span class="crow-stat-label">Expires</span>
+                            <span class="crow-stat-val">${expiryDisplay}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="crow-actions">
+                    ${statusBadge}
+                    <div class="btn-row">
+                        <button class="btn-sm btn-edit" onclick="editCoupon(${c.id})">&#9998; Edit</button>
+                        <button class="btn-sm btn-toggle" onclick="toggleCoupon(${c.id})">${c.is_active ? '&#9208;' : '&#9654;'}</button>
+                        <button class="btn-sm btn-delete" onclick="deleteCoupon(${c.id})">&#128465;</button>
+                    </div>
                 </div>
             </div>`;
         }).join('');

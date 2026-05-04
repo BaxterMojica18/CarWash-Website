@@ -9,23 +9,51 @@ async function loadDashboard(period = 'weekly') {
         const filteredData = await filterDataByPeriod(invoices, period);
         
         document.querySelector('.stats-grid').innerHTML = `
-            <div class="stat-card" onclick="navigateToReports('${period}')" style="cursor: pointer;">
-                <h3>Total Revenue</h3>
-                <p class="stat-value">$${filteredData.totalRevenue.toFixed(2)}</p>
+            <div class="stat-card" onclick="navigateToReports('${period}')" style="cursor: pointer; --card-accent: #2196f3; --icon-bg: rgba(33, 150, 243, 0.1);">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 9h20"/></svg>
+                    </div>
+                </div>
+                <div>
+                    <h3>Total Revenue</h3>
+                    <p class="stat-value">$${filteredData.totalRevenue.toFixed(2)}</p>
+                </div>
             </div>
-            <div class="stat-card" onclick="navigateToInvoices('${period}')" style="cursor: pointer;">
-                <h3>Total Invoices</h3>
-                <p class="stat-value">${filteredData.totalInvoices}</p>
+            <div class="stat-card" onclick="navigateToInvoices('${period}')" style="cursor: pointer; --card-accent: #ffeb3b; --icon-bg: rgba(255, 235, 59, 0.1);">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </div>
+                </div>
+                <div>
+                    <h3>Total Invoices</h3>
+                    <p class="stat-value">${filteredData.totalInvoices}</p>
+                </div>
             </div>
-            <div class="stat-card" onclick="navigateToServices()" style="cursor: pointer;">
-                <h3>Most Popular Service</h3>
-                <p class="stat-value" style="font-size: 20px;">${filteredData.topService || 'N/A'}</p>
-                <span class="stat-change">${filteredData.topServiceCount || 0} sold</span>
+            <div class="stat-card" onclick="navigateToServices()" style="cursor: pointer; --card-accent: #4caf50; --icon-bg: rgba(76, 175, 80, 0.1);">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    </div>
+                </div>
+                <div>
+                    <h3>Most Popular Service</h3>
+                    <p class="stat-value" style="font-size: 20px;">${filteredData.topService || 'N/A'}</p>
+                    <p class="stat-subtext">${filteredData.topServiceCount || 0} sold</p>
+                </div>
             </div>
-            <div class="stat-card" onclick="navigateToProducts()" style="cursor: pointer;">
-                <h3>Top Product Sold</h3>
-                <p class="stat-value" style="font-size: 20px;">${filteredData.topProduct || 'N/A'}</p>
-                <span class="stat-change">${filteredData.topProductCount || 0} sold</span>
+            <div class="stat-card" onclick="navigateToProducts()" style="cursor: pointer; --card-accent: #9c27b0; --icon-bg: rgba(156, 39, 176, 0.1);">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                    </div>
+                </div>
+                <div>
+                    <h3>Top Product Sold</h3>
+                    <p class="stat-value" style="font-size: 20px;">${filteredData.topProduct || 'N/A'}</p>
+                    <p class="stat-subtext">${filteredData.topProductCount || 0} sold</p>
+                </div>
             </div>
         `;
         
@@ -339,19 +367,10 @@ async function applyDashboardSettings() {
             .btn-primary { background: ${buttonColor} !important; }
             .stat-card { 
                 background: ${cardColor} !important;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-                border-left: 4px solid ${settings.primary_color} !important;
             }
-            .stat-card h3 { color: ${cardTextColor} !important; font-size: 14px !important; }
-            .stat-card .stat-value { color: ${cardTextColor} !important; font-size: 32px !important; font-weight: bold !important; }
-            .stat-card .stat-change { 
-                display: inline-block;
-                padding: 4px 8px;
-                background: #f0f0f0;
-                border-radius: 4px;
-                font-size: 12px;
-                color: ${cardTextColor};
-            }
+            .stat-card h3 { color: ${cardTextColor} !important; }
+            .stat-card .stat-value { color: ${cardTextColor} !important; }
+            .stat-card .stat-subtext { color: ${cardTextColor} !important; opacity: 0.7; }
             .sidebar a.active, .sidebar a:hover { background: ${sidebarActive} !important; }
         `;
         document.head.appendChild(style);
@@ -398,6 +417,34 @@ async function loadCustomModules(layoutType) {
                 card.className = 'stat-card';
                 card.style.cursor = 'pointer';
                 
+                // Set dynamic accent colors and icons based on module type
+                let accentColor = 'var(--primary-color)';
+                let iconBg = 'rgba(102, 126, 234, 0.1)';
+                let iconSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>';
+
+                if (mod.module_type.includes('revenue')) { 
+                    accentColor = '#2196f3'; iconBg = 'rgba(33, 150, 243, 0.1)'; 
+                    iconSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 9h20"/></svg>'; 
+                } else if (mod.module_type.includes('invoice')) { 
+                    accentColor = '#ffeb3b'; iconBg = 'rgba(255, 235, 59, 0.1)'; 
+                    iconSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'; 
+                } else if (mod.module_type.includes('service') || mod.module_type.includes('bay')) { 
+                    accentColor = '#4caf50'; iconBg = 'rgba(76, 175, 80, 0.1)'; 
+                    iconSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>'; 
+                } else if (mod.module_type.includes('product') || mod.module_type.includes('coupon')) { 
+                    accentColor = '#9c27b0'; iconBg = 'rgba(156, 39, 176, 0.1)'; 
+                    iconSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>'; 
+                } else if (mod.module_type.includes('client') || mod.module_type.includes('rating')) {
+                    accentColor = '#00bcd4'; iconBg = 'rgba(0, 188, 212, 0.1)';
+                    iconSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+                } else if (mod.module_type.includes('queue') || mod.module_type.includes('order')) {
+                    accentColor = '#ff9800'; iconBg = 'rgba(255, 152, 0, 0.1)';
+                    iconSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+                }
+
+                card.style.setProperty('--card-accent', accentColor);
+                card.style.setProperty('--icon-bg', iconBg);
+                
                 if (mod.width === 'half') {
                     card.style.gridColumn = 'span 6';
                 } else if (mod.width === 'third') {
@@ -408,26 +455,44 @@ async function loadCustomModules(layoutType) {
                     card.style.gridColumn = 'span 12';
                 }
                 
+                const cardContent = (title, val, sub) => `
+                    <div class="stat-header">
+                        <div class="stat-icon" style="color: ${accentColor};">${iconSvg}</div>
+                    </div>
+                    <div>
+                        <h3>${title}</h3>
+                        <p class="stat-value" ${val.length > 8 ? 'style="font-size: 20px;"' : ''}>${val}</p>
+                        ${sub ? `<p class="stat-subtext">${sub}</p>` : ''}
+                    </div>
+                `;
+
                 const templates = {
-                    'revenue_total': `<h3>Total Revenue</h3><p class="stat-value">$12,450</p><span class="stat-change positive">+15%</span>`,
-                    'revenue_average': `<h3>Average Revenue</h3><p class="stat-value">$1,245</p><span class="stat-change">Per invoice</span>`,
-                    'revenue_weekly': `<h3>Weekly Revenue</h3><p class="stat-value">$3,200</p><span class="stat-change positive">+8%</span>`,
-                    'revenue_monthly': `<h3>Monthly Revenue</h3><p class="stat-value">$12,800</p><span class="stat-change positive">+12%</span>`,
-                    'revenue_bimonthly': `<h3>Bi-Monthly Revenue</h3><p class="stat-value">$25,600</p><span class="stat-change">2 months</span>`,
-                    'revenue_semiannual': `<h3>Semi-Annual Revenue</h3><p class="stat-value">$76,800</p><span class="stat-change">6 months</span>`,
-                    'revenue_annual': `<h3>Annual Revenue</h3><p class="stat-value">$153,600</p><span class="stat-change">Year total</span>`,
-                    'invoice_total': `<h3>Total Invoices</h3><p class="stat-value">245</p><span class="stat-change">This month</span>`,
-                    'invoice_average': `<h3>Average Invoice</h3><p class="stat-value">$85</p><span class="stat-change">Per transaction</span>`,
-                    'service_total': `<h3>Total Services</h3><p class="stat-value">189</p><span class="stat-change">Completed</span>`,
-                    'service_popular': `<h3>Most Popular Service</h3><p class="stat-value" style="font-size: 20px;">Premium Wash</p><span class="stat-change">87 times</span>`,
-                    'product_total': `<h3>Products Sold</h3><p class="stat-value">456</p><span class="stat-change">Total units</span>`,
-                    'product_popular': `<h3>Top Product</h3><p class="stat-value" style="font-size: 20px;">Car Wax</p><span class="stat-change">123 sold</span>`,
+                    'revenue_total': cardContent('Total Revenue', '$12,450', '+15%'),
+                    'revenue_average': cardContent('Average Revenue', '$1,245', 'Per invoice'),
+                    'revenue_weekly': cardContent('Weekly Revenue', '$3,200', '+8%'),
+                    'revenue_monthly': cardContent('Monthly Revenue', '$12,800', '+12%'),
+                    'revenue_bimonthly': cardContent('Bi-Monthly Revenue', '$25,600', '2 months'),
+                    'revenue_semiannual': cardContent('Semi-Annual Revenue', '$76,800', '6 months'),
+                    'revenue_annual': cardContent('Annual Revenue', '$153,600', 'Year total'),
+                    'invoice_total': cardContent('Total Invoices', '245', 'This month'),
+                    'invoice_average': cardContent('Average Invoice', '$85', 'Per transaction'),
+                    'orders_completed': cardContent('Completed Orders', '124', 'This month'),
+                    'queue_pending': cardContent('Pending Appointments', '7', 'Awaiting service'),
+                    'service_total': cardContent('Total Services', '189', 'Completed'),
+                    'service_popular': cardContent('Most Popular Service', 'Premium Wash', '87 times'),
+                    'product_total': cardContent('Products Sold', '456', 'Total units'),
+                    'product_popular': cardContent('Top Product', 'Car Wax', '123 sold'),
+                    'client_total': cardContent('Total Clients', '850', 'Registered users'),
+                    'client_new': cardContent('New Clients', '45', 'This month'),
+                    'rating_average': cardContent('Average Rating', '4.8', 'From 120 reviews'),
+                    'coupon_used': cardContent('Coupons Used', '1,240', 'Lifetime redemptions'),
+                    'bay_active': cardContent('Active Bays', '3 / 5', 'Currently in use'),
                     'recent_activity': `<h3>Recent Activity</h3><ul class="activity-list" style="max-height: 200px; overflow-y: auto; text-align: left; list-style: none; padding: 0;"><li style="padding: 8px; border-bottom: 1px solid #eee;">✓ Invoice #1023 created - $85</li><li style="padding: 8px; border-bottom: 1px solid #eee;">✓ Bay 2 completed service</li><li style="padding: 8px; border-bottom: 1px solid #eee;">✓ New product added</li><li style="padding: 8px;">✓ Invoice #1022 paid - $120</li></ul>`,
                     'chart': `<h3>${mod.title}</h3><div style="background: #f0f0f0; height: 150px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-top: 10px;">Chart Placeholder</div>`,
                     'table': `<h3>${mod.title}</h3><table style="width: 100%; margin-top: 10px; border-collapse: collapse;"><tr style="background: #f8f9fa;"><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Column 1</th><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Column 2</th></tr><tr><td style="padding: 8px; border: 1px solid #ddd;">Data 1</td><td style="padding: 8px; border: 1px solid #ddd;">Data 2</td></tr></table>`
                 };
                 
-                card.innerHTML = templates[mod.module_type] || `<h3>${mod.title}</h3><p class="stat-value">Module content</p>`;
+                card.innerHTML = templates[mod.module_type] || cardContent(mod.title, 'Data', '');
                 statsGrid.appendChild(card);
             });
             return true;

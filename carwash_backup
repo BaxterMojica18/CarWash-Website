@@ -1,0 +1,2516 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict HA5O12fkyg5TTswfv0RCxiQe5F8AtfZsGNTBSTKBffxMGah2bmqd6jgB3dTaX62
+
+-- Dumped from database version 18.0
+-- Dumped by pg_dump version 18.0
+
+-- Started on 2026-05-04 23:35:06
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+DROP DATABASE IF EXISTS carwash_db;
+--
+-- TOC entry 5310 (class 1262 OID 27750)
+-- Name: carwash_db; Type: DATABASE; Schema: -; Owner: postgres
+--
+
+CREATE DATABASE carwash_db WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'English_United States.1252';
+
+
+ALTER DATABASE carwash_db OWNER TO postgres;
+
+\unrestrict HA5O12fkyg5TTswfv0RCxiQe5F8AtfZsGNTBSTKBffxMGah2bmqd6jgB3dTaX62
+\connect carwash_db
+\restrict HA5O12fkyg5TTswfv0RCxiQe5F8AtfZsGNTBSTKBffxMGah2bmqd6jgB3dTaX62
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 4 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO pg_database_owner;
+
+--
+-- TOC entry 5311 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 240 (class 1259 OID 27916)
+-- Name: business_info; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.business_info (
+    id integer NOT NULL,
+    user_id integer,
+    business_name character varying,
+    logo character varying,
+    logo_type character varying,
+    address character varying,
+    phone character varying,
+    email character varying
+);
+
+
+ALTER TABLE public.business_info OWNER TO postgres;
+
+--
+-- TOC entry 239 (class 1259 OID 27915)
+-- Name: business_info_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.business_info_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.business_info_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5312 (class 0 OID 0)
+-- Dependencies: 239
+-- Name: business_info_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.business_info_id_seq OWNED BY public.business_info.id;
+
+
+--
+-- TOC entry 258 (class 1259 OID 28079)
+-- Name: cart_items; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cart_items (
+    id integer NOT NULL,
+    client_id integer,
+    product_service_id integer,
+    quantity integer,
+    price_at_add double precision,
+    created_at timestamp without time zone
+);
+
+
+ALTER TABLE public.cart_items OWNER TO postgres;
+
+--
+-- TOC entry 257 (class 1259 OID 28078)
+-- Name: cart_items_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.cart_items_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.cart_items_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5313 (class 0 OID 0)
+-- Dependencies: 257
+-- Name: cart_items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.cart_items_id_seq OWNED BY public.cart_items.id;
+
+
+--
+-- TOC entry 252 (class 1259 OID 28024)
+-- Name: dashboard_modules; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.dashboard_modules (
+    id integer NOT NULL,
+    user_id integer,
+    module_name character varying,
+    module_type character varying,
+    title character varying,
+    "position" integer,
+    width character varying,
+    is_visible boolean,
+    config character varying,
+    updated_at timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.dashboard_modules OWNER TO postgres;
+
+--
+-- TOC entry 251 (class 1259 OID 28023)
+-- Name: dashboard_modules_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.dashboard_modules_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.dashboard_modules_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5314 (class 0 OID 0)
+-- Dependencies: 251
+-- Name: dashboard_modules_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.dashboard_modules_id_seq OWNED BY public.dashboard_modules.id;
+
+
+--
+-- TOC entry 250 (class 1259 OID 28007)
+-- Name: dashboard_settings; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.dashboard_settings (
+    id integer NOT NULL,
+    user_id integer,
+    website_name character varying,
+    primary_color character varying,
+    background_color character varying,
+    sidebar_color character varying,
+    layout_type character varying,
+    button_color character varying,
+    text_color character varying,
+    sidebar_active_color character varying,
+    card_color character varying,
+    card_text_color character varying,
+    updated_at timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.dashboard_settings OWNER TO postgres;
+
+--
+-- TOC entry 249 (class 1259 OID 28006)
+-- Name: dashboard_settings_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.dashboard_settings_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.dashboard_settings_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5315 (class 0 OID 0)
+-- Dependencies: 249
+-- Name: dashboard_settings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.dashboard_settings_id_seq OWNED BY public.dashboard_settings.id;
+
+
+--
+-- TOC entry 242 (class 1259 OID 27934)
+-- Name: invoice_customization; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.invoice_customization (
+    id integer NOT NULL,
+    user_id integer,
+    invoice_address character varying,
+    invoice_phone character varying,
+    invoice_email character varying
+);
+
+
+ALTER TABLE public.invoice_customization OWNER TO postgres;
+
+--
+-- TOC entry 241 (class 1259 OID 27933)
+-- Name: invoice_customization_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.invoice_customization_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.invoice_customization_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5316 (class 0 OID 0)
+-- Dependencies: 241
+-- Name: invoice_customization_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.invoice_customization_id_seq OWNED BY public.invoice_customization.id;
+
+
+--
+-- TOC entry 264 (class 1259 OID 28144)
+-- Name: invoice_items; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.invoice_items (
+    id integer NOT NULL,
+    invoice_id integer,
+    product_service_id integer,
+    quantity integer,
+    unit_price double precision,
+    subtotal double precision
+);
+
+
+ALTER TABLE public.invoice_items OWNER TO postgres;
+
+--
+-- TOC entry 263 (class 1259 OID 28143)
+-- Name: invoice_items_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.invoice_items_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.invoice_items_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5317 (class 0 OID 0)
+-- Dependencies: 263
+-- Name: invoice_items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.invoice_items_id_seq OWNED BY public.invoice_items.id;
+
+
+--
+-- TOC entry 256 (class 1259 OID 28057)
+-- Name: invoices; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.invoices (
+    id integer NOT NULL,
+    invoice_number character varying,
+    date timestamp without time zone,
+    customer_name character varying,
+    total_amount double precision,
+    location_id integer,
+    user_id integer,
+    status character varying,
+    deleted_at timestamp without time zone
+);
+
+
+ALTER TABLE public.invoices OWNER TO postgres;
+
+--
+-- TOC entry 255 (class 1259 OID 28056)
+-- Name: invoices_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.invoices_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.invoices_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5318 (class 0 OID 0)
+-- Dependencies: 255
+-- Name: invoices_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.invoices_id_seq OWNED BY public.invoices.id;
+
+
+--
+-- TOC entry 234 (class 1259 OID 27864)
+-- Name: locations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.locations (
+    id integer NOT NULL,
+    name character varying,
+    address character varying,
+    user_id integer,
+    status character varying,
+    deleted_at timestamp without time zone
+);
+
+
+ALTER TABLE public.locations OWNER TO postgres;
+
+--
+-- TOC entry 233 (class 1259 OID 27863)
+-- Name: locations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.locations_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.locations_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5319 (class 0 OID 0)
+-- Dependencies: 233
+-- Name: locations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.locations_id_seq OWNED BY public.locations.id;
+
+
+--
+-- TOC entry 260 (class 1259 OID 28098)
+-- Name: order_items; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.order_items (
+    id integer NOT NULL,
+    order_id integer,
+    product_service_id integer,
+    quantity integer,
+    unit_price double precision,
+    subtotal double precision
+);
+
+
+ALTER TABLE public.order_items OWNER TO postgres;
+
+--
+-- TOC entry 259 (class 1259 OID 28097)
+-- Name: order_items_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.order_items_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.order_items_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5320 (class 0 OID 0)
+-- Dependencies: 259
+-- Name: order_items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.order_items_id_seq OWNED BY public.order_items.id;
+
+
+--
+-- TOC entry 246 (class 1259 OID 27968)
+-- Name: orders; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.orders (
+    id integer NOT NULL,
+    order_number character varying,
+    client_id integer,
+    status character varying,
+    total_amount double precision,
+    payment_method character varying,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.orders OWNER TO postgres;
+
+--
+-- TOC entry 245 (class 1259 OID 27967)
+-- Name: orders_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.orders_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.orders_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5321 (class 0 OID 0)
+-- Dependencies: 245
+-- Name: orders_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.orders_id_seq OWNED BY public.orders.id;
+
+
+--
+-- TOC entry 248 (class 1259 OID 27985)
+-- Name: password_reset_tokens; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.password_reset_tokens (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    token character varying NOT NULL,
+    otp_code character varying(6),
+    expires_at timestamp without time zone NOT NULL,
+    used boolean,
+    created_at timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.password_reset_tokens OWNER TO postgres;
+
+--
+-- TOC entry 247 (class 1259 OID 27984)
+-- Name: password_reset_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.password_reset_tokens_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.password_reset_tokens_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5322 (class 0 OID 0)
+-- Dependencies: 247
+-- Name: password_reset_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.password_reset_tokens_id_seq OWNED BY public.password_reset_tokens.id;
+
+
+--
+-- TOC entry 226 (class 1259 OID 27791)
+-- Name: payment_methods; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.payment_methods (
+    id integer NOT NULL,
+    name character varying NOT NULL,
+    icon character varying,
+    qr_image character varying,
+    account_number character varying,
+    is_active boolean,
+    created_at timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.payment_methods OWNER TO postgres;
+
+--
+-- TOC entry 225 (class 1259 OID 27790)
+-- Name: payment_methods_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.payment_methods_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.payment_methods_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5323 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: payment_methods_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.payment_methods_id_seq OWNED BY public.payment_methods.id;
+
+
+--
+-- TOC entry 222 (class 1259 OID 27765)
+-- Name: permissions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.permissions (
+    id integer NOT NULL,
+    name character varying,
+    description character varying
+);
+
+
+ALTER TABLE public.permissions OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 27764)
+-- Name: permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.permissions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.permissions_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5324 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.permissions_id_seq OWNED BY public.permissions.id;
+
+
+--
+-- TOC entry 236 (class 1259 OID 27881)
+-- Name: products_services; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.products_services (
+    id integer NOT NULL,
+    product_id character varying,
+    service_id character varying,
+    name character varying,
+    price double precision,
+    description character varying,
+    type character varying,
+    quantity double precision,
+    quantity_unit character varying,
+    user_id integer,
+    status character varying,
+    deleted_at timestamp without time zone
+);
+
+
+ALTER TABLE public.products_services OWNER TO postgres;
+
+--
+-- TOC entry 235 (class 1259 OID 27880)
+-- Name: products_services_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.products_services_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.products_services_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5325 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: products_services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.products_services_id_seq OWNED BY public.products_services.id;
+
+
+--
+-- TOC entry 244 (class 1259 OID 27952)
+-- Name: reports_cache; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.reports_cache (
+    id integer NOT NULL,
+    user_id integer,
+    report_type character varying,
+    filter_period character varying,
+    filter_value character varying,
+    generated_at timestamp without time zone,
+    total_sales double precision,
+    total_invoices integer
+);
+
+
+ALTER TABLE public.reports_cache OWNER TO postgres;
+
+--
+-- TOC entry 243 (class 1259 OID 27951)
+-- Name: reports_cache_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.reports_cache_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.reports_cache_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5326 (class 0 OID 0)
+-- Dependencies: 243
+-- Name: reports_cache_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.reports_cache_id_seq OWNED BY public.reports_cache.id;
+
+
+--
+-- TOC entry 262 (class 1259 OID 28117)
+-- Name: reservations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.reservations (
+    id integer NOT NULL,
+    reservation_number character varying,
+    client_id integer,
+    service_id integer,
+    location_id integer,
+    vehicle_plate character varying,
+    status character varying,
+    queue_position integer,
+    estimated_start_time timestamp without time zone,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.reservations OWNER TO postgres;
+
+--
+-- TOC entry 261 (class 1259 OID 28116)
+-- Name: reservations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.reservations_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.reservations_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5327 (class 0 OID 0)
+-- Dependencies: 261
+-- Name: reservations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.reservations_id_seq OWNED BY public.reservations.id;
+
+
+--
+-- TOC entry 227 (class 1259 OID 27803)
+-- Name: role_permissions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.role_permissions (
+    role_id integer,
+    permission_id integer
+);
+
+
+ALTER TABLE public.role_permissions OWNER TO postgres;
+
+--
+-- TOC entry 254 (class 1259 OID 28041)
+-- Name: role_sidebar_settings; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.role_sidebar_settings (
+    id integer NOT NULL,
+    role_id integer,
+    page_name character varying,
+    is_visible boolean
+);
+
+
+ALTER TABLE public.role_sidebar_settings OWNER TO postgres;
+
+--
+-- TOC entry 253 (class 1259 OID 28040)
+-- Name: role_sidebar_settings_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.role_sidebar_settings_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.role_sidebar_settings_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5328 (class 0 OID 0)
+-- Dependencies: 253
+-- Name: role_sidebar_settings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.role_sidebar_settings_id_seq OWNED BY public.role_sidebar_settings.id;
+
+
+--
+-- TOC entry 220 (class 1259 OID 27752)
+-- Name: roles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.roles (
+    id integer NOT NULL,
+    name character varying,
+    description character varying
+);
+
+
+ALTER TABLE public.roles OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 27751)
+-- Name: roles_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.roles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.roles_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5329 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.roles_id_seq OWNED BY public.roles.id;
+
+
+--
+-- TOC entry 238 (class 1259 OID 27900)
+-- Name: settings_theme_selection; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.settings_theme_selection (
+    id integer NOT NULL,
+    user_id integer,
+    preset_name character varying,
+    is_active boolean,
+    text_color character varying,
+    text_brightness integer,
+    card_color character varying,
+    card_brightness integer,
+    input_color character varying,
+    input_brightness integer,
+    button_color character varying,
+    sidebar_color character varying,
+    sidebar_active_color character varying,
+    bg_color character varying,
+    dropdown_color character varying,
+    dropdown_brightness integer,
+    delete_button_brightness integer,
+    delete_button_saturation integer
+);
+
+
+ALTER TABLE public.settings_theme_selection OWNER TO postgres;
+
+--
+-- TOC entry 237 (class 1259 OID 27899)
+-- Name: settings_theme_selection_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.settings_theme_selection_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.settings_theme_selection_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5330 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: settings_theme_selection_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.settings_theme_selection_id_seq OWNED BY public.settings_theme_selection.id;
+
+
+--
+-- TOC entry 232 (class 1259 OID 27848)
+-- Name: user_preferences; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.user_preferences (
+    id integer NOT NULL,
+    user_id integer,
+    sms_opt_in boolean
+);
+
+
+ALTER TABLE public.user_preferences OWNER TO postgres;
+
+--
+-- TOC entry 231 (class 1259 OID 27847)
+-- Name: user_preferences_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.user_preferences_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.user_preferences_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5331 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: user_preferences_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.user_preferences_id_seq OWNED BY public.user_preferences.id;
+
+
+--
+-- TOC entry 230 (class 1259 OID 27830)
+-- Name: user_profiles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.user_profiles (
+    id integer NOT NULL,
+    user_id integer,
+    name character varying,
+    role character varying,
+    photo character varying
+);
+
+
+ALTER TABLE public.user_profiles OWNER TO postgres;
+
+--
+-- TOC entry 229 (class 1259 OID 27829)
+-- Name: user_profiles_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.user_profiles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.user_profiles_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5332 (class 0 OID 0)
+-- Dependencies: 229
+-- Name: user_profiles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.user_profiles_id_seq OWNED BY public.user_profiles.id;
+
+
+--
+-- TOC entry 228 (class 1259 OID 27816)
+-- Name: user_roles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.user_roles (
+    user_id integer,
+    role_id integer
+);
+
+
+ALTER TABLE public.user_roles OWNER TO postgres;
+
+--
+-- TOC entry 224 (class 1259 OID 27778)
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users (
+    id integer NOT NULL,
+    email character varying,
+    password_hash character varying,
+    is_demo boolean,
+    phone_number character varying,
+    account_type character varying,
+    business_number character varying
+);
+
+
+ALTER TABLE public.users OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 27777)
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.users_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5333 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+
+--
+-- TOC entry 4979 (class 2604 OID 27919)
+-- Name: business_info id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.business_info ALTER COLUMN id SET DEFAULT nextval('public.business_info_id_seq'::regclass);
+
+
+--
+-- TOC entry 4991 (class 2604 OID 28082)
+-- Name: cart_items id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart_items ALTER COLUMN id SET DEFAULT nextval('public.cart_items_id_seq'::regclass);
+
+
+--
+-- TOC entry 4987 (class 2604 OID 28027)
+-- Name: dashboard_modules id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.dashboard_modules ALTER COLUMN id SET DEFAULT nextval('public.dashboard_modules_id_seq'::regclass);
+
+
+--
+-- TOC entry 4985 (class 2604 OID 28010)
+-- Name: dashboard_settings id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.dashboard_settings ALTER COLUMN id SET DEFAULT nextval('public.dashboard_settings_id_seq'::regclass);
+
+
+--
+-- TOC entry 4980 (class 2604 OID 27937)
+-- Name: invoice_customization id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoice_customization ALTER COLUMN id SET DEFAULT nextval('public.invoice_customization_id_seq'::regclass);
+
+
+--
+-- TOC entry 4994 (class 2604 OID 28147)
+-- Name: invoice_items id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoice_items ALTER COLUMN id SET DEFAULT nextval('public.invoice_items_id_seq'::regclass);
+
+
+--
+-- TOC entry 4990 (class 2604 OID 28060)
+-- Name: invoices id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoices ALTER COLUMN id SET DEFAULT nextval('public.invoices_id_seq'::regclass);
+
+
+--
+-- TOC entry 4976 (class 2604 OID 27867)
+-- Name: locations id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.locations ALTER COLUMN id SET DEFAULT nextval('public.locations_id_seq'::regclass);
+
+
+--
+-- TOC entry 4992 (class 2604 OID 28101)
+-- Name: order_items id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.order_items ALTER COLUMN id SET DEFAULT nextval('public.order_items_id_seq'::regclass);
+
+
+--
+-- TOC entry 4982 (class 2604 OID 27971)
+-- Name: orders id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orders ALTER COLUMN id SET DEFAULT nextval('public.orders_id_seq'::regclass);
+
+
+--
+-- TOC entry 4983 (class 2604 OID 27988)
+-- Name: password_reset_tokens id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.password_reset_tokens ALTER COLUMN id SET DEFAULT nextval('public.password_reset_tokens_id_seq'::regclass);
+
+
+--
+-- TOC entry 4972 (class 2604 OID 27794)
+-- Name: payment_methods id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.payment_methods ALTER COLUMN id SET DEFAULT nextval('public.payment_methods_id_seq'::regclass);
+
+
+--
+-- TOC entry 4970 (class 2604 OID 27768)
+-- Name: permissions id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.permissions ALTER COLUMN id SET DEFAULT nextval('public.permissions_id_seq'::regclass);
+
+
+--
+-- TOC entry 4977 (class 2604 OID 27884)
+-- Name: products_services id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.products_services ALTER COLUMN id SET DEFAULT nextval('public.products_services_id_seq'::regclass);
+
+
+--
+-- TOC entry 4981 (class 2604 OID 27955)
+-- Name: reports_cache id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reports_cache ALTER COLUMN id SET DEFAULT nextval('public.reports_cache_id_seq'::regclass);
+
+
+--
+-- TOC entry 4993 (class 2604 OID 28120)
+-- Name: reservations id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reservations ALTER COLUMN id SET DEFAULT nextval('public.reservations_id_seq'::regclass);
+
+
+--
+-- TOC entry 4989 (class 2604 OID 28044)
+-- Name: role_sidebar_settings id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.role_sidebar_settings ALTER COLUMN id SET DEFAULT nextval('public.role_sidebar_settings_id_seq'::regclass);
+
+
+--
+-- TOC entry 4969 (class 2604 OID 27755)
+-- Name: roles id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_id_seq'::regclass);
+
+
+--
+-- TOC entry 4978 (class 2604 OID 27903)
+-- Name: settings_theme_selection id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.settings_theme_selection ALTER COLUMN id SET DEFAULT nextval('public.settings_theme_selection_id_seq'::regclass);
+
+
+--
+-- TOC entry 4975 (class 2604 OID 27851)
+-- Name: user_preferences id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_preferences ALTER COLUMN id SET DEFAULT nextval('public.user_preferences_id_seq'::regclass);
+
+
+--
+-- TOC entry 4974 (class 2604 OID 27833)
+-- Name: user_profiles id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_profiles ALTER COLUMN id SET DEFAULT nextval('public.user_profiles_id_seq'::regclass);
+
+
+--
+-- TOC entry 4971 (class 2604 OID 27781)
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- TOC entry 5280 (class 0 OID 27916)
+-- Dependencies: 240
+-- Data for Name: business_info; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5298 (class 0 OID 28079)
+-- Dependencies: 258
+-- Data for Name: cart_items; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5292 (class 0 OID 28024)
+-- Dependencies: 252
+-- Data for Name: dashboard_modules; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5290 (class 0 OID 28007)
+-- Dependencies: 250
+-- Data for Name: dashboard_settings; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5282 (class 0 OID 27934)
+-- Dependencies: 242
+-- Data for Name: invoice_customization; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5304 (class 0 OID 28144)
+-- Dependencies: 264
+-- Data for Name: invoice_items; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.invoice_items VALUES (1, 1, 1, 2, 15, 30) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (2, 1, 2, 1, 30, 30) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (3, 1, 2, 3, 30, 90) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (4, 2, 1, 3, 15, 45) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (5, 2, 3, 2, 50, 100) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (6, 3, 4, 1, 20, 20) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (7, 4, 3, 1, 50, 50) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (8, 4, 4, 2, 20, 40) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (9, 4, 4, 1, 20, 20) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (10, 5, 2, 1, 30, 30) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (11, 5, 2, 1, 30, 30) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (12, 6, 4, 2, 20, 40) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (13, 6, 4, 2, 20, 40) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (14, 7, 3, 1, 50, 50) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (15, 8, 3, 3, 50, 150) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (16, 9, 3, 3, 50, 150) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (17, 10, 3, 2, 50, 100) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (18, 10, 2, 3, 30, 90) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoice_items VALUES (19, 10, 4, 1, 20, 20) ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 5296 (class 0 OID 28057)
+-- Dependencies: 256
+-- Data for Name: invoices; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.invoices VALUES (1, 'INV-20260326215036-0', '2026-03-26 21:50:36.875524', 'Bob Johnson', 150, 1, 3, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoices VALUES (2, 'INV-20260328215036-1', '2026-03-28 21:50:36.879069', 'John Doe', 145, 2, 3, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoices VALUES (3, 'INV-20260331215036-2', '2026-03-31 21:50:36.884093', 'Alice Williams', 20, 1, 3, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoices VALUES (4, 'INV-20260327215036-3', '2026-03-27 21:50:36.886099', 'Jane Smith', 110, 2, 3, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoices VALUES (5, 'INV-20260327215036-4', '2026-03-27 21:50:36.8871', 'Alice Williams', 60, 1, 3, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoices VALUES (6, 'INV-20260330215036-5', '2026-03-30 21:50:36.888225', 'Alice Williams', 80, 1, 3, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoices VALUES (7, 'INV-20260325215036-6', '2026-03-25 21:50:36.890232', 'Bob Johnson', 50, 2, 3, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoices VALUES (8, 'INV-20260329215036-7', '2026-03-29 21:50:36.891745', 'Charlie Brown', 150, 2, 3, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoices VALUES (9, 'INV-20260330215036-8', '2026-03-30 21:50:36.893751', 'Jane Smith', 150, 1, 3, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.invoices VALUES (10, 'INV-20260330215036-9', '2026-03-30 21:50:36.894752', 'Bob Johnson', 210, 2, 3, 'A', NULL) ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 5274 (class 0 OID 27864)
+-- Dependencies: 234
+-- Data for Name: locations; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.locations VALUES (1, 'Main Street Bay', '123 Main St, City', NULL, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.locations VALUES (2, 'Downtown Bay', '456 Downtown Ave, City', NULL, 'A', NULL) ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 5300 (class 0 OID 28098)
+-- Dependencies: 260
+-- Data for Name: order_items; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5286 (class 0 OID 27968)
+-- Dependencies: 246
+-- Data for Name: orders; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5288 (class 0 OID 27985)
+-- Dependencies: 248
+-- Data for Name: password_reset_tokens; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5266 (class 0 OID 27791)
+-- Dependencies: 226
+-- Data for Name: payment_methods; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5262 (class 0 OID 27765)
+-- Dependencies: 222
+-- Data for Name: permissions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.permissions VALUES (1, 'manage_users', 'Manage users and roles') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (2, 'add_invoice', 'Add invoices') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (3, 'edit_invoice', 'Edit invoices') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (4, 'delete_invoice', 'Delete invoices') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (5, 'add_product', 'Add products') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (6, 'edit_product', 'Edit products') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (7, 'delete_product', 'Delete products') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (8, 'add_service', 'Add services') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (9, 'edit_service', 'Edit services') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (10, 'delete_service', 'Delete services') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (11, 'edit_theme', 'Edit theme options') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (12, 'add_bay', 'Add washing bays') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (13, 'edit_bay', 'Edit washing bays') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (14, 'delete_bay', 'Delete washing bays') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (15, 'view_reports', 'View sales reports') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (16, 'view_products', 'View products and services') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (17, 'manage_cart', 'Manage shopping cart') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (18, 'place_order', 'Place product orders') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (19, 'reserve_service', 'Reserve car wash services') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (20, 'view_own_orders', 'View own orders and reservations') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (21, 'manage_orders', 'Manage all orders') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions VALUES (22, 'manage_queue', 'Manage service queue') ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 5276 (class 0 OID 27881)
+-- Dependencies: 236
+-- Data for Name: products_services; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.products_services VALUES (1, NULL, NULL, 'Basic Wash', 15, 'Exterior wash only', 'service', NULL, NULL, NULL, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.products_services VALUES (2, NULL, NULL, 'Premium Wash', 30, 'Exterior + Interior', 'service', NULL, NULL, NULL, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.products_services VALUES (3, NULL, NULL, 'Deluxe Wash', 50, 'Full detail service', 'service', NULL, NULL, NULL, 'A', NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.products_services VALUES (4, NULL, NULL, 'Wax Treatment', 20, 'Protective wax coating', 'product', NULL, NULL, NULL, 'A', NULL) ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 5284 (class 0 OID 27952)
+-- Dependencies: 244
+-- Data for Name: reports_cache; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5302 (class 0 OID 28117)
+-- Dependencies: 262
+-- Data for Name: reservations; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5267 (class 0 OID 27803)
+-- Dependencies: 227
+-- Data for Name: role_permissions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.role_permissions VALUES (1, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 8) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 8) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 7) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 7) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 9) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 9) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 6) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 6) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 11) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 11) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 5) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 5) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 22) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 22) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 4) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 4) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 14) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 14) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 3) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 3) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 15) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 15) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (3, 15) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (3, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 16) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 16) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (4, 16) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 17) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 17) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (4, 17) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 18) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 18) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (4, 18) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 19) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 19) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (4, 19) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 20) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 20) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (4, 20) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 13) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 13) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 21) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 21) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 12) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 12) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (1, 1) ON CONFLICT DO NOTHING;
+INSERT INTO public.role_permissions VALUES (2, 1) ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 5294 (class 0 OID 28041)
+-- Dependencies: 254
+-- Data for Name: role_sidebar_settings; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5260 (class 0 OID 27752)
+-- Dependencies: 220
+-- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.roles VALUES (1, 'admin', 'Full system access') ON CONFLICT DO NOTHING;
+INSERT INTO public.roles VALUES (2, 'owner', 'Business owner access') ON CONFLICT DO NOTHING;
+INSERT INTO public.roles VALUES (3, 'staff', 'Limited staff access') ON CONFLICT DO NOTHING;
+INSERT INTO public.roles VALUES (4, 'client', 'Customer access') ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 5278 (class 0 OID 27900)
+-- Dependencies: 238
+-- Data for Name: settings_theme_selection; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5272 (class 0 OID 27848)
+-- Dependencies: 232
+-- Data for Name: user_preferences; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5270 (class 0 OID 27830)
+-- Dependencies: 230
+-- Data for Name: user_profiles; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 5268 (class 0 OID 27816)
+-- Dependencies: 228
+-- Data for Name: user_roles; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.user_roles VALUES (1, 3) ON CONFLICT DO NOTHING;
+INSERT INTO public.user_roles VALUES (2, 4) ON CONFLICT DO NOTHING;
+INSERT INTO public.user_roles VALUES (3, 1) ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 5264 (class 0 OID 27778)
+-- Dependencies: 224
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.users VALUES (1, 'demo@carwash.com', '$2b$12$A9xZNgPdj6QHTD8epdlwDOgLo0kfBgtRR/3rVAga/e.5xbRIlj4VK', true, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.users VALUES (2, 'client@carwash.com', '$2b$12$BcVWHlabOc93uieVUN.J1eE9tbaBZluuIQ3SAg2qzZjyWdByWEdXG', true, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
+INSERT INTO public.users VALUES (3, 'admin@carwash.com', '$2b$12$4X2vQnV1RdESs5RJE2.fuuPL5NhEbgFrUR2mtS/T5AxqyIF2c621.', false, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
+
+
+--
+-- TOC entry 5334 (class 0 OID 0)
+-- Dependencies: 239
+-- Name: business_info_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.business_info_id_seq', 1, false);
+
+
+--
+-- TOC entry 5335 (class 0 OID 0)
+-- Dependencies: 257
+-- Name: cart_items_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.cart_items_id_seq', 1, false);
+
+
+--
+-- TOC entry 5336 (class 0 OID 0)
+-- Dependencies: 251
+-- Name: dashboard_modules_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.dashboard_modules_id_seq', 1, false);
+
+
+--
+-- TOC entry 5337 (class 0 OID 0)
+-- Dependencies: 249
+-- Name: dashboard_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.dashboard_settings_id_seq', 1, false);
+
+
+--
+-- TOC entry 5338 (class 0 OID 0)
+-- Dependencies: 241
+-- Name: invoice_customization_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.invoice_customization_id_seq', 1, false);
+
+
+--
+-- TOC entry 5339 (class 0 OID 0)
+-- Dependencies: 263
+-- Name: invoice_items_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.invoice_items_id_seq', 19, true);
+
+
+--
+-- TOC entry 5340 (class 0 OID 0)
+-- Dependencies: 255
+-- Name: invoices_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.invoices_id_seq', 10, true);
+
+
+--
+-- TOC entry 5341 (class 0 OID 0)
+-- Dependencies: 233
+-- Name: locations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.locations_id_seq', 2, true);
+
+
+--
+-- TOC entry 5342 (class 0 OID 0)
+-- Dependencies: 259
+-- Name: order_items_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.order_items_id_seq', 1, false);
+
+
+--
+-- TOC entry 5343 (class 0 OID 0)
+-- Dependencies: 245
+-- Name: orders_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.orders_id_seq', 1, false);
+
+
+--
+-- TOC entry 5344 (class 0 OID 0)
+-- Dependencies: 247
+-- Name: password_reset_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.password_reset_tokens_id_seq', 1, false);
+
+
+--
+-- TOC entry 5345 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: payment_methods_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.payment_methods_id_seq', 1, false);
+
+
+--
+-- TOC entry 5346 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.permissions_id_seq', 22, true);
+
+
+--
+-- TOC entry 5347 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: products_services_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.products_services_id_seq', 4, true);
+
+
+--
+-- TOC entry 5348 (class 0 OID 0)
+-- Dependencies: 243
+-- Name: reports_cache_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.reports_cache_id_seq', 1, false);
+
+
+--
+-- TOC entry 5349 (class 0 OID 0)
+-- Dependencies: 261
+-- Name: reservations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.reservations_id_seq', 1, false);
+
+
+--
+-- TOC entry 5350 (class 0 OID 0)
+-- Dependencies: 253
+-- Name: role_sidebar_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.role_sidebar_settings_id_seq', 1, false);
+
+
+--
+-- TOC entry 5351 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.roles_id_seq', 4, true);
+
+
+--
+-- TOC entry 5352 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: settings_theme_selection_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.settings_theme_selection_id_seq', 1, false);
+
+
+--
+-- TOC entry 5353 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: user_preferences_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.user_preferences_id_seq', 1, false);
+
+
+--
+-- TOC entry 5354 (class 0 OID 0)
+-- Dependencies: 229
+-- Name: user_profiles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.user_profiles_id_seq', 1, false);
+
+
+--
+-- TOC entry 5355 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 3, true);
+
+
+--
+-- TOC entry 5037 (class 2606 OID 27924)
+-- Name: business_info business_info_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.business_info
+    ADD CONSTRAINT business_info_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5039 (class 2606 OID 27926)
+-- Name: business_info business_info_user_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.business_info
+    ADD CONSTRAINT business_info_user_id_key UNIQUE (user_id);
+
+
+--
+-- TOC entry 5072 (class 2606 OID 28085)
+-- Name: cart_items cart_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart_items
+    ADD CONSTRAINT cart_items_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5062 (class 2606 OID 28033)
+-- Name: dashboard_modules dashboard_modules_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.dashboard_modules
+    ADD CONSTRAINT dashboard_modules_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5059 (class 2606 OID 28016)
+-- Name: dashboard_settings dashboard_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.dashboard_settings
+    ADD CONSTRAINT dashboard_settings_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5042 (class 2606 OID 27942)
+-- Name: invoice_customization invoice_customization_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoice_customization
+    ADD CONSTRAINT invoice_customization_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5044 (class 2606 OID 27944)
+-- Name: invoice_customization invoice_customization_user_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoice_customization
+    ADD CONSTRAINT invoice_customization_user_id_key UNIQUE (user_id);
+
+
+--
+-- TOC entry 5082 (class 2606 OID 28150)
+-- Name: invoice_items invoice_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoice_items
+    ADD CONSTRAINT invoice_items_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5068 (class 2606 OID 28065)
+-- Name: invoices invoices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT invoices_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5026 (class 2606 OID 27872)
+-- Name: locations locations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.locations
+    ADD CONSTRAINT locations_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5076 (class 2606 OID 28104)
+-- Name: order_items order_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.order_items
+    ADD CONSTRAINT order_items_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5052 (class 2606 OID 27976)
+-- Name: orders orders_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT orders_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5057 (class 2606 OID 27997)
+-- Name: password_reset_tokens password_reset_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.password_reset_tokens
+    ADD CONSTRAINT password_reset_tokens_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5012 (class 2606 OID 27801)
+-- Name: payment_methods payment_methods_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.payment_methods
+    ADD CONSTRAINT payment_methods_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5002 (class 2606 OID 27775)
+-- Name: permissions permissions_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.permissions
+    ADD CONSTRAINT permissions_name_key UNIQUE (name);
+
+
+--
+-- TOC entry 5004 (class 2606 OID 27773)
+-- Name: permissions permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.permissions
+    ADD CONSTRAINT permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5032 (class 2606 OID 27889)
+-- Name: products_services products_services_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.products_services
+    ADD CONSTRAINT products_services_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5048 (class 2606 OID 27960)
+-- Name: reports_cache reports_cache_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reports_cache
+    ADD CONSTRAINT reports_cache_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5080 (class 2606 OID 28125)
+-- Name: reservations reservations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reservations
+    ADD CONSTRAINT reservations_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5066 (class 2606 OID 28049)
+-- Name: role_sidebar_settings role_sidebar_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.role_sidebar_settings
+    ADD CONSTRAINT role_sidebar_settings_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4997 (class 2606 OID 27762)
+-- Name: roles roles_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_name_key UNIQUE (name);
+
+
+--
+-- TOC entry 4999 (class 2606 OID 27760)
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5035 (class 2606 OID 27908)
+-- Name: settings_theme_selection settings_theme_selection_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.settings_theme_selection
+    ADD CONSTRAINT settings_theme_selection_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5020 (class 2606 OID 27854)
+-- Name: user_preferences user_preferences_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_preferences
+    ADD CONSTRAINT user_preferences_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5022 (class 2606 OID 27856)
+-- Name: user_preferences user_preferences_user_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_preferences
+    ADD CONSTRAINT user_preferences_user_id_key UNIQUE (user_id);
+
+
+--
+-- TOC entry 5015 (class 2606 OID 27838)
+-- Name: user_profiles user_profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_profiles
+    ADD CONSTRAINT user_profiles_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5017 (class 2606 OID 27840)
+-- Name: user_profiles user_profiles_user_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_profiles
+    ADD CONSTRAINT user_profiles_user_id_key UNIQUE (user_id);
+
+
+--
+-- TOC entry 5009 (class 2606 OID 27786)
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5040 (class 1259 OID 27932)
+-- Name: ix_business_info_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_business_info_id ON public.business_info USING btree (id);
+
+
+--
+-- TOC entry 5073 (class 1259 OID 28096)
+-- Name: ix_cart_items_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_cart_items_id ON public.cart_items USING btree (id);
+
+
+--
+-- TOC entry 5063 (class 1259 OID 28039)
+-- Name: ix_dashboard_modules_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_dashboard_modules_id ON public.dashboard_modules USING btree (id);
+
+
+--
+-- TOC entry 5060 (class 1259 OID 28022)
+-- Name: ix_dashboard_settings_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_dashboard_settings_id ON public.dashboard_settings USING btree (id);
+
+
+--
+-- TOC entry 5045 (class 1259 OID 27950)
+-- Name: ix_invoice_customization_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_invoice_customization_id ON public.invoice_customization USING btree (id);
+
+
+--
+-- TOC entry 5083 (class 1259 OID 28161)
+-- Name: ix_invoice_items_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_invoice_items_id ON public.invoice_items USING btree (id);
+
+
+--
+-- TOC entry 5069 (class 1259 OID 28077)
+-- Name: ix_invoices_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_invoices_id ON public.invoices USING btree (id);
+
+
+--
+-- TOC entry 5070 (class 1259 OID 28076)
+-- Name: ix_invoices_invoice_number; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ix_invoices_invoice_number ON public.invoices USING btree (invoice_number);
+
+
+--
+-- TOC entry 5023 (class 1259 OID 27879)
+-- Name: ix_locations_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_locations_id ON public.locations USING btree (id);
+
+
+--
+-- TOC entry 5024 (class 1259 OID 27878)
+-- Name: ix_locations_name; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_locations_name ON public.locations USING btree (name);
+
+
+--
+-- TOC entry 5074 (class 1259 OID 28115)
+-- Name: ix_order_items_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_order_items_id ON public.order_items USING btree (id);
+
+
+--
+-- TOC entry 5049 (class 1259 OID 27983)
+-- Name: ix_orders_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_orders_id ON public.orders USING btree (id);
+
+
+--
+-- TOC entry 5050 (class 1259 OID 27982)
+-- Name: ix_orders_order_number; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ix_orders_order_number ON public.orders USING btree (order_number);
+
+
+--
+-- TOC entry 5053 (class 1259 OID 28005)
+-- Name: ix_password_reset_tokens_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_password_reset_tokens_id ON public.password_reset_tokens USING btree (id);
+
+
+--
+-- TOC entry 5054 (class 1259 OID 28003)
+-- Name: ix_password_reset_tokens_otp_code; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_password_reset_tokens_otp_code ON public.password_reset_tokens USING btree (otp_code);
+
+
+--
+-- TOC entry 5055 (class 1259 OID 28004)
+-- Name: ix_password_reset_tokens_token; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ix_password_reset_tokens_token ON public.password_reset_tokens USING btree (token);
+
+
+--
+-- TOC entry 5010 (class 1259 OID 27802)
+-- Name: ix_payment_methods_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_payment_methods_id ON public.payment_methods USING btree (id);
+
+
+--
+-- TOC entry 5000 (class 1259 OID 27776)
+-- Name: ix_permissions_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_permissions_id ON public.permissions USING btree (id);
+
+
+--
+-- TOC entry 5027 (class 1259 OID 27897)
+-- Name: ix_products_services_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_products_services_id ON public.products_services USING btree (id);
+
+
+--
+-- TOC entry 5028 (class 1259 OID 27898)
+-- Name: ix_products_services_name; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_products_services_name ON public.products_services USING btree (name);
+
+
+--
+-- TOC entry 5029 (class 1259 OID 27896)
+-- Name: ix_products_services_product_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_products_services_product_id ON public.products_services USING btree (product_id);
+
+
+--
+-- TOC entry 5030 (class 1259 OID 27895)
+-- Name: ix_products_services_service_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_products_services_service_id ON public.products_services USING btree (service_id);
+
+
+--
+-- TOC entry 5046 (class 1259 OID 27966)
+-- Name: ix_reports_cache_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_reports_cache_id ON public.reports_cache USING btree (id);
+
+
+--
+-- TOC entry 5077 (class 1259 OID 28141)
+-- Name: ix_reservations_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_reservations_id ON public.reservations USING btree (id);
+
+
+--
+-- TOC entry 5078 (class 1259 OID 28142)
+-- Name: ix_reservations_reservation_number; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ix_reservations_reservation_number ON public.reservations USING btree (reservation_number);
+
+
+--
+-- TOC entry 5064 (class 1259 OID 28055)
+-- Name: ix_role_sidebar_settings_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_role_sidebar_settings_id ON public.role_sidebar_settings USING btree (id);
+
+
+--
+-- TOC entry 4995 (class 1259 OID 27763)
+-- Name: ix_roles_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_roles_id ON public.roles USING btree (id);
+
+
+--
+-- TOC entry 5033 (class 1259 OID 27914)
+-- Name: ix_settings_theme_selection_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_settings_theme_selection_id ON public.settings_theme_selection USING btree (id);
+
+
+--
+-- TOC entry 5018 (class 1259 OID 27862)
+-- Name: ix_user_preferences_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_user_preferences_id ON public.user_preferences USING btree (id);
+
+
+--
+-- TOC entry 5013 (class 1259 OID 27846)
+-- Name: ix_user_profiles_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_user_profiles_id ON public.user_profiles USING btree (id);
+
+
+--
+-- TOC entry 5005 (class 1259 OID 27787)
+-- Name: ix_users_business_number; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_users_business_number ON public.users USING btree (business_number);
+
+
+--
+-- TOC entry 5006 (class 1259 OID 27789)
+-- Name: ix_users_email; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ix_users_email ON public.users USING btree (email);
+
+
+--
+-- TOC entry 5007 (class 1259 OID 27788)
+-- Name: ix_users_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_users_id ON public.users USING btree (id);
+
+
+--
+-- TOC entry 5093 (class 2606 OID 27927)
+-- Name: business_info business_info_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.business_info
+    ADD CONSTRAINT business_info_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5103 (class 2606 OID 28086)
+-- Name: cart_items cart_items_client_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart_items
+    ADD CONSTRAINT cart_items_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5104 (class 2606 OID 28091)
+-- Name: cart_items cart_items_product_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart_items
+    ADD CONSTRAINT cart_items_product_service_id_fkey FOREIGN KEY (product_service_id) REFERENCES public.products_services(id);
+
+
+--
+-- TOC entry 5099 (class 2606 OID 28034)
+-- Name: dashboard_modules dashboard_modules_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.dashboard_modules
+    ADD CONSTRAINT dashboard_modules_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5098 (class 2606 OID 28017)
+-- Name: dashboard_settings dashboard_settings_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.dashboard_settings
+    ADD CONSTRAINT dashboard_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5094 (class 2606 OID 27945)
+-- Name: invoice_customization invoice_customization_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoice_customization
+    ADD CONSTRAINT invoice_customization_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5110 (class 2606 OID 28151)
+-- Name: invoice_items invoice_items_invoice_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoice_items
+    ADD CONSTRAINT invoice_items_invoice_id_fkey FOREIGN KEY (invoice_id) REFERENCES public.invoices(id);
+
+
+--
+-- TOC entry 5111 (class 2606 OID 28156)
+-- Name: invoice_items invoice_items_product_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoice_items
+    ADD CONSTRAINT invoice_items_product_service_id_fkey FOREIGN KEY (product_service_id) REFERENCES public.products_services(id);
+
+
+--
+-- TOC entry 5101 (class 2606 OID 28066)
+-- Name: invoices invoices_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT invoices_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id);
+
+
+--
+-- TOC entry 5102 (class 2606 OID 28071)
+-- Name: invoices invoices_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT invoices_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5090 (class 2606 OID 27873)
+-- Name: locations locations_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.locations
+    ADD CONSTRAINT locations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5105 (class 2606 OID 28105)
+-- Name: order_items order_items_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.order_items
+    ADD CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id);
+
+
+--
+-- TOC entry 5106 (class 2606 OID 28110)
+-- Name: order_items order_items_product_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.order_items
+    ADD CONSTRAINT order_items_product_service_id_fkey FOREIGN KEY (product_service_id) REFERENCES public.products_services(id);
+
+
+--
+-- TOC entry 5096 (class 2606 OID 27977)
+-- Name: orders orders_client_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT orders_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5097 (class 2606 OID 27998)
+-- Name: password_reset_tokens password_reset_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.password_reset_tokens
+    ADD CONSTRAINT password_reset_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5091 (class 2606 OID 27890)
+-- Name: products_services products_services_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.products_services
+    ADD CONSTRAINT products_services_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5095 (class 2606 OID 27961)
+-- Name: reports_cache reports_cache_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reports_cache
+    ADD CONSTRAINT reports_cache_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5107 (class 2606 OID 28126)
+-- Name: reservations reservations_client_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reservations
+    ADD CONSTRAINT reservations_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5108 (class 2606 OID 28136)
+-- Name: reservations reservations_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reservations
+    ADD CONSTRAINT reservations_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id);
+
+
+--
+-- TOC entry 5109 (class 2606 OID 28131)
+-- Name: reservations reservations_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reservations
+    ADD CONSTRAINT reservations_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.products_services(id);
+
+
+--
+-- TOC entry 5084 (class 2606 OID 27811)
+-- Name: role_permissions role_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.role_permissions
+    ADD CONSTRAINT role_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES public.permissions(id);
+
+
+--
+-- TOC entry 5085 (class 2606 OID 27806)
+-- Name: role_permissions role_permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.role_permissions
+    ADD CONSTRAINT role_permissions_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(id);
+
+
+--
+-- TOC entry 5100 (class 2606 OID 28050)
+-- Name: role_sidebar_settings role_sidebar_settings_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.role_sidebar_settings
+    ADD CONSTRAINT role_sidebar_settings_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(id);
+
+
+--
+-- TOC entry 5092 (class 2606 OID 27909)
+-- Name: settings_theme_selection settings_theme_selection_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.settings_theme_selection
+    ADD CONSTRAINT settings_theme_selection_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5089 (class 2606 OID 27857)
+-- Name: user_preferences user_preferences_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_preferences
+    ADD CONSTRAINT user_preferences_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5088 (class 2606 OID 27841)
+-- Name: user_profiles user_profiles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_profiles
+    ADD CONSTRAINT user_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- TOC entry 5086 (class 2606 OID 27824)
+-- Name: user_roles user_roles_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_roles
+    ADD CONSTRAINT user_roles_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(id);
+
+
+--
+-- TOC entry 5087 (class 2606 OID 27819)
+-- Name: user_roles user_roles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_roles
+    ADD CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+-- Completed on 2026-05-04 23:35:07
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict HA5O12fkyg5TTswfv0RCxiQe5F8AtfZsGNTBSTKBffxMGah2bmqd6jgB3dTaX62
+

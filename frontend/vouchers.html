@@ -220,7 +220,16 @@
     </style>
 </head>
 <body>
-
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
+        </div>
+        <ul>
+            <!-- Tabs are dynamically generated in menu.js -->
+        </ul>
+    </nav>
+    <div class="content" style="padding: 0;">
 <header class="page-header">
     <button class="back-btn" onclick="history.back()">←</button>
     <div class="header-main-content">
@@ -407,5 +416,7 @@
 
     loadCoupons();
 </script>
+    <script src="/js/menu.js"></script>
+    </div>
 </body>
 </html>

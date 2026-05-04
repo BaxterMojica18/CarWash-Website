@@ -2110,3 +2110,120 @@ Prevents the cart content from stretching awkwardly when the sidebar is visible 
 - ✅ Old emoji mobile navs removed from all three client pages
 - ✅ Cart desktop layout fixed — constrained to 960px centered
 - ✅ Render hotfix — `is_active` and `deleted_at` columns added to `start.sh` migrations
+
+---
+
+## Latest Updates (Session 11)
+
+> **Version:** 6.7.0 (Public: V2.7) | **Branch:** `feature/top-navbar-dashboard-coupon-ui`
+
+---
+
+### 🔝 Top Navbar — Global Injection via `menu.js`
+**Status:** ✅ Completed
+
+#### Changes (`frontend/js/menu.js`):
+- Added `injectTopNavbar()` function — dynamically injects a fixed top navbar into every admin/staff page via `menu.js` (no HTML changes needed per page)
+- Top navbar contains:
+  - Left: business logo + business name (pulled from `topNavbarLogo` / `topNavbarName`, synced with branding API)
+  - Right: expandable search field (slide-in animation), notification bell with badge, settings gear icon, profile dropdown (role name + chevron)
+- Profile dropdown in top navbar: Settings link + Logout link with SVG icons
+- Click-outside listener closes the profile dropdown
+- `toggleSearchField()` — expands/collapses the search input with smooth width transition
+- Business branding (`loadBranding()`, `applyBrandingFromStorage()`) updated to target `topNavbarName` and `topNavbarLogo` instead of `sidebarName` / `sidebarLogo`
+- Old per-page `header .profile-dropdown` removed on inject to avoid duplication
+- Sidebar logo area hidden (`display: none !important`) — branding now lives in top navbar only
+- Sidebar `ul` gets `margin-top: 40px` to clear the top navbar overlap
+- Collapse sidebar button added at bottom of sidebar with chevron icon + "COLLAPSE SIDEBAR" label (hidden when collapsed)
+- Sidebar divider line added above collapse button
+- Logout removed from sidebar tab list — now only in top navbar profile dropdown
+- Coupons sidebar tab now links to `coupon-management.html` instead of `coupons.html`
+
+#### Changes (`frontend/css/style.css`):
+- Added full `.top-navbar` styles: fixed position, full width, 60px height, sidebar color background
+- `.content` padding updated to `90px 30px 30px 30px` (top padding accounts for fixed navbar)
+- Mobile `.content` padding updated to `80px 15px 15px 15px`
+- Client page `.content` padding updated to `80px 16px 80px 16px`
+- `.sidebar` changed from `position: relative` to `position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column`
+- `.sidebar .logo` set to `display: none !important` (branding moved to top navbar)
+- `.sidebar ul` gets `flex: 1; overflow-y: auto; margin-top: 40px`
+- `.sidebar-close` button repositioned to `top: 75px`
+- `.content > header .profile-dropdown` hidden globally (replaced by top navbar)
+- Added `.sidebar-divider`, `.sidebar-collapse-btn` styles
+- Added `.top-navbar-left/right/center`, `.navbar-icon-btn`, `.navbar-badge`, `.profile-btn`, `.profile-avatar`, `.profile-name`, `.profile-menu`, `.profile-menu-divider` styles
+- Duplicate `:root` block removed (CSS cleanup)
+- `body`, `*`, `.login-page`, `.login-container` base styles moved to top of file
+
+---
+
+### 📊 Dashboard Stat Cards — UI Overhaul
+**Status:** ✅ Completed
+
+#### Changes (`frontend/dashboard.html`):
+- Stat cards redesigned with new layout: icon top-right, label + value bottom
+- Each card has a colored top accent bar via `--card-accent` CSS variable
+- SVG icons per card (no emoji): credit card, pulse line, dollar sign, clock, document, list, info circle, users
+- 8 stat cards total (was 4): Today's Revenue, Monthly Revenue, Cars Washed, Active Bays, Pending Invoices, Completed Orders, Average Rating, Total Clients
+- Stats grid changed to `repeat(4, 1fr)` with responsive breakpoints (2-col at 1200px, 1-col at 768px)
+
+#### Changes (`frontend/css/style.css`):
+- `.stat-card` redesigned: `border-radius: 8px`, `box-shadow: 0 4px 12px`, hover lift effect, `::before` pseudo-element for colored top border
+- `.stat-header` flex row for icon placement
+- `.stat-icon` 36×36px rounded box with accent color background
+- `.stat-card h3` — uppercase, 11px, letter-spacing, opacity 0.6
+- `.stat-value` — 28px, font-weight 800
+
+---
+
+### 🎟️ Coupon Management — UI Overhaul
+**Status:** ✅ Completed
+
+#### Changes (`frontend/coupon-management.html`):
+- Migrated from generic `layout/sidebar-container` structure to standard sidebar + `<main class="content">` pattern (matches all other admin pages)
+- Added proper profile dropdown in header (Edit Profile, Settings, Logout with HTML entities)
+- Added desktop row-list view (`coupon-list`) alongside existing mobile card grid (`coupon-grid`)
+  - Row-list hidden on mobile, card-grid hidden on desktop (CSS media query at 900px)
+  - Row-list uses ticket-stub style: left colored stub (code + discount + type), center body (description + 4 stats), right actions (status badge + edit/toggle/delete buttons)
+- All emoji in JS replaced with HTML entities (`&#8369;` for ₱, `&#8734;` for ∞, `&#9998;` for ✏, etc.)
+- Stats row color hardcoding removed — uses theme variables
+- Search placeholder emoji removed
+
+#### Changes (`frontend/css/style.css`):
+- Added coupon row-list styles: `.coupon-list`, `.coupon-row`, `.crow-stub`, `.crow-code`, `.crow-discount`, `.crow-type`, `.crow-body`, `.crow-desc`, `.crow-stats`, `.crow-stat`, `.crow-stat-label`, `.crow-stat-val`, `.crow-actions`, `.btn-row`
+- Responsive toggle: `coupon-grid` shown on mobile, `coupon-list` shown on desktop (≥900px)
+
+---
+
+### 🔧 Other Fixes
+- `app/permissions.py` — updated permission checks
+- `app/routers/cart.py` — cart logic fixes
+- `app/routers/client.py` — client endpoint fixes
+- `frontend/client-dashboard.html` — updated for top navbar compatibility
+- `frontend/edit-dashboard.html` — updated for top navbar compatibility
+- `frontend/flash-sale-management.html` — updated for top navbar compatibility
+- `frontend/reserve.html`, `frontend/shop.html`, `frontend/vouchers.html` — minor nav/padding fixes
+
+#### Files Modified:
+- ✅ `frontend/js/menu.js` — top navbar injection, branding targets, collapse button, logout removal from sidebar
+- ✅ `frontend/css/style.css` — top navbar styles, stat card redesign, coupon row-list styles, layout fixes
+- ✅ `frontend/dashboard.html` — 8 stat cards with SVG icons and accent colors
+- ✅ `frontend/coupon-management.html` — standard sidebar structure, desktop row-list view, HTML entities
+- ✅ `app/permissions.py` — permission check updates
+- ✅ `app/routers/cart.py` — cart fixes
+- ✅ `app/routers/client.py` — client fixes
+- ✅ `frontend/client-dashboard.html`, `edit-dashboard.html`, `flash-sale-management.html`, `reserve.html`, `shop.html`, `vouchers.html` — compatibility updates
+
+---
+
+## Change Log
+
+### Version 6.7.0 / V2.7 (Session 11)
+- ✅ Global top navbar injected via `menu.js` — no per-page HTML changes needed
+- ✅ Business branding (logo + name) moved from sidebar to top navbar
+- ✅ Sidebar collapse button added at bottom with chevron icon
+- ✅ Logout moved from sidebar to top navbar profile dropdown
+- ✅ Dashboard stat cards redesigned — 8 cards, SVG icons, accent colors, 4-column grid
+- ✅ Coupon management page migrated to standard sidebar layout
+- ✅ Coupon desktop row-list view added (ticket-stub style)
+- ✅ All emoji in coupon management replaced with HTML entities
+- ✅ CSS base styles cleaned up (duplicate `:root` removed)

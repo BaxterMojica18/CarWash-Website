@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -915,16 +915,13 @@
         const show = cartCount > 0;
 
         const hb = document.getElementById('headerCartBadge');
-        hb.textContent = txt;
-        hb.classList.toggle('hide', !show);
+        if (hb) { hb.textContent = txt; hb.classList.toggle('hide', !show); }
 
         const fb = document.getElementById('floatingBadge');
-        fb.textContent = txt;
-        fb.classList.toggle('hide', !show);
+        if (fb) { fb.textContent = txt; fb.classList.toggle('hide', !show); }
 
         const mb = document.getElementById('mobileNavBadge');
-        mb.textContent = txt;
-        mb.classList.toggle('hide', !show);
+        if (mb) { mb.textContent = txt; mb.classList.toggle('hide', !show); }
     }
 
     // ── Filter & Sort ──────────────────────────────────────────────────────

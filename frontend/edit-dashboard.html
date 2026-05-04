@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -329,17 +329,26 @@
                         <option value="revenue_semiannual">Semi-Annual Revenue</option>
                         <option value="revenue_annual">Annual Revenue</option>
                     </optgroup>
-                    <optgroup label="Invoices">
+                    <optgroup label="Invoices & Orders">
                         <option value="invoice_total">Total Invoices</option>
                         <option value="invoice_average">Average Invoice Value</option>
+                        <option value="orders_completed">Completed Orders</option>
+                        <option value="queue_pending">Pending Appointments</option>
                     </optgroup>
-                    <optgroup label="Services">
+                    <optgroup label="Services & Products">
                         <option value="service_total">Total Services</option>
                         <option value="service_popular">Most Popular Service</option>
-                    </optgroup>
-                    <optgroup label="Products">
                         <option value="product_total">Total Products Sold</option>
                         <option value="product_popular">Top Product</option>
+                    </optgroup>
+                    <optgroup label="Clients & Marketing">
+                        <option value="client_total">Total Clients</option>
+                        <option value="client_new">New Clients (This Month)</option>
+                        <option value="rating_average">Average Rating</option>
+                        <option value="coupon_used">Coupons Used</option>
+                    </optgroup>
+                    <optgroup label="Operations">
+                        <option value="bay_active">Active Bays</option>
                     </optgroup>
                     <optgroup label="Other">
                         <option value="recent_activity">Recent Activity</option>
@@ -464,10 +473,17 @@
                 'revenue_annual': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Annual Revenue</h3><p class="stat-value">$153,600</p><span style="color: #28a745; font-size: 12px;">Year total</span></div>',
                 'invoice_total': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Total Invoices</h3><p class="stat-value">245</p><span style="color: #17a2b8; font-size: 12px;">This month</span></div>',
                 'invoice_average': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Average Invoice</h3><p class="stat-value">$85</p><span style="color: #17a2b8; font-size: 12px;">Per transaction</span></div>',
+                'orders_completed': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Completed Orders</h3><p class="stat-value">124</p><span style="color: #17a2b8; font-size: 12px;">This month</span></div>',
+                'queue_pending': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Pending Appointments</h3><p class="stat-value">7</p><span style="color: #dc3545; font-size: 12px;">Awaiting service</span></div>',
                 'service_total': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Total Services</h3><p class="stat-value">189</p><span style="color: #6f42c1; font-size: 12px;">Services completed</span></div>',
                 'service_popular': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Most Popular Service</h3><p class="stat-value" style="font-size: 20px;">Premium Wash</p><span style="color: #6f42c1; font-size: 12px;">87 times</span></div>',
                 'product_total': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Products Sold</h3><p class="stat-value">456</p><span style="color: #fd7e14; font-size: 12px;">Total units</span></div>',
                 'product_popular': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Top Product</h3><p class="stat-value" style="font-size: 20px;">Car Wax</p><span style="color: #fd7e14; font-size: 12px;">123 sold</span></div>',
+                'client_total': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Total Clients</h3><p class="stat-value">850</p><span style="color: #007bff; font-size: 12px;">Registered users</span></div>',
+                'client_new': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">New Clients</h3><p class="stat-value">45</p><span style="color: #007bff; font-size: 12px;">This month</span></div>',
+                'rating_average': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Average Rating</h3><p class="stat-value">4.8</p><span style="color: #ffc107; font-size: 12px;">From 120 reviews</span></div>',
+                'coupon_used': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Coupons Used</h3><p class="stat-value">1,240</p><span style="color: #e83e8c; font-size: 12px;">Lifetime redemptions</span></div>',
+                'bay_active': '<div class="stat-card"><h3 style="color: #666; font-size: 14px; margin: 0;">Active Bays</h3><p class="stat-value">3 / 5</p><span style="color: #28a745; font-size: 12px;">Currently in use</span></div>',
                 'recent_activity': '<div style="padding: 10px;"><h4 style="margin: 0 0 10px 0;">Recent Activity</h4><ul style="list-style: none; padding: 0; margin: 0;"><li style="padding: 8px; border-bottom: 1px solid #eee; font-size: 13px;">✓ Invoice #1023 created - $85</li><li style="padding: 8px; border-bottom: 1px solid #eee; font-size: 13px;">✓ Bay 2 completed service</li><li style="padding: 8px; border-bottom: 1px solid #eee; font-size: 13px;">✓ New product added</li><li style="padding: 8px; font-size: 13px;">✓ Invoice #1022 paid - $120</li></ul></div>',
                 'chart': '<div style="height: 150px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px; margin-top: 10px;">Chart Placeholder</div>',
                 'table': '<table style="width: 100%; margin-top: 10px; border-collapse: collapse;"><tr style="background: #f8f9fa;"><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Column 1</th><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Column 2</th></tr><tr><td style="padding: 8px; border: 1px solid #ddd;">Data 1</td><td style="padding: 8px; border: 1px solid #ddd;">Data 2</td></tr></table>'

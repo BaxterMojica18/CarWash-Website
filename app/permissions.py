@@ -38,3 +38,22 @@ def is_superadmin(current_user: User = Depends(get_current_user)):
     if "superadmin" not in role_names:
         raise HTTPException(status_code=403, detail="Superadmin access required")
     return current_user
+
+def is_client(current_user: User = Depends(get_current_user)):
+    role_names = [role.name for role in current_user.roles]
+    # A user is a client if they have the client role OR if they don't have any staff/admin roles
+    # (some systems default to client). Let's strictly check for client role and NO staff/admin roles.
+    is_c = "client" in role_names
+    is_staff_admin = any(r in role_names for r in ["staff", "admin", "owner", "superadmin"])
+    
+    if is_staff_admin or not is_c:
+        # If they are staff/admin, they shouldn't access client endpoints
+        raise HTTPException(status_code=403, detail="Client access only")
+        
+    return current_user
+
+def is_staff_or_admin(current_user: User = Depends(get_current_user)):
+    role_names = [role.name for role in current_user.roles]
+    if not any(r in role_names for r in ["staff", "admin", "owner", "superadmin"]):
+        raise HTTPException(status_code=403, detail="Staff or Admin access required")
+    return current_user
