@@ -799,7 +799,10 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 | Phase 1 | ✅ Done | Auth, email, Firebase, sidebar, deployment | ✅ Complete |
 | Phase 2 | ✅ Done | Multi-tenant, Stripe, e-commerce, user sidebar, V2.4 | ✅ Complete |
 | Session 9 | V2.5 | Client shopping experience overhaul | ✅ Done |
-| Session 10 | V2.6 | Admin Side: Voucher CRUD, Flash Sales, Order UI | ⏳ Next |
+| Session 10 | V2.6 | Admin Side: Voucher CRUD, Flash Sales, Order UI | ✅ Done |
+| Session 11 | V2.7 | Top navbar, dashboard stat redesign, coupon UI | ✅ Done |
+| Session 12 | V2.8 | Dashboard grid refinement, dynamic theming, sidebar polish | ✅ Done |
+| Session 13 | V2.9 | Flash sale → shop, coupon → cart, sidebar nav links | ⏳ Next |
 | Phase 3 | V3.x | PWA, advanced dashboard, WebSockets, mobile UX | 📅 Planned |
 | Phase 4 | V4.x | Next.js migration, AI, multi-location, security, payments | 🚀 Future |
 
@@ -955,7 +958,35 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 | SMS Notifications (Twilio) | ⬜ Pending |
 | React + Next.js Frontend | ⬜ Pending |
 
-## 🔜 Next Session (Session 12) — V2.8
+## ✅ Completed in Session 12 *(May 5, 2026)* — V2.8
+
+### 🎨 Dashboard & Grid System Refinement
+- [x] **High-Density Grid (1/6)** — Added `1/6` width (span 2) to the 12-column grid, enabling up to 6 modules per row
+- [x] **Dynamic Theming** — Stat cards inherit owner's sidebar theme via `var(--sidebar-color)`, replacing hardcoded accents
+- [x] **Edit Dashboard UI** — Module editor updated with visual width selector for the new 1/6 size
+
+### 🧭 App Shell & Sidebar Polish
+- [x] **Top Navbar "Edit Dashboard"** — Moved edit entry point from floating button to permanent Top Navbar button (Owner/Admin only)
+- [x] **Role Access Fix** — Case-insensitive role check for Edit Dashboard button (`Owner`, `Admin`, `Superadmin`)
+- [x] **Sidebar Collapse Centering** — Fixed vertical alignment of collapse button in mini/collapsed state
+- [x] **Sub-menu Spacing Fix** — Resolved `.sidebar ul` 40px margin specificity issue; tightened User Management dropdown spacing
+
+### 📊 Current Version: 6.8.0 (Public: V2.8)
+
+## 🔄 Updated Status (Session 12)
+
+| Feature | Status |
+|---------|--------|
+| Dashboard high-density grid (1/6) | ✅ Done |
+| Stat card dynamic theming | ✅ Done |
+| Top Navbar Edit Dashboard button | ✅ Done |
+| Sidebar collapse + sub-menu fixes | ✅ Done |
+| Flash sale linked to shop.html | ⬜ Pending |
+| Coupon validation in cart.html | ⬜ Pending |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| SMS Notifications (Twilio) | ⬜ Pending |
+
+## 🔜 Next Session (Session 13) — V2.9
 
 ### Planned:
 - [ ] Connect flash sales to `shop.html` — show sale badge + discounted price on product cards when a flash sale is active

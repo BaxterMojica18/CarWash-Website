@@ -9,7 +9,7 @@ async function loadDashboard(period = 'weekly') {
         const filteredData = await filterDataByPeriod(invoices, period);
         
         document.querySelector('.stats-grid').innerHTML = `
-            <div class="stat-card" onclick="navigateToReports('${period}')" style="cursor: pointer; --card-accent: #2196f3; --icon-bg: rgba(33, 150, 243, 0.1);">
+            <div class="stat-card" onclick="navigateToReports('${period}')" style="cursor: pointer;">
                 <div class="stat-header">
                     <div class="stat-icon">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 9h20"/></svg>
@@ -20,7 +20,7 @@ async function loadDashboard(period = 'weekly') {
                     <p class="stat-value">$${filteredData.totalRevenue.toFixed(2)}</p>
                 </div>
             </div>
-            <div class="stat-card" onclick="navigateToInvoices('${period}')" style="cursor: pointer; --card-accent: #ffeb3b; --icon-bg: rgba(255, 235, 59, 0.1);">
+            <div class="stat-card" onclick="navigateToInvoices('${period}')" style="cursor: pointer;">
                 <div class="stat-header">
                     <div class="stat-icon">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -31,7 +31,7 @@ async function loadDashboard(period = 'weekly') {
                     <p class="stat-value">${filteredData.totalInvoices}</p>
                 </div>
             </div>
-            <div class="stat-card" onclick="navigateToServices()" style="cursor: pointer; --card-accent: #4caf50; --icon-bg: rgba(76, 175, 80, 0.1);">
+            <div class="stat-card" onclick="navigateToServices()" style="cursor: pointer;">
                 <div class="stat-header">
                     <div class="stat-icon">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
@@ -43,7 +43,7 @@ async function loadDashboard(period = 'weekly') {
                     <p class="stat-subtext">${filteredData.topServiceCount || 0} sold</p>
                 </div>
             </div>
-            <div class="stat-card" onclick="navigateToProducts()" style="cursor: pointer; --card-accent: #9c27b0; --icon-bg: rgba(156, 39, 176, 0.1);">
+            <div class="stat-card" onclick="navigateToProducts()" style="cursor: pointer;">
                 <div class="stat-header">
                     <div class="stat-icon">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
@@ -340,9 +340,7 @@ async function applyDashboardSettings() {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         const meData = await meResponse.json();
-        if (meData.roles && meData.roles.includes('superadmin')) {
-            document.getElementById('floatingEditBtn').style.display = 'block';
-        }
+        // Button moved to top navbar
         
         const response = await fetch(`${API_BASE}/dashboard/settings`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -442,8 +440,8 @@ async function loadCustomModules(layoutType) {
                     iconSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
                 }
 
-                card.style.setProperty('--card-accent', accentColor);
-                card.style.setProperty('--icon-bg', iconBg);
+                // Icons are kept for visual distinction but colors now inherit from sidebar theme
+                // No need to set --card-accent or --icon-bg, they use CSS variable fallbacks
                 
                 if (mod.width === 'half') {
                     card.style.gridColumn = 'span 6';
@@ -451,13 +449,15 @@ async function loadCustomModules(layoutType) {
                     card.style.gridColumn = 'span 4';
                 } else if (mod.width === 'quarter') {
                     card.style.gridColumn = 'span 3';
+                } else if (mod.width === 'sixth') {
+                    card.style.gridColumn = 'span 2';
                 } else {
                     card.style.gridColumn = 'span 12';
                 }
                 
                 const cardContent = (title, val, sub) => `
                     <div class="stat-header">
-                        <div class="stat-icon" style="color: ${accentColor};">${iconSvg}</div>
+                        <div class="stat-icon">${iconSvg}</div>
                     </div>
                     <div>
                         <h3>${title}</h3>

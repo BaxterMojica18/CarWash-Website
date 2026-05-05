@@ -1056,6 +1056,7 @@ For issues or questions:
 
 > **Version:** 5.0.0 | **Branch:** main
 
+
 ---
 
 ### 🎨 UI: Sidebar Icons, Profile Dropdown & Filter Centering
@@ -2227,3 +2228,21 @@ Prevents the cart content from stretching awkwardly when the sidebar is visible 
 - ✅ Coupon desktop row-list view added (ticket-stub style)
 - ✅ All emoji in coupon management replaced with HTML entities
 - ✅ CSS base styles cleaned up (duplicate `:root` removed)
+
+---
+
+## ✅ Completed — Session 12 *(May 5, 2026)*
+
+### 🎨 Dashboard & Grid System Refinement
+- [x] **High-Density Grid (1/6)** — Added support for `1/6` width (span 2) in the 12-column grid system, enabling high-density dashboard layouts with up to 6 modules per row.
+- [x] **Dynamic Theming** — Stat cards now fully inherit the owner's sidebar theme via CSS variables (`var(--sidebar-color)`), replacing hardcoded red/green/blue accents.
+- [x] **Edit Dashboard UI** — Updated the module editor with a visual width selector for the new 1/6 size.
+
+### 🧭 App Shell & Sidebar Polish
+- [x] **Top Navbar "Edit Dashboard"** — Relocated the edit entry point from a floating button to a permanent button in the Top Navbar (visible to Owners/Admins).
+- [x] **Role Access Fix** — Implemented case-insensitive role checking to ensure the Edit Dashboard button correctly appears for `Owner`, `Admin`, and `Superadmin` accounts.
+- [x] **Sidebar Collapse Centering** — Fixed the vertical alignment of the collapse button when the sidebar is in its mini (collapsed) state.
+- [x] **Sub-menu Spacing Fix** — Resolved a specificity issue where `.sidebar ul` was adding 40px margin to all sub-menus; tightened "User Management" dropdown spacing for a sleeker look.
+
+### 📊 Current Version: 6.8.0 (Public: V2.8)
+

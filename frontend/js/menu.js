@@ -112,6 +112,22 @@ function injectTopNavbar() {
     navbar.className = 'top-navbar';
     navbar.style.background = 'var(--sidebar-color)';
     navbar.style.color = '#ffffff';
+    let roles = [];
+    try {
+        const roleStr = localStorage.getItem('roles');
+        if (roleStr) roles = JSON.parse(roleStr);
+        else roles = [role];
+    } catch(e) {
+        roles = [role];
+    }
+    
+    // Case-insensitive check for admin/owner
+    const isAdmin = roles.some(r => {
+        if (!r) return false;
+        const lower = r.toLowerCase();
+        return lower === 'superadmin' || lower === 'admin' || lower === 'owner';
+    });
+
     navbar.innerHTML = `
         <div class="top-navbar-left" style="display: flex; align-items: center; gap: 10px;">
             <span id="topNavbarLogo" style="display: flex; align-items: center; justify-content: center; font-size: 24px;"></span>
@@ -125,6 +141,10 @@ function injectTopNavbar() {
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 </button>
             </div>
+            ${isAdmin ? `
+            <button class="navbar-icon-btn" style="color: white;" title="Edit Dashboard" onclick="window.location.href='edit-dashboard.html'">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>` : ''}
             <button class="navbar-icon-btn" style="color: white;">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 <span class="navbar-badge">3</span>
