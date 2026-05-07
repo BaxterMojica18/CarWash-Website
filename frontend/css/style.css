@@ -1834,3 +1834,59 @@ header {
 @media (min-width: 769px) {
     .client-bottom-nav { display: none !important; }
 }
+
+/* ── Theme Color Propagation ─────────────────────────────────────────── */
+.btn-primary:not(.btn-danger):not(.btn-delete) {
+    background: var(--sidebar-color, #2c3e50) !important;
+    border-color: var(--sidebar-color, #2c3e50) !important;
+}
+.btn-edit {
+    background: var(--sidebar-color, #2c3e50) !important;
+    border-color: var(--sidebar-color, #2c3e50) !important;
+}
+
+/* ── Filter Button Theming ───────────────────────────────────────────── */
+.filter-btn {
+    padding: 12px 20px;
+    border: 2px solid #e0e0e0;
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    background: white;
+    color: #333;
+}
+
+.filter-btn.active {
+    background: var(--sidebar-color, #667eea) !important;
+    border-color: var(--sidebar-color, #667eea) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* ── User Management Sub-Tab Theming ─────────────────────────────────── */
+.nav-sub li a:hover,
+.nav-sub li a.active {
+    background: color-mix(in srgb, var(--sidebar-color, #2c3e50) 40%, transparent) !important;
+}
+.nav-group-header:hover {
+    background: color-mix(in srgb, var(--sidebar-color, #2c3e50) 30%, transparent) !important;
+}
+
+/* ── Sidebar FOUC Prevention ─────────────────────────────────────────── */
+.sidebar-pre-collapsed .sidebar {
+    width: 76px;
+    padding-left: 10px;
+    padding-right: 10px;
+    overflow: hidden;
+}
+.sidebar-pre-collapsed .sidebar .nav-text,
+.sidebar-pre-collapsed .sidebar .logo,
+.sidebar-pre-collapsed .sidebar .welcome-section {
+    display: none;
+}
+.sidebar-pre-collapsed .content {
+    margin-left: 0;
+}

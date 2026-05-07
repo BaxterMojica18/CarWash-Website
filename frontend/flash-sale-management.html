@@ -56,6 +56,7 @@
         .empty-state { text-align:center; padding:60px 20px; color:#aaa; }
         .empty-state .icon { font-size:48px; margin-bottom:12px; }
     </style>
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
 </head>
 <body>
     <nav class="sidebar" id="sidebar">
@@ -177,6 +178,7 @@
 
 <script src="/js/api.js"></script>
 <script src="/js/menu.js"></script>
+<script src="/js/router.js"></script>
 <script src="/js/profile.js"></script>
 <script>
     let allSales = [];

@@ -676,6 +676,7 @@
             .voucher-card { flex-direction: row; }
         }
     </style>
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
 </head>
 <body>
     <nav class="sidebar" id="sidebar">
@@ -799,6 +800,7 @@
     let currentSort = 'default';
     let currentSearch = '';
     let cartCount = 0;
+    let activeFlashSale = null;
 
     // ── Init ───────────────────────────────────────────────────────────────
     async function init() {
@@ -808,7 +810,7 @@
             loadBusinessName(),
             loadVouchers()
         ]);
-        startCountdown(4 * 3600 + 23 * 60 + 18);
+        loadFlashSales();
         // If redirected here with featured tab requested
         if (sessionStorage.getItem('openFeatured') === '1') {
             sessionStorage.removeItem('openFeatured');
@@ -826,6 +828,56 @@
                 localStorage.setItem('businessName', biz.business_name);
             }
         } catch {}
+    }
+
+    // ── Flash Sales ────────────────────────────────────────────────────────
+    async function loadFlashSales() {
+        const banner = document.getElementById('flashBanner');
+        try {
+            const res = await fetch(`${API_BASE}/flash-sales`, {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            if (!res.ok) throw new Error();
+            const sales = await res.json();
+            if (!sales || sales.length === 0) {
+                banner.style.display = 'none';
+                return;
+            }
+            activeFlashSale = sales[0];
+            renderFlashBanner(activeFlashSale);
+            startCountdownFromTimestamp(activeFlashSale.ends_at);
+        } catch {
+            banner.style.display = 'none';
+        }
+    }
+
+    function renderFlashBanner(sale) {
+        const banner = document.getElementById('flashBanner');
+        banner.style.display = 'flex';
+        const flashText = banner.querySelector('.flash-text');
+        if (flashText) {
+            flashText.textContent = sale.title || 'Limited-time deals. Up to 30% off selected services.';
+        }
+    }
+
+    function getFlashSaleDiscount(productId) {
+        if (!activeFlashSale) return null;
+        const ids = activeFlashSale.product_ids || [];
+        if (ids.length > 0 && !ids.includes(productId)) return null;
+
+        const original = allItems.find(i => i.id === productId)?.price || 0;
+        let discountedPrice;
+        let label;
+
+        if (activeFlashSale.discount_type === 'percentage') {
+            discountedPrice = original * (1 - activeFlashSale.discount_value / 100);
+            label = `${activeFlashSale.discount_value}% OFF`;
+        } else {
+            discountedPrice = Math.max(0, original - activeFlashSale.discount_value);
+            label = `₱${activeFlashSale.discount_value} OFF`;
+        }
+
+        return { discountedPrice: Math.round(discountedPrice * 100) / 100, label };
     }
 
     // ── Load vouchers from API ─────────────────────────────────────────────
@@ -996,16 +1048,26 @@
                 ? `<img src="${item.image}" alt="${item.name}" loading="lazy">`
                 : `<span class="product-emoji-placeholder">🧴</span>`;
 
+            const saleInfo = getFlashSaleDiscount(item.id);
+            const priceHtml = saleInfo
+                ? `<span style="text-decoration:line-through;color:#999;font-size:12px;">₱${Number(item.price).toFixed(2)}</span>
+                   <span class="card-price">₱${saleInfo.discountedPrice.toFixed(2)}</span>`
+                : `<span class="card-price">₱${Number(item.price).toFixed(2)}</span>`;
+            const badgeHtml = saleInfo
+                ? `<span class="product-badge" style="background:#e74c3c;color:white;padding:2px 8px;border-radius:4px;font-size:11px;position:absolute;top:8px;right:8px;">⚡ ${saleInfo.label}</span>`
+                : '';
+
             return `
                 <div class="product-card">
                     <div class="product-img-wrap">
                         ${imgHtml}
+                        ${badgeHtml}
                     </div>
                     <div class="card-body">
                         <p class="card-name">${item.name}</p>
                         ${item.description ? `<p class="card-desc">${item.description}</p>` : ''}
                         <div class="card-price-row">
-                            <span class="card-price">₱${Number(item.price).toFixed(2)}</span>
+                            ${priceHtml}
                         </div>
                         <button class="card-add-btn"
                             onclick="event.stopPropagation(); addToCart(${item.id}, '${item.name.replace(/'/g, "\\'")}')">
@@ -1047,17 +1109,22 @@
         setTimeout(() => nudge.classList.remove('show'), 2200);
     }
 
-    // ── Flash countdown ────────────────────────────────────────────────────
-    function startCountdown(secs) {
+    // ── Flash countdown (timestamp-based) ─────────────────────────────────
+    function startCountdownFromTimestamp(endsAt) {
+        const endTime = new Date(endsAt).getTime();
         function tick() {
-            if (secs <= 0) { secs = 0; }
-            const h = Math.floor(secs / 3600);
-            const m = Math.floor((secs % 3600) / 60);
-            const s = secs % 60;
-            document.getElementById('cdHr').textContent = String(h).padStart(2,'0');
-            document.getElementById('cdMin').textContent = String(m).padStart(2,'0');
-            document.getElementById('cdSec').textContent = String(s).padStart(2,'0');
-            if (secs > 0) { secs--; setTimeout(tick, 1000); }
+            const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+            const h = Math.floor(remaining / 3600);
+            const m = Math.floor((remaining % 3600) / 60);
+            const s = remaining % 60;
+            document.getElementById('cdHr').textContent = String(h).padStart(2, '0');
+            document.getElementById('cdMin').textContent = String(m).padStart(2, '0');
+            document.getElementById('cdSec').textContent = String(s).padStart(2, '0');
+            if (remaining <= 0) {
+                loadFlashSales(); // re-fetch when expired
+                return;
+            }
+            setTimeout(tick, 1000);
         }
         tick();
     }
@@ -1065,6 +1132,7 @@
     init();
 </script>
     <script src="/js/menu.js"></script>
+    <script src="/js/router.js"></script>
     <script src="/js/client-nav.js"></script>
     </div>
 </body>

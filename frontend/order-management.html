@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Management - Car Wash</title>
     <link rel="stylesheet" href="css/style.css">
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
 </head>
 <body>
     <nav class="sidebar" id="sidebar">
@@ -41,13 +42,13 @@
         </header>
 
         <div class="filters" style="display: flex; gap: 10px; margin-bottom: 30px; padding: 15px; border-radius: 15px; flex-wrap: wrap; background: white; border: 1px solid #e0e0e0; justify-content: center;">
-            <button onclick="filterOrders('all')" class="filter-btn active" data-filter="all" style="padding: 12px 20px; border: 2px solid #667eea; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: #667eea; color: white; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">All Orders</button>
-            <button onclick="filterOrders('pending')" class="filter-btn" data-filter="pending" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Pending</button>
-            <button onclick="filterOrders('accepted')" class="filter-btn" data-filter="accepted" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Accepted</button>
-            <button onclick="filterOrders('processing')" class="filter-btn" data-filter="processing" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Processing</button>
-            <button onclick="filterOrders('completed')" class="filter-btn" data-filter="completed" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Completed</button>
-            <button onclick="filterOrders('delayed')" class="filter-btn" data-filter="delayed" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Delayed</button>
-            <button onclick="filterOrders('cancelled')" class="filter-btn" data-filter="cancelled" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Cancelled</button>
+            <button onclick="filterOrders('all')" class="filter-btn active" data-filter="all">All Orders</button>
+            <button onclick="filterOrders('pending')" class="filter-btn" data-filter="pending">Pending</button>
+            <button onclick="filterOrders('accepted')" class="filter-btn" data-filter="accepted">Accepted</button>
+            <button onclick="filterOrders('processing')" class="filter-btn" data-filter="processing">Processing</button>
+            <button onclick="filterOrders('completed')" class="filter-btn" data-filter="completed">Completed</button>
+            <button onclick="filterOrders('delayed')" class="filter-btn" data-filter="delayed">Delayed</button>
+            <button onclick="filterOrders('cancelled')" class="filter-btn" data-filter="cancelled">Cancelled</button>
             <select id="location-filter" class="filter-select" onchange="filterByLocation()" style="padding: 12px 20px; border: 2px solid #e0e0e0; background: white; border-radius: 10px; font-weight: 600; cursor: pointer; color: #333; font-size: 14px; outline: none; transition: all 0.3s ease;">
                 <option value="all">All Locations</option>
             </select>
@@ -77,6 +78,7 @@
 
     <script src="js/api.js"></script>
     <script src="js/menu.js"></script>
+    <script src="js/router.js"></script>
     <script src="js/toast.js"></script>
     <script src="js/profile.js"></script>
     <script>
@@ -120,17 +122,12 @@
         function filterOrders(status) {
             currentFilter = status;
             document.querySelectorAll('.filter-btn').forEach(btn => {
-                if (btn.dataset.filter === status) {
-                    btn.style.background = '#667eea';
-                    btn.style.color = 'white';
-                    btn.style.border = '2px solid #667eea';
-                    btn.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.3)';
-                } else {
-                    btn.style.background = 'white';
-                    btn.style.color = '#333';
-                    btn.style.border = '2px solid #e0e0e0';
-                    btn.style.boxShadow = 'none';
-                }
+                btn.classList.toggle('active', btn.dataset.filter === status);
+                // Remove any inline styles that override the CSS
+                btn.style.background = '';
+                btn.style.borderColor = '';
+                btn.style.color = '';
+                btn.style.boxShadow = '';
             });
             renderOrders();
         }
@@ -229,7 +226,7 @@
     <style>
         .order-card { background: white; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeSlideIn 0.45s ease both; }
         .order-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
-        .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .card-header { background: linear-gradient(135deg, var(--sidebar-color, #667eea) 0%, color-mix(in srgb, var(--sidebar-color, #667eea) 70%, #000) 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .order-info h3 { color: white; margin: 0 0 8px 0; font-size: 1.3rem; }
         .order-date { color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9rem; }
         .status-badge { padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }

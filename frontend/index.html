@@ -225,6 +225,46 @@
     </div>
 
     <script>
+        // Gateway: resolve hash URLs on direct entry (e.g., /index.html#!/a3f2b1c8)
+        (function() {
+            var hash = window.location.hash;
+            if (hash && hash.indexOf('#!/') === 0) {
+                var hashValue = hash.slice(3);
+                var ROUTE_MAP = {
+                    'a3f2b1c8': 'dashboard.html',
+                    'e7d4c9a2': 'invoices.html',
+                    'b8f1e3d6': 'order-management.html',
+                    'c2a9f7b4': 'queue-management.html',
+                    'd5e8a1c3': 'products.html',
+                    'f9b2d4e7': 'services.html',
+                    '1c3e5a7b': 'reports.html',
+                    '4d6f8b2e': 'settings.html',
+                    '7a9c1d3f': 'permissions-management.html',
+                    '2b4e6f8a': 'sidebar-management.html',
+                    '5c7d9e1b': 'coupon-management.html',
+                    '8e2a4c6d': 'flash-sale-management.html',
+                    '3f5b7d9e': 'client-dashboard.html',
+                    '6a8c2e4f': 'client-orders.html',
+                    '9b1d3f5a': 'shop.html',
+                    '0c2e4a6b': 'cart.html',
+                    '1d3f5b7c': 'reserve.html',
+                    '4e6a8c0d': 'vouchers.html',
+                    '7f9b1d3e': 'checkout.html',
+                    'a1c3e5f7': 'users.html',
+                    'b2d4f6a8': 'payment-methods.html',
+                    'c3e5a7b9': 'edit-dashboard.html'
+                };
+                var targetPage = ROUTE_MAP[hashValue];
+                if (targetPage) {
+                    window.location.replace('/' + targetPage + '#!/' + hashValue);
+                } else {
+                    window.location.replace('/login.html');
+                }
+            }
+        })();
+    </script>
+
+    <script>
         function openContactSales() {
             document.getElementById('contactSalesModal').style.display = 'block';
             document.body.style.overflow = 'hidden';

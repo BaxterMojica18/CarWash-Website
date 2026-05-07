@@ -44,7 +44,7 @@ function renderInvoicePage() {
             <td>$${inv.total_amount.toFixed(2)}</td>
             <td><span class="badge-success">Completed</span></td>
             <td>
-                <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;" onclick="downloadPDF(${inv.id}, '${inv.invoice_number}')">PDF</button>
+                <button onclick="downloadPDF(${inv.id}, '${inv.invoice_number}')" style="background: var(--sidebar-color, #2c3e50); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-size: 12px;">PDF</button>
                 <button class="btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="downloadJPG(${inv.id}, '${inv.invoice_number}')">JPG</button>
             </td>
         </tr>

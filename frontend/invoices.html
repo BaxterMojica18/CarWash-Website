@@ -6,6 +6,12 @@
     <title>Invoices - Car Wash Management</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .btn-primary {
+            background: var(--sidebar-color, #2c3e50) !important;
+        }
+    </style>
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
 </head>
 <body>
     <nav class="sidebar" id="sidebar">
@@ -150,6 +156,7 @@
 
     <script src="js/api.js"></script>
     <script src="js/menu.js"></script>
+    <script src="js/router.js"></script>
     <script src="js/invoices.js"></script>
     <script src="js/profile.js"></script>
 </body>

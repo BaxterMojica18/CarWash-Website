@@ -618,6 +618,7 @@
             .item-price { font-size: 15px; }
         }
     </style>
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
 </head>
 <body>
     <nav class="sidebar" id="sidebar">
@@ -734,6 +735,7 @@
     let cartItems = [];
     let paymentMethods = [];
     let discount = 0;
+    let appliedCoupon = null;
     let cartSearchQuery = '';
 
     async function init() {
@@ -1006,6 +1008,12 @@
     }
 
     async function applyVoucher() {
+        // Auth check
+        if (!getToken()) {
+            showToast('Please log in to apply a coupon', 'error');
+            return;
+        }
+
         const code = document.getElementById('voucherInput').value.trim().toUpperCase();
         if (!code) { showToast('Please enter a coupon code', 'error'); return; }
 
@@ -1029,24 +1037,64 @@
                 body: JSON.stringify({ code, cart_total: subtotal })
             });
 
-            const data = await res.json();
             if (!res.ok) {
+                const data = await res.json();
                 showToast(data.detail || 'Invalid coupon code', 'error');
                 return;
             }
 
+            const data = await res.json();
+            appliedCoupon = { code: data.code, discount_amount: data.discount_amount };
             discount = data.discount_amount;
+
             const label = data.discount_type === 'percentage'
                 ? `${data.discount_value}% off`
                 : `\u20b1${data.discount_value} off`;
             showToast(`\ud83c\udff7\ufe0f "${code}" applied! ${label} = -\u20b1${discount.toFixed(2)}`, 'success');
+            renderAppliedCoupon();
             updateSummary();
         } catch {
             showToast('Failed to validate coupon. Please try again.', 'error');
         } finally {
-            applyBtn.textContent = originalText;
-            applyBtn.disabled = false;
+            if (document.querySelector('.voucher-apply-btn')) {
+                const btn = document.querySelector('.voucher-apply-btn');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
         }
+    }
+
+    function renderAppliedCoupon() {
+        const container = document.querySelector('.voucher-input-row');
+        if (!container) return;
+        if (appliedCoupon) {
+            container.innerHTML = `
+                <div style="display:flex;align-items:center;gap:8px;flex:1;
+                            background:var(--brand-light);border:1.5px solid var(--brand);
+                            border-radius:6px;padding:9px 12px;">
+                    <span style="font-size:13px;font-weight:600;color:var(--brand);">
+                        🏷️ ${appliedCoupon.code}
+                    </span>
+                    <span style="font-size:12px;color:var(--green);margin-left:auto;">
+                        -₱${appliedCoupon.discount_amount.toFixed(2)}
+                    </span>
+                    <button onclick="removeCoupon()" style="background:none;border:none;
+                            cursor:pointer;font-size:16px;color:var(--text-muted);"
+                            title="Remove coupon">✕</button>
+                </div>`;
+        } else {
+            container.innerHTML = `
+                <input type="text" id="voucherInput" placeholder="Enter voucher / promo code">
+                <button class="voucher-apply-btn" onclick="applyVoucher()">Apply</button>`;
+        }
+    }
+
+    function removeCoupon() {
+        appliedCoupon = null;
+        discount = 0;
+        renderAppliedCoupon();
+        updateSummary();
+        showToast('Coupon removed', 'success');
     }
 
 
@@ -1089,6 +1137,7 @@
     init();
 </script>
     <script src="/js/menu.js"></script>
+    <script src="/js/router.js"></script>
     <script src="/js/client-nav.js"></script>
     </div>
 </body>

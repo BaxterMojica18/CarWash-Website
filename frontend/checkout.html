@@ -6,6 +6,7 @@
     <title>Checkout - Car Wash</title>
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://js.stripe.com/v3/"></script>
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
 </head>
 <body>
     <div class="checkout-container">
@@ -103,6 +104,7 @@
 
     <script src="/js/api.js"></script>
     <script src="/js/toast.js"></script>
+    <script src="/js/router.js"></script>
     <script>
         let stripe, cardNumberElement, cardExpiryElement, cardCvcElement, clientSecret;
 

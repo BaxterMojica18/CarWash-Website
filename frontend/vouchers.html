@@ -218,6 +218,7 @@
         }
         .cat-btn.active { background: #fff0f3; color: #f02d55; border-color: #f02d55; }
     </style>
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
 </head>
 <body>
     <nav class="sidebar" id="sidebar">
@@ -417,6 +418,7 @@
     loadCoupons();
 </script>
     <script src="/js/menu.js"></script>
+    <script src="/js/router.js"></script>
     </div>
 </body>
 </html>

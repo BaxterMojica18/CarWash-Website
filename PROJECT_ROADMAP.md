@@ -993,3 +993,58 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 - [ ] Connect coupon validation to `cart.html` — call `POST /coupons/validate` on apply, show discount in order summary
 - [ ] Add `coupon-management.html` and `flash-sale-management.html` to admin sidebar navigation
 - [ ] Apply top navbar to remaining pages that haven't been updated yet
+
+---
+
+## ✅ Completed in Session 12
+
+### ⚡ Flash Sales → Shop
+- [x] `loadFlashSales()` fetches active sales from API on shop init
+- [x] Flash banner text updated with live sale title
+- [x] Product cards show strikethrough price + discounted price + `⚡ X% OFF` badge
+- [x] Countdown timer driven by real `ends_at` timestamp from API
+- [x] Auto-refresh when sale expires
+
+### 🎟️ Coupon Validation → Cart
+- [x] `appliedCoupon` state tracks applied coupon
+- [x] Auth check before applying coupon
+- [x] `renderAppliedCoupon()` — input ↔ applied pill toggle
+- [x] `removeCoupon()` — clears coupon and resets discount
+- [x] Fixed double-parse crash on error response
+
+### 🔀 URL Obfuscation Router
+- [x] `frontend/js/router.js` — 22 pages mapped to random hex hashes
+- [x] `history.replaceState` hides real filenames from URL bar
+- [x] Direct hash URL entry handled (bookmarks, shared links)
+- [x] `index.html` gateway resolver for hash-based entry
+- [x] Added to all pages
+
+### 🎨 Theme & UX
+- [x] `.btn-primary`, `.btn-edit`, `.filter-btn.active` use `var(--sidebar-color)`
+- [x] Order management filter buttons use CSS classes (no inline styles)
+- [x] Order card header gradient uses theme color
+- [x] Sidebar FOUC prevention via inline script + `.sidebar-pre-collapsed` CSS
+
+### 📊 Current Version: 6.8.0 (Public: V2.8)
+
+## 🔄 Updated Status (Session 12)
+
+| Feature | Status |
+|---------|--------|
+| Flash sales → shop.html | ✅ Done |
+| Coupon validation → cart.html | ✅ Done |
+| URL obfuscation router | ✅ Done |
+| Theme color propagation | ✅ Done |
+| Sidebar FOUC prevention | ✅ Done |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| SMS Notifications (Twilio) | ⬜ Pending |
+| React + Next.js Frontend | ⬜ Pending |
+
+## 🔜 Next Session (Session 13) — V2.9
+
+### Planned:
+- [ ] Apply router.js to remaining pages not yet updated
+- [ ] Flash sale management linked to sidebar nav
+- [ ] Queue management real-time updates (polling or WebSocket)
+- [ ] Payment history page
+- [ ] Mobile PWA manifest + service worker

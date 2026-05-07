@@ -14,6 +14,7 @@
         .save-btn { background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
         .save-btn:hover { background: #45a049; }
     </style>
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
 </head>
 <body>
     <div class="container">
@@ -21,6 +22,7 @@
         <div id="payment-methods"></div>
     </div>
 
+    <script src="/js/router.js"></script>
     <script>
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/login.html';

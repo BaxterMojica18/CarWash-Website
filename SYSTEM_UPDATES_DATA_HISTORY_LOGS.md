@@ -2246,3 +2246,109 @@ Prevents the cart content from stretching awkwardly when the sidebar is visible 
 
 ### 📊 Current Version: 6.8.0 (Public: V2.8)
 
+
+---
+
+## Latest Updates (Session 12)
+
+> **Version:** 6.8.0 (Public: V2.8) | **Branch:** `feature/flash-sale-shop-coupon-cart-router`
+
+---
+
+### ⚡ Flash Sales Connected to Shop Page
+**Status:** ✅ Completed
+
+#### Changes (`frontend/shop.html`):
+- `loadFlashSales()` — fetches active flash sales from `GET /api/flash-sales` on page init
+- `renderFlashBanner(sale)` — updates the flash sale banner text with the live sale title
+- `getFlashSaleDiscount(productId)` — checks if a product is included in the active flash sale and returns discounted price + label
+- Product cards now show:
+  - Strikethrough original price when a flash sale applies
+  - Discounted price in the price row
+  - Red `⚡ X% OFF` badge (absolute positioned top-right of product image)
+- Flash countdown timer changed from hardcoded static countdown to `startCountdownFromTimestamp(endsAt)` — counts down to the actual `ends_at` datetime from the API
+- When countdown reaches 0, `loadFlashSales()` is called again to refresh (picks up next active sale or hides banner)
+- Flash banner hidden if no active sales exist
+
+---
+
+### 🎟️ Coupon Validation Connected to Cart
+**Status:** ✅ Completed
+
+#### Changes (`frontend/cart.html`):
+- `appliedCoupon` state variable tracks the currently applied coupon `{ code, discount_amount }`
+- Auth check added to `applyVoucher()` — shows error toast if user is not logged in
+- Fixed error handling: `res.json()` now only called after checking `res.ok` (prevents double-parse crash)
+- `renderAppliedCoupon()` — swaps the voucher input row between:
+  - Input mode: text field + Apply button
+  - Applied mode: pill showing code + discount amount + ✕ remove button
+- `removeCoupon()` — clears `appliedCoupon`, resets discount to 0, re-renders input, updates summary
+- Applied coupon pill styled with brand color border and green discount amount
+- Button reference fixed after DOM swap (no longer crashes on re-render)
+
+---
+
+### 🔀 URL Obfuscation Router (`frontend/js/router.js`) — NEW
+**Status:** ✅ Completed
+
+- New `router.js` script that obfuscates page URLs using hash-based routing
+- Maps 22 pages to random hex hashes (e.g. `dashboard.html` → `#!/a3f2b1c8`)
+- On page load: replaces URL with `history.replaceState` to show hash instead of filename
+- Intercepts all internal link clicks — navigates to real page with hash appended
+- Handles direct hash URL entry (e.g. bookmarks) — resolves hash and redirects correctly
+- Invalid hashes redirect to `/login.html`
+- `index.html` gateway script resolves hash URLs on direct entry
+- Exposes `window._router` for debugging
+- Added to: `shop.html`, `cart.html`, `invoices.html`, `order-management.html` + all other pages via `<script src="/js/router.js">`
+
+---
+
+### 🎨 Theme Color Propagation & Filter Button Theming
+**Status:** ✅ Completed
+
+#### Changes (`frontend/css/style.css`):
+- `.btn-primary` now uses `var(--sidebar-color)` as background — buttons match the active theme color
+- `.btn-edit` also uses `var(--sidebar-color)`
+- `.filter-btn` and `.filter-btn.active` extracted to global CSS — active state uses `var(--sidebar-color)` instead of hardcoded `#667eea`
+- `.nav-sub` and `.nav-group-header` hover states use `color-mix` with `--sidebar-color`
+- Order management filter buttons cleaned up — inline styles removed, now use `.filter-btn` / `.filter-btn.active` CSS classes
+- Order card header gradient updated to use `var(--sidebar-color)` instead of hardcoded purple
+
+---
+
+### ⚡ Sidebar FOUC Prevention
+**Status:** ✅ Completed
+
+#### Changes (`frontend/css/style.css`):
+- Added `.sidebar-pre-collapsed` class — applied instantly via inline `<script>` before page render
+- Prevents sidebar flash-of-uncollapsed-content (FOUC) when user has sidebar collapsed in localStorage
+- Inline script added to: `shop.html`, `cart.html`, `invoices.html`, `order-management.html` (and all other pages via the `<script>` tag in `<head>`)
+
+---
+
+### 🔧 Other Fixes
+- `frontend/invoices.js` — PDF button uses `var(--sidebar-color)` inline style instead of `.btn-primary` class (avoids class conflict)
+- `frontend/invoices.html` — added `router.js` script tag + FOUC prevention inline script
+- All other modified HTML pages — added `router.js` script tag + FOUC prevention inline script
+
+#### Files Created/Modified:
+- ✅ `frontend/js/router.js` — NEW URL obfuscation router
+- ✅ `frontend/shop.html` — flash sale API integration, real countdown, sale badges on product cards
+- ✅ `frontend/cart.html` — coupon apply/remove UI, auth check, fixed error handling
+- ✅ `frontend/css/style.css` — theme color propagation, filter button theming, FOUC prevention
+- ✅ `frontend/order-management.html` — filter buttons use CSS classes, card header uses theme color
+- ✅ `frontend/invoices.html` + `invoices.js` — theme color fix, router.js added
+- ✅ `frontend/index.html` — hash URL gateway resolver
+- ✅ All other HTML pages — router.js + FOUC prevention script added
+
+---
+
+## Change Log
+
+### Version 6.8.0 / V2.8 (Session 12)
+- ✅ Flash sales connected to shop — live sale badges, discounted prices, real countdown from API
+- ✅ Coupon validation connected to cart — apply/remove pill UI, auth check, fixed error handling
+- ✅ URL obfuscation router (`router.js`) — 22 pages mapped to random hex hashes
+- ✅ Theme color propagation — buttons and filter tabs use `var(--sidebar-color)` globally
+- ✅ Sidebar FOUC prevention — no more flash of expanded sidebar on page load
+- ✅ Order management filter buttons cleaned up — inline styles removed, CSS class-driven
