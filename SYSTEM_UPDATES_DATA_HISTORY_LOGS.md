@@ -2602,3 +2602,18 @@ Fixed sidebar click behavior when collapsed. Previously, clicking anywhere on th
 - [x] Reply emails sent to customer via Resend API with styled HTML template
 
 ### 📊 Current Version: 6.9.0 (Public: V2.9)
+
+
+---
+
+## 🐛 Session 13 — Bugfix Addendum *(May 8, 2026)*
+
+### ✅ Fixed
+- [x] **Profile save silent failure** — `saveNavbarProfile()` had no `res.ok` check; `showToast` dependency on `toast.js` was unreliable from `menu.js` context. Replaced with self-contained inline toast, `res.ok` guard, and "Saving..." button state.
+- [x] **support_tickets NameError on startup** — `support_tickets` was registered in `app.include_router` but never imported in the `from app.routers import (...)` block. Fixed via binary replace in container.
+
+### 🔜 Known Issues (Deferred to Session 14)
+- [ ] **Upload photo broken in Edit Profile** — base64 photo upload via navbar profile modal fails to persist correctly
+- [ ] **Sidebar stuck after collapse** — clicking the collapse button does not immediately re-open; requires clicking a nav tab first before it opens
+- [ ] **Dashboard sidebar hover color mismatch** — hover/active color on dashboard page does not match the active theme (regression from dashboard.js CSS variable fix)
+- [ ] **Database migration to Aiven** — move PostgreSQL from Render to Aiven for better reliability and control

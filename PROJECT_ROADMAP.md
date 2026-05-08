@@ -1137,3 +1137,36 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 - [ ] Connect coupon validation to `cart.html` — validate against backend on apply
 - [ ] Apply top navbar to remaining pages not yet updated
 - [ ] PWA manifest + service worker (offline support)
+
+
+---
+
+## 🔜 Next Session (Session 14) — V2.9 Bugfix + DB Migration
+
+### 🐛 Bug Fixes (Priority)
+
+#### 1. Upload Photo — Edit Profile Modal
+- [ ] Base64 photo upload in `saveNavbarProfile()` not persisting correctly
+- [ ] Investigate whether large base64 payload exceeds request body limit
+- [ ] Consider resizing image client-side before encoding (canvas resize to max 200px)
+
+#### 2. Sidebar Stuck After Collapse
+- [ ] Clicking collapse button does not immediately re-open sidebar — requires a nav tab click first
+- [ ] Root cause likely: `sidebar.onclick` handler and `closeBtn.onclick` conflict — both fire on the same click event
+- [ ] Fix: ensure the close/expand button's click does not bubble to the sidebar's own click handler
+
+#### 3. Dashboard Sidebar Hover Color Mismatch
+- [ ] Hover/active color on `dashboard.html` does not match theme
+- [ ] `dashboard.js` sets `--sidebar-active-color` via `setProperty` but the injected `<style>` tag from a previous session may still be overriding it
+- [ ] Audit all `dashboard-colors` style injections and ensure no leftover hardcoded hover rules
+
+### 🗄️ Database Migration — Render → Aiven
+- [ ] Create Aiven PostgreSQL instance (free tier or paid)
+- [ ] Export current Render DB: `pg_dump` → `.sql` file
+- [ ] Import to Aiven: `psql` with new connection string
+- [ ] Update `DATABASE_URL` in Render environment variables
+- [ ] Update `docker-compose.yml` `.env.example` with Aiven connection string format
+- [ ] Test all endpoints after migration
+- [ ] Update `README.md` database badge and connection docs
+
+### 📊 Version Target: V2.9.1 (bugfix patch)
