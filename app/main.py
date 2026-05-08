@@ -29,6 +29,7 @@ from app.routers import (
     flash_sales,
     audit_logs,
     notifications,
+    support_tickets,
 )
 from app.email_service import send_email
 import os
