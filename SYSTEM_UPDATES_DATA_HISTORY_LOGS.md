@@ -1,8 +1,36 @@
 # System Updates, Data & History Logs
 
-> **Last Updated:** April 7, 2026  
-> **Version:** 4.2.0  
+> **Last Updated:** May 8, 2026  
+> **Version:** 6.9.3  
 > **Branch:** main
+
+---
+
+## Latest Updates (May 8, 2026 — Session 17)
+### 🐛 Dashboard Theme Priority Fix — Respect Cached Theme Presets
+**Status:** ✅ Completed
+**Date:** May 8, 2026
+**Version Bump:** Patch (6.9.2 → 6.9.3)
+
+#### Summary:
+Fixed a bug in `dashboard.js` where the `loadDashboardSettings()` function was unconditionally overwriting CSS custom properties (`--primary-color`, `--bg-color`, `--sidebar-color`) with dashboard settings values, even when a theme preset was already cached in localStorage. This caused the user's selected theme to be overridden on the dashboard page. Now checks for `cachedThemeColors` in localStorage first and only applies dashboard settings colors as a fallback when no theme preset is cached.
+
+#### Files Modified:
+- ✅ `frontend/js/dashboard.js` — Added `cachedThemeColors` localStorage check before applying dashboard settings colors; theme presets now take priority over dashboard settings to prevent color override on page load.
+
+---
+
+## Latest Updates (May 8, 2026 — Session 16)
+### 🐛 Sidebar Icon Normalization Fix — Skip Nav-Sub Links
+**Status:** ✅ Completed
+**Date:** May 8, 2026
+**Version Bump:** Patch (6.9.2 → 6.9.3)
+
+#### Summary:
+Fixed a bug in `normalizeSidebarIcons()` where the icon replacement logic was incorrectly processing links inside `.nav-sub` (User Management sub-items like "Permissions" and "Sidebar Tabs"). These sub-links should retain their existing text/styling and not be processed by the icon normalizer. Added an early return guard using `link.closest('.nav-sub')`.
+
+#### Files Modified:
+- ✅ `frontend/js/menu.js` — Added guard in `normalizeSidebarIcons()` to skip links inside `.nav-sub` containers, preventing unintended icon replacement on User Management sub-navigation items.
 
 ---
 
@@ -15,6 +43,149 @@
 6. [Superadmin Role](#superadmin-role)
 7. [Setup Instructions](#setup-instructions)
 8. [API Documentation](#api-documentation)
+
+## Latest Updates (May 8, 2026 — Session 15)
+### 🏢 Dashboard UI Redesign — Business Sub-Name Support (Backend)
+**Status:** ✅ Completed
+**Date:** May 8, 2026
+**Version Bump:** Minor (6.9.1 → 6.9.2)
+
+#### Summary:
+Added `business_sub_name` column to the `BusinessInfo` SQLAlchemy model in `app/database.py`. This enables business owners to store a secondary tagline or descriptor that will be displayed below the business name in the top navbar branding area, as part of the Dashboard UI Redesign feature.
+
+#### Files Modified:
+- ✅ `app/database.py` — Added `business_sub_name = Column(String, nullable=True)` to the `BusinessInfo` model class for storing an optional business tagline/sub-name.
+
+---
+
+## Latest Updates (May 8, 2026 — Session 14)
+### 🎨 Settings Theme UI Simplification — V2.9 (Patch)
+**Status:** ✅ Completed
+**Date:** May 8, 2026
+**Version Bump:** Patch (6.9.0 → 6.9.1)
+
+#### Summary:
+Consolidated the separate "Button Color" and "Sidebar Color" inputs in the theme customization section into a single unified "Sidebar & Button Color" picker. This simplifies the theme UI by removing a redundant control — buttons already derive their color from `var(--sidebar-color)` via CSS, so a separate button color input was unnecessary and potentially confusing.
+
+#### Files Modified:
+- ✅ `frontend/settings.html` — Removed the standalone "Button Color" form group and `#buttonColor` input; renamed "Sidebar Color" label to "Sidebar & Button Color" to clarify that this single picker controls both sidebar and button theming. Also removed BOM character (``) from the file start.
+
+---
+
+## Latest Updates (May 8, 2026 — Session 13)
+### 📋 Audit Logging & 🔔 Notification System — V2.9
+**Status:** ✅ Completed
+
+#### Features Added:
+
+**Audit Logging System:**
+- **`audit_logs` table** — Stores all CUD operations with user_id, action, resource_type, resource_id, details (JSON), ip_address, created_at. Indexes on user_id, (resource_type, created_at), and created_at DESC.
+- **`app/audit.py`** — Utility module with `log_audit()` (fail-safe INSERT with rollback on error) and `get_client_ip()` (X-Forwarded-For aware).
+- **`app/routers/audit_logs.py`** — `GET /api/audit-logs` with pagination, filtering (user, action, resource_type, date range), business-scoped via user join, admin-only access.
+- **CUD Logging Integration** — `log_audit()` calls added to all write operations across 9 routers: settings, invoices, orders, reservations, cart, payment_methods, coupons, flash_sales, auth.
+- **`frontend/audit-logs.html`** — Admin-only viewer page with filter bar, paginated table, expandable JSON details, SVG icons (no emoji), theme-compliant styling.
+
+**Notification System:**
+- **`notifications` table** — user_id, title, message, type, is_read, link, created_at, deleted_at (soft delete). Indexes on (user_id, is_read, created_at DESC) and (user_id, deleted_at).
+- **`notification_preferences` table** — Per-user boolean toggles for 6 notification types, all defaulting to TRUE.
+- **`app/notification_service.py`** — `create_notification()` (checks preferences before creating), `notify_business_admins()` (notifies all admin/owner/superadmin in business), `get_or_create_preferences()` (lazy initialization).
+- **`app/routers/notifications.py`** — Full CRUD: GET (paginated + unread_count), PATCH /{id}/read, PATCH /read-all, DELETE /{id} (soft-delete), GET/PUT /preferences. All endpoints verify ownership (403 on cross-user access).
+- **Bell Icon Dropdown** — Dynamic badge (hides at 0, shows "99+" over 99), dropdown panel with 10 recent notifications, relative timestamps, unread blue dot, "Mark all read" button, "View all" link, click-outside-to-close.
+- **Auto-generation Triggers** — Notifications created on: new order (admins), order status change (client), reservation status change (client), payment received (admins), coupon applied (admins), flash sale activated (all business users), permission changes (affected user).
+- **Notification Preferences UI** — Toggle switches in Settings page for Orders, Reservations, Payments, Coupons, Flash Sales, Permissions. Saves immediately on toggle change with toast confirmation.
+
+**UI/Theme Fixes (Tasks 1-3, completed earlier in session):**
+- Queue management tiles use `var(--sidebar-color)` instead of hardcoded gradients.
+- Permissions page uses flat cards with themed border-top, SVG icons replacing all emoji.
+- Sidebar `normalizeSidebarIcons()` extended with flash-sales, users, payment-methods, audit-logs, notifications keys.
+- Router.js upgraded to 32-char hex tokens with legacy 8-char backward compatibility.
+
+#### Files Created:
+- ✅ `commands/database/add_audit_logs_table.py` — Migration script
+- ✅ `commands/database/add_notifications_tables.py` — Migration script
+- ✅ `app/audit.py` — Audit logging utility
+- ✅ `app/notification_service.py` — Notification service module
+- ✅ `app/routers/audit_logs.py` — Audit logs API router
+- ✅ `app/routers/notifications.py` — Notifications API router
+- ✅ `frontend/audit-logs.html` — Audit log viewer page
+
+#### Files Modified:
+- ✅ `app/database.py` — Added AuditLog, Notification, NotificationPreference models
+- ✅ `app/main.py` — Registered audit_logs and notifications routers
+- ✅ `app/routers/settings.py` — Added audit logging to CUD operations
+- ✅ `app/routers/invoices.py` — Added audit logging
+- ✅ `app/routers/orders.py` — Added audit logging + notification triggers
+- ✅ `app/routers/reservations.py` — Added audit logging + notification triggers
+- ✅ `app/routers/cart.py` — Added audit logging
+- ✅ `app/routers/payment_methods.py` — Added audit logging
+- ✅ `app/routers/coupons.py` — Added audit logging + notification triggers
+- ✅ `app/routers/flash_sales.py` — Added audit logging + notification triggers
+- ✅ `app/routers/auth.py` — Added audit logging + notification triggers
+- ✅ `app/routers/payments.py` — Added notification triggers (webhook)
+- ✅ `frontend/js/menu.js` — Bell icon dropdown, notification badge, enforcePageAccess updated
+- ✅ `frontend/js/settings.js` — Notification preferences load/save logic
+- ✅ `frontend/settings.html` — Notification preferences toggle UI section
+- ✅ `frontend/js/router.js` — Added audit-logs.html to ROUTE_MAP
+- ✅ `frontend/queue-management.html` — Theme compliance (var(--sidebar-color))
+- ✅ `frontend/permissions-management.html` — Flat cards, SVG icons, no emoji
+
+#### Database Changes:
+```sql
+-- Audit Logs
+CREATE TABLE audit_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    action VARCHAR NOT NULL,
+    resource_type VARCHAR NOT NULL,
+    resource_id INTEGER,
+    details TEXT,
+    ip_address VARCHAR,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX idx_audit_logs_resource_type_created ON audit_logs(resource_type, created_at);
+CREATE INDEX idx_audit_logs_created_at_desc ON audit_logs(created_at DESC);
+
+-- Notifications
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    title VARCHAR NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    link VARCHAR,
+    created_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP
+);
+CREATE INDEX idx_notifications_user_read_created ON notifications(user_id, is_read, created_at DESC);
+CREATE INDEX idx_notifications_user_deleted ON notifications(user_id, deleted_at);
+
+-- Notification Preferences
+CREATE TABLE notification_preferences (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+    order_notifications BOOLEAN DEFAULT TRUE,
+    reservation_notifications BOOLEAN DEFAULT TRUE,
+    payment_notifications BOOLEAN DEFAULT TRUE,
+    coupon_notifications BOOLEAN DEFAULT TRUE,
+    flash_sale_notifications BOOLEAN DEFAULT TRUE,
+    permission_notifications BOOLEAN DEFAULT TRUE
+);
+```
+
+#### New API Endpoints:
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/audit-logs` | Paginated audit log entries (admin-only, business-scoped) |
+| GET | `/api/notifications` | Paginated notifications + unread_count |
+| PATCH | `/api/notifications/{id}/read` | Mark notification as read |
+| PATCH | `/api/notifications/read-all` | Mark all as read |
+| DELETE | `/api/notifications/{id}` | Soft-delete notification |
+| GET | `/api/notifications/preferences` | Get notification preferences |
+| PUT | `/api/notifications/preferences` | Update notification preferences |
+
+---
 
 ## Latest Updates (April 20, 2026 — Session 10 Continuation)
 ### 🔒 RBAC Isolation & 📱 UI Responsiveness Overhaul
@@ -2352,3 +2523,82 @@ Prevents the cart content from stretching awkwardly when the sidebar is visible 
 - ✅ Theme color propagation — buttons and filter tabs use `var(--sidebar-color)` globally
 - ✅ Sidebar FOUC prevention — no more flash of expanded sidebar on page load
 - ✅ Order management filter buttons cleaned up — inline styles removed, CSS class-driven
+
+---
+
+## Latest Updates (Session 13)
+
+> **Version:** 6.8.1 (Public: V2.8.1) | **Branch:** `main`
+
+### 🔧 Audit Logger IP Fallback Fix
+**Date:** May 8, 2026  
+**Type:** Bug fix  
+**Version Bump:** Patch (6.8.0 → 6.8.1)  
+**Status:** ✅ Completed
+
+#### Files Modified:
+- ✅ `app/audit.py` — Fixed `get_client_ip()` to return `"unknown"` instead of `None` when no client IP is available, ensuring consistent string return type for the `ip_address` column
+
+
+## Latest Updates (May 8, 2026 — Session 15)
+### 🐛 Sidebar Collapsed Click Behavior Fix — V2.9 (Patch)
+**Status:** ✅ Completed
+**Date:** May 8, 2026
+**Version Bump:** Patch (6.9.1 → 6.9.2)
+
+#### Summary:
+Fixed sidebar click behavior when collapsed. Previously, clicking anywhere on the collapsed sidebar that wasn't directly on an `<a>` element would expand the sidebar — even if the user clicked on a nav link's child element (icon, text span). Now, if the user clicks a nav link (or any child within an `<a>` with an `href`), the click is allowed to navigate without forcibly expanding the sidebar. Only clicks on non-link areas of the collapsed sidebar trigger expansion.
+
+#### Files Modified:
+- ✅ `frontend/js/menu.js` — Refined the `sidebar.onclick` handler: instead of checking `!e.target.closest('a')`, now uses `e.target.closest('a')` with an `href` check to allow link navigation through without expanding, while still expanding on non-link area clicks.
+
+---
+
+
+
+---
+
+## ✅ Completed — Session 13 *(May 8, 2026)*
+
+### 🐛 Bug Fixes
+
+#### Sidebar Collapse — Cannot Re-open After Navigation
+- [x] Root cause: `.sidebar.collapsed .sidebar-close { display: none !important }` hid the toggle button entirely when collapsed
+- [x] Fix: Collapsed state now shows a right-pointing chevron button (visible, centered at top of sidebar)
+- [x] `updateToggleButton()` updated — shows `›` chevron when collapsed, `‹` when expanded
+
+#### Business Name / Settings Save Error
+- [x] `business_sub_name` column missing from `business_info` table in DB
+- [x] Migration run via Docker: `ALTER TABLE business_info ADD COLUMN IF NOT EXISTS business_sub_name VARCHAR`
+- [x] Added to `start.sh` for Render production auto-migration on next deploy
+
+#### Dashboard Sidebar Active Color Mismatch
+- [x] `dashboard.js` was injecting a hardcoded `!important` style overriding the theme CSS variable
+- [x] Fix: replaced injected style rule with `document.documentElement.style.setProperty('--sidebar-active-color', sidebarActive)`
+
+### 👤 Profile Edit in Top Navbar
+- [x] "Edit Profile" in navbar dropdown now opens an inline modal (no redirect to settings)
+- [x] Modal fields: Display Name + Upload Photo (with live preview)
+- [x] Saves to `POST /api/settings/profile` and updates navbar name + avatar in real-time
+- [x] `openNavbarProfileEdit()`, `previewNavProfilePhoto()`, `saveNavbarProfile()` added to `menu.js`
+
+### 🖼️ Business Logo — Update Logo Button
+- [x] Added "Update Logo" button below the file input in `settings.html`
+- [x] `saveLogo()` function in `settings.js` — saves current logo state independently from the full business form
+- [x] Allows replacing logo without re-entering all business fields
+
+### 🌐 Footer — BuxTek Inc Branding
+- [x] Footer updated: `© 2025 BuxTek Inc. All rights reserved. | Philippines`
+- [x] "Contact Customer Support" button added to bottom-right of footer
+
+### 🎫 Support Ticket System
+- [x] `SupportTicket` model added to `database.py` (id, name, email, phone, concern, status, reply, created_at, replied_at)
+- [x] `app/routers/support_tickets.py` — POST (public submit), GET list, GET detail, POST reply (sends email to customer), PATCH close
+- [x] Registered at `/api/support-tickets` in `main.py`
+- [x] Support ticket modal on landing page (`index.html`) — fields: Name, Email, Mobile, Concern
+- [x] `frontend/tickets.html` — owner-only tickets management page with filter tabs (All/Open/Replied/Closed), table view, ticket detail modal with reply form
+- [x] "Tickets" tab added to owner/superadmin sidebar in `menu.js` with chat bubble SVG icon
+- [x] `tickets.html` added to `adminOnlyPages` guard — staff/clients redirected away
+- [x] Reply emails sent to customer via Resend API with styled HTML template
+
+### 📊 Current Version: 6.9.0 (Public: V2.9)

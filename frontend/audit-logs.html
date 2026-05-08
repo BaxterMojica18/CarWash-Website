@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - Car Wash</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .filter-bar .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .filter-bar label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+        .filter-bar input,
+        .filter-bar select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 140px;
+        }
+        .filter-bar button {
+            padding: 8px 16px;
+            background: var(--sidebar-color, #2c3e50);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            height: 36px;
+            align-self: flex-end;
+        }
+        .filter-bar button:hover {
+            opacity: 0.9;
+        }
+        .filter-bar .btn-clear {
+            background: #6c757d;
+        }
+
+        .audit-table-container {
+            overflow-x: auto;
+            background: var(--card-bg, #ffffff);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .audit-table th {
+            background: var(--sidebar-color, #2c3e50);
+            color: white;
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .audit-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            color: var(--card-text, #333);
+        }
+        .audit-table tr:hover {
+            background: rgba(0,0,0,0.02);
+        }
+        .audit-table .action-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .action-badge.create { background: #d4edda; color: #155724; }
+        .action-badge.update { background: #fff3cd; color: #856404; }
+        .action-badge.delete { background: #f8d7da; color: #721c24; }
+
+        .details-cell {
+            max-width: 200px;
+            position: relative;
+        }
+        .details-preview {
+            cursor: pointer;
+            color: var(--sidebar-color, #2c3e50);
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+            display: block;
+        }
+        .details-preview:hover {
+            text-decoration: underline;
+        }
+        .details-expanded {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-width: 400px;
+            max-height: 200px;
+            overflow-y: auto;
+            position: absolute;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            top: 100%;
+            left: 0;
+        }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+            padding: 15px 0;
+        }
+        .pagination-controls button {
+            padding: 8px 16px;
+            background: var(--sidebar-color, #2c3e50);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .pagination-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .pagination-controls .page-info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-state svg {
+            margin-bottom: 15px;
+            opacity: 0.4;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
+        </div>
+        <ul>
+            <!-- Tabs are dynamically generated in menu.js -->
+        </ul>
+    </nav>
+    <main class="content">
+        <header>
+            <h1><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Audit Logs</h1>
+            <p style="color: #666; margin-top: 5px;">View system activity and change history</p>
+        </header>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label for="filterUser">User</label>
+                <select id="filterUser">
+                    <option value="">All Users</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filterAction">Action</label>
+                <select id="filterAction">
+                    <option value="">All Actions</option>
+                    <option value="create">Create</option>
+                    <option value="update">Update</option>
+                    <option value="delete">Delete</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filterResource">Resource Type</label>
+                <select id="filterResource">
+                    <option value="">All Resources</option>
+                    <option value="product">Product</option>
+                    <option value="service">Service</option>
+                    <option value="order">Order</option>
+                    <option value="reservation">Reservation</option>
+                    <option value="invoice">Invoice</option>
+                    <option value="coupon">Coupon</option>
+                    <option value="flash_sale">Flash Sale</option>
+                    <option value="user">User</option>
+                    <option value="permission">Permission</option>
+                    <option value="sidebar_setting">Sidebar Setting</option>
+                    <option value="payment_method">Payment Method</option>
+                    <option value="business_setting">Business Setting</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filterDateFrom">From</label>
+                <input type="date" id="filterDateFrom">
+            </div>
+            <div class="filter-group">
+                <label for="filterDateTo">To</label>
+                <input type="date" id="filterDateTo">
+            </div>
+            <button onclick="applyFilters()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Filter
+            </button>
+            <button class="btn-clear" onclick="clearFilters()">Clear</button>
+        </div>
+
+        <div class="audit-table-container">
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Resource Type</th>
+                        <th>Resource ID</th>
+                        <th>IP Address</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody id="auditTableBody">
+                    <tr><td colspan="7" class="loading-state">Loading audit logs...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-controls">
+            <button id="btnPrev" onclick="goToPage(currentPage - 1)" disabled>Previous</button>
+            <span class="page-info" id="pageInfo">Page 1</span>
+            <button id="btnNext" onclick="goToPage(currentPage + 1)" disabled>Next</button>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/toast.js"></script>
+    <script>
+        let currentPage = 1;
+        const pageSize = 50;
+        let totalEntries = 0;
+        let expandedDetail = null;
+
+        async function loadAuditLogs() {
+            const params = new URLSearchParams();
+            params.set('page', currentPage);
+            params.set('page_size', pageSize);
+
+            const userFilter = document.getElementById('filterUser').value;
+            const actionFilter = document.getElementById('filterAction').value;
+            const resourceFilter = document.getElementById('filterResource').value;
+            const dateFrom = document.getElementById('filterDateFrom').value;
+            const dateTo = document.getElementById('filterDateTo').value;
+
+            if (userFilter) params.set('user_filter', userFilter);
+            if (actionFilter) params.set('action', actionFilter);
+            if (resourceFilter) params.set('resource_type', resourceFilter);
+            if (dateFrom) params.set('date_from', dateFrom);
+            if (dateTo) params.set('date_to', dateTo);
+
+            try {
+                const response = await fetch(`${API_BASE}/audit-logs?${params.toString()}`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+
+                if (response.status === 403) {
+                    document.getElementById('auditTableBody').innerHTML =
+                        '<tr><td colspan="7" class="empty-state">Access denied. Admin or owner role required.</td></tr>';
+                    return;
+                }
+
+                if (!response.ok) throw new Error('Failed to load audit logs');
+
+                const data = await response.json();
+                totalEntries = data.total || 0;
+                renderTable(data.entries || []);
+                updatePagination();
+            } catch (error) {
+                console.error('Error loading audit logs:', error);
+                document.getElementById('auditTableBody').innerHTML =
+                    '<tr><td colspan="7" class="empty-state">Failed to load audit logs. Please try again.</td></tr>';
+            }
+        }
+
+        function renderTable(entries) {
+            const tbody = document.getElementById('auditTableBody');
+
+            if (entries.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="7" class="empty-state">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <p>No audit log entries found</p>
+                    </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = entries.map(entry => {
+                const timestamp = formatTimestamp(entry.created_at);
+                const actionClass = (entry.action || '').toLowerCase();
+                const detailsStr = entry.details || '';
+                const truncated = detailsStr.length > 40 ? detailsStr.substring(0, 40) + '...' : detailsStr;
+
+                return `
+                    <tr>
+                        <td>${timestamp}</td>
+                        <td>${escapeHtml(entry.user_email || 'Unknown')}</td>
+                        <td><span class="action-badge ${actionClass}">${escapeHtml(entry.action || '')}</span></td>
+                        <td>${escapeHtml(entry.resource_type || '')}</td>
+                        <td>${entry.resource_id != null ? entry.resource_id : '-'}</td>
+                        <td>${escapeHtml(entry.ip_address || '-')}</td>
+                        <td class="details-cell">
+                            ${detailsStr ? `<span class="details-preview" onclick="toggleDetails(this, '${escapeAttr(detailsStr)}')">${escapeHtml(truncated)}</span>` : '-'}
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function toggleDetails(el, rawDetails) {
+            // Close any previously expanded detail
+            if (expandedDetail && expandedDetail !== el) {
+                const prev = expandedDetail.parentElement.querySelector('.details-expanded');
+                if (prev) prev.remove();
+            }
+
+            const existing = el.parentElement.querySelector('.details-expanded');
+            if (existing) {
+                existing.remove();
+                expandedDetail = null;
+                return;
+            }
+
+            let formatted;
+            try {
+                const parsed = JSON.parse(rawDetails);
+                formatted = JSON.stringify(parsed, null, 2);
+            } catch (e) {
+                formatted = rawDetails;
+            }
+
+            const div = document.createElement('div');
+            div.className = 'details-expanded';
+            div.textContent = formatted;
+            el.parentElement.appendChild(div);
+            expandedDetail = el;
+        }
+
+        // Close expanded details when clicking outside
+        document.addEventListener('click', function(e) {
+            if (expandedDetail && !e.target.closest('.details-cell')) {
+                const expanded = document.querySelector('.details-expanded');
+                if (expanded) expanded.remove();
+                expandedDetail = null;
+            }
+        });
+
+        function updatePagination() {
+            const totalPages = Math.max(1, Math.ceil(totalEntries / pageSize));
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('btnPrev').disabled = currentPage <= 1;
+            document.getElementById('btnNext').disabled = currentPage >= totalPages;
+        }
+
+        function goToPage(page) {
+            if (page < 1) return;
+            currentPage = page;
+            loadAuditLogs();
+        }
+
+        function applyFilters() {
+            currentPage = 1;
+            loadAuditLogs();
+        }
+
+        function clearFilters() {
+            document.getElementById('filterUser').value = '';
+            document.getElementById('filterAction').value = '';
+            document.getElementById('filterResource').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            currentPage = 1;
+            loadAuditLogs();
+        }
+
+        function formatTimestamp(isoStr) {
+            if (!isoStr) return '-';
+            const d = new Date(isoStr);
+            return d.toLocaleString();
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function escapeAttr(str) {
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+        }
+
+        async function loadUserFilter() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/users`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (!response.ok) return;
+                const users = await response.json();
+                const select = document.getElementById('filterUser');
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.user_id || user.id;
+                    option.textContent = user.email;
+                    select.appendChild(option);
+                });
+            } catch (e) {
+                console.warn('Could not load users for filter', e);
+            }
+        }
+
+        // Initialize
+        loadUserFilter();
+        loadAuditLogs();
+    </script>
+</body>
+</html>

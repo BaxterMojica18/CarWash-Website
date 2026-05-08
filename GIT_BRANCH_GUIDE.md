@@ -23,7 +23,7 @@ git checkout -b <branch-name>
 
 **Example:**
 ```bash
-git checkout -b update/gmail-smtp-password-reset-dbfill-update
+git checkout -b feature/websocket-queue-05-08-2026
 ```
 
 This creates the branch AND switches to it in one command.
@@ -32,29 +32,21 @@ This creates the branch AND switches to it in one command.
 
 ## 3. Branch Naming Convention
 
-Use this format: `<type>/<short-description>`
+Use this format: `<type>/<short-description>-<MM-DD-YYYY>`
 
-| Type | When to Use |
-|------|-------------|
-| `update/` | Adding or improving existing features |
-| `feature/` | Brand new feature |
-| `fix/` | Bug fix |
-| `hotfix/` | Urgent production fix |
-| `refactor/` | Code cleanup, no new features |
+The date suffix is **today's date** in MM-DD-YYYY format.
 
-**Examples:**
-```
-update/sidebar-navigation-button-update
-feature/email-notifications
-fix/login-401-error
-hotfix/payment-crash
-refactor/cleanup-api-routes
-```
+| Type | When to Use | Example |
+|------|-------------|---------|
+| `feature/` | Brand new feature | `feature/email-notifications-05-08-2026` |
+| `bugfix/` | Bug fix | `bugfix/login-401-error-05-08-2026` |
+| `hotfix/` | Urgent production fix | `hotfix/payment-crash-05-08-2026` |
 
 Rules:
 - All **lowercase**
 - Use **hyphens** instead of spaces
 - Keep it **short but descriptive**
+- Always append **today's date** as `-MM-DD-YYYY`
 
 ---
 
@@ -63,67 +55,97 @@ Rules:
 Edit your files, then stage and commit:
 
 ```bash
-# Stage all changes
-git add .
+# Stage specific files (NEVER use git add .)
+git add app/routers/orders.py app/schemas.py frontend/orders.html
 
-# Or stage a specific file
-git add frontend/js/menu.js
-
-# Commit with a descriptive message
-git commit -m "Short description of what was changed"
+# Commit with the *CODE UPDATE* format
+git commit -m "*CODE UPDATE*
+- Added order status endpoint for real-time tracking.
+- Updated order schema with delivery_date field.
+- Created orders page with status timeline UI."
 ```
 
-**Good commit message examples:**
+### Commit Message Format
+
 ```
-git commit -m "Add Gmail SMTP for password reset emails"
-git commit -m "Fix: sidebar close button overlapping title on desktop"
-git commit -m "Feature: fill database with seed data on startup"
+*CODE UPDATE*
+- Change description ending with a period.
+- Another change description ending with a period.
 ```
+
+**Rules:**
+- First line is always `*CODE UPDATE*`
+- Each change starts with `- ` on a new line
+- Each change is exactly **one sentence ending with a period**
+- List ALL changes from the session
+- Be descriptive — explain what was done, not just which file
 
 ---
 
 ## 5. Push the Branch to GitHub
 
 ```bash
-git push -u origin <branch-name>
+git push -u origin feature/<branch-name>-<MM-DD-YYYY>
 ```
 
 **Example:**
 ```bash
-git push -u origin update/gmail-smtp-password-reset-dbfill-update
+git push -u origin feature/websocket-queue-05-08-2026
 ```
 
 The `-u` flag sets the upstream so next time you can just run `git push`.
 
 ---
 
-## 6. Create a Pull Request (PR)
+## 6. Merge to Main and Push
 
-After pushing, GitHub will print a link in the terminal:
+After pushing your branch, merge it to main:
 
+```bash
+git checkout main
+git merge feature/<branch-name>-<MM-DD-YYYY>
+git push origin main
 ```
-remote: Create a pull request by visiting:
-remote:   https://github.com/your-repo/pull/new/your-branch-name
-```
 
-Open that link in your browser to create a PR and merge into main.
+**NEVER push directly to main without creating a branch first.**
 
 ---
 
-## Quick Reference Cheatsheet
+## Full Push Workflow (Strict Sequence)
 
 ```bash
 # 1. Start from main
 git checkout main
 git pull origin main
 
-# 2. Create and switch to new branch
-git checkout -b update/your-branch-name
+# 2. Create and switch to new branch (with today's date)
+git checkout -b feature/your-feature-name-05-08-2026
 
-# 3. Make changes, then stage and commit
-git add .
-git commit -m "Your commit message"
+# 3. Make changes, then stage SPECIFIC files (never git add .)
+git add app/routers/feature.py app/schemas.py frontend/feature.html frontend/js/feature.js
 
-# 4. Push to GitHub
-git push -u origin update/your-branch-name
+# 4. Commit with *CODE UPDATE* format
+git commit -m "*CODE UPDATE*
+- Added feature endpoint with proper auth guards.
+- Created Pydantic schemas for request/response validation.
+- Built feature page with sidebar integration.
+- Added client-side API calls using api.js module."
+
+# 5. Push branch to GitHub
+git push -u origin feature/your-feature-name-05-08-2026
+
+# 6. Merge to main and push
+git checkout main
+git merge feature/your-feature-name-05-08-2026
+git push origin main
 ```
+
+---
+
+## Important Rules
+
+- **Never force push** — if push is rejected, run `git pull --no-rebase` first
+- **Never push directly to main** — always create a branch first
+- **Never use `git add .`** — stage specific files to avoid committing unrelated changes
+- **Always use `-u` flag** on first push of a new branch
+- **Always include date suffix** on branch names for traceability

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Tickets</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo"><span id="sidebarLogo"></span><h2 id="sidebarName"></h2></div>
+        <ul></ul>
+    </nav>
+    <div class="content">
+        <div class="header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+            <h1 style="margin:0;font-size:22px;">Support Tickets</h1>
+            <div style="display:flex;gap:8px;">
+                <button onclick="filterTickets('all')" id="btn-all" class="filter-btn active-filter">All</button>
+                <button onclick="filterTickets('open')" id="btn-open" class="filter-btn">Open</button>
+                <button onclick="filterTickets('replied')" id="btn-replied" class="filter-btn">Replied</button>
+                <button onclick="filterTickets('closed')" id="btn-closed" class="filter-btn">Closed</button>
+            </div>
+        </div>
+
+        <div class="card" style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;" id="ticketsTable">
+                <thead>
+                    <tr style="border-bottom:2px solid #eee;">
+                        <th style="padding:12px 16px;text-align:left;font-size:13px;color:#888;font-weight:600;">#</th>
+                        <th style="padding:12px 16px;text-align:left;font-size:13px;color:#888;font-weight:600;">Name</th>
+                        <th style="padding:12px 16px;text-align:left;font-size:13px;color:#888;font-weight:600;">Email</th>
+                        <th style="padding:12px 16px;text-align:left;font-size:13px;color:#888;font-weight:600;">Concern</th>
+                        <th style="padding:12px 16px;text-align:left;font-size:13px;color:#888;font-weight:600;">Status</th>
+                        <th style="padding:12px 16px;text-align:left;font-size:13px;color:#888;font-weight:600;">Date</th>
+                        <th style="padding:12px 16px;text-align:left;font-size:13px;color:#888;font-weight:600;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="ticketsTbody">
+                    <tr><td colspan="7" style="padding:40px;text-align:center;color:#999;">Loading tickets...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Ticket Detail Modal -->
+    <div id="ticketModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;overflow-y:auto;">
+        <div style="max-width:560px;margin:40px auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;">
+                <h3 style="color:white;margin:0;" id="modalTicketTitle">Ticket #</h3>
+                <button onclick="closeTicketModal()" style="background:none;border:none;color:white;font-size:22px;cursor:pointer;">&times;</button>
+            </div>
+            <div style="padding:24px;">
+                <div style="margin-bottom:16px;">
+                    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+                        <span><strong>Name:</strong> <span id="modalName"></span></span>
+                        <span><strong>Email:</strong> <span id="modalEmail"></span></span>
+                        <span><strong>Phone:</strong> <span id="modalPhone"></span></span>
+                    </div>
+                    <div style="background:#f8f9fa;border-radius:8px;padding:14px;margin-bottom:16px;">
+                        <p style="margin:0 0 4px;font-size:12px;color:#888;font-weight:600;">CONCERN</p>
+                        <p style="margin:0;color:#333;" id="modalConcern"></p>
+                    </div>
+                    <div id="modalReplySection" style="display:none;background:#f0f4ff;border-radius:8px;padding:14px;margin-bottom:16px;">
+                        <p style="margin:0 0 4px;font-size:12px;color:#667eea;font-weight:600;">PREVIOUS REPLY</p>
+                        <p style="margin:0;color:#333;" id="modalPrevReply"></p>
+                    </div>
+                </div>
+                <div id="modalReplyForm">
+                    <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Reply to Customer</label>
+                    <textarea id="replyText" rows="4" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;resize:vertical;" placeholder="Type your reply..."></textarea>
+                    <div style="display:flex;gap:10px;margin-top:12px;">
+                        <button onclick="sendReply()" style="flex:1;padding:11px;background:var(--primary-color,#667eea);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Send Reply</button>
+                        <button onclick="closeTicket()" style="padding:11px 16px;background:#f5f5f5;color:#555;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Close Ticket</button>
+                    </div>
+                </div>
+                <div id="modalClosedMsg" style="display:none;text-align:center;padding:12px;background:#f5f5f5;border-radius:8px;color:#888;font-size:14px;">This ticket is closed.</div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .filter-btn { padding:7px 16px;border:1px solid #ddd;background:white;border-radius:20px;cursor:pointer;font-size:13px;transition:all 0.2s; }
+        .filter-btn:hover { border-color:var(--primary-color,#667eea);color:var(--primary-color,#667eea); }
+        .active-filter { background:var(--primary-color,#667eea);color:white;border-color:var(--primary-color,#667eea); }
+        .status-badge { padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600; }
+        .status-open { background:#fff3cd;color:#856404; }
+        .status-replied { background:#d1e7dd;color:#0f5132; }
+        .status-closed { background:#e2e3e5;color:#41464b; }
+    </style>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/toast.js"></script>
+    <script>
+        let allTickets = [];
+        let currentFilter = 'all';
+        let currentTicketId = null;
+
+        async function loadTickets() {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE}/support-tickets/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error();
+                allTickets = await res.json();
+                renderTickets();
+            } catch {
+                document.getElementById('ticketsTbody').innerHTML = '<tr><td colspan="7" style="padding:40px;text-align:center;color:#999;">Failed to load tickets.</td></tr>';
+            }
+        }
+
+        function renderTickets() {
+            const filtered = currentFilter === 'all' ? allTickets : allTickets.filter(t => t.status === currentFilter);
+            const tbody = document.getElementById('ticketsTbody');
+            if (!filtered.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="padding:40px;text-align:center;color:#999;">No tickets found.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = filtered.map(t => `
+                <tr style="border-bottom:1px solid #f0f0f0;">
+                    <td style="padding:12px 16px;font-size:13px;color:#888;">#${t.id}</td>
+                    <td style="padding:12px 16px;font-size:14px;font-weight:500;">${t.name}</td>
+                    <td style="padding:12px 16px;font-size:13px;color:#555;">${t.email}</td>
+                    <td style="padding:12px 16px;font-size:13px;color:#555;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.concern}</td>
+                    <td style="padding:12px 16px;"><span class="status-badge status-${t.status}">${t.status}</span></td>
+                    <td style="padding:12px 16px;font-size:12px;color:#888;">${new Date(t.created_at).toLocaleDateString()}</td>
+                    <td style="padding:12px 16px;"><button onclick="openTicket(${t.id})" style="padding:6px 14px;background:var(--primary-color,#667eea);color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;">View</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function filterTickets(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active-filter'));
+            document.getElementById('btn-' + status).classList.add('active-filter');
+            renderTickets();
+        }
+
+        function openTicket(id) {
+            const t = allTickets.find(x => x.id === id);
+            if (!t) return;
+            currentTicketId = id;
+            document.getElementById('modalTicketTitle').textContent = `Ticket #${t.id} — ${t.name}`;
+            document.getElementById('modalName').textContent = t.name;
+            document.getElementById('modalEmail').textContent = t.email;
+            document.getElementById('modalPhone').textContent = t.phone || '—';
+            document.getElementById('modalConcern').textContent = t.concern;
+            document.getElementById('replyText').value = '';
+
+            if (t.reply) {
+                document.getElementById('modalPrevReply').textContent = t.reply;
+                document.getElementById('modalReplySection').style.display = 'block';
+            } else {
+                document.getElementById('modalReplySection').style.display = 'none';
+            }
+
+            const isClosed = t.status === 'closed';
+            document.getElementById('modalReplyForm').style.display = isClosed ? 'none' : 'block';
+            document.getElementById('modalClosedMsg').style.display = isClosed ? 'block' : 'none';
+            document.getElementById('ticketModal').style.display = 'block';
+        }
+
+        function closeTicketModal() {
+            document.getElementById('ticketModal').style.display = 'none';
+            currentTicketId = null;
+        }
+
+        async function sendReply() {
+            const reply = document.getElementById('replyText').value.trim();
+            if (!reply) return showToast('Please enter a reply', 'error');
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE}/support-tickets/${currentTicketId}/reply`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reply })
+                });
+                if (!res.ok) throw new Error();
+                showToast('Reply sent!', 'success');
+                closeTicketModal();
+                loadTickets();
+            } catch { showToast('Failed to send reply', 'error'); }
+        }
+
+        async function closeTicket() {
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`${API_BASE}/support-tickets/${currentTicketId}/close`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                showToast('Ticket closed', 'success');
+                closeTicketModal();
+                loadTickets();
+            } catch { showToast('Failed to close ticket', 'error'); }
+        }
+
+        window.addEventListener('click', (e) => { if (e.target === document.getElementById('ticketModal')) closeTicketModal(); });
+        document.addEventListener('DOMContentLoaded', loadTickets);
+    </script>
+</body>
+</html>

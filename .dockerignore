@@ -17,3 +17,21 @@ check_*.py
 fix_*.py
 add_*.py
 change_*.py
+
+# Kiro dev tooling
+.kiro/
+
+# Agent workflow instructions
+.agents/
+
+# Internal reference markdown files
+PROJECT_ROADMAP.md
+SYSTEM_UPDATES_DATA_HISTORY_LOGS.md
+GIT_BRANCH_GUIDE.md
+sidebar_visibility_refactor_summary.md
+
+# Pytest / test files
+commands/testing/
+.pytest_cache/
+conftest.py
+pytest.ini

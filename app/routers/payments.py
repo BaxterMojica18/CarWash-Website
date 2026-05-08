@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import Optional
 from app import database, crud
 from app.dependencies import get_current_user
+from app.notification_service import notify_business_admins
 import stripe
 import os
 
@@ -30,7 +31,7 @@ def _is_demo(user) -> bool:
 def create_payment_intent(
     data: CreatePaymentIntentRequest,
     db: Session = Depends(database.get_db),
-    current_user = Depends(get_current_user)
+    current_user=Depends(get_current_user),
 ):
     """Create a Stripe PaymentIntent from the user's current cart."""
     if not stripe.api_key:
@@ -54,14 +55,14 @@ def create_payment_intent(
             metadata={
                 "user_id": str(current_user.id),
                 "user_email": current_user.email,
-                "is_demo": str(is_demo)
-            }
+                "is_demo": str(is_demo),
+            },
         )
         return {
             "client_secret": intent.client_secret,
             "amount": total,
             "amount_cents": amount_cents,
-            "is_demo": is_demo
+            "is_demo": is_demo,
         }
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -71,7 +72,7 @@ def create_payment_intent(
 def create_checkout_session(
     data: CreateCheckoutSessionRequest,
     db: Session = Depends(database.get_db),
-    current_user = Depends(get_current_user)
+    current_user=Depends(get_current_user),
 ):
     """Create a Stripe Checkout Session from the user's current cart."""
     if not stripe.api_key:
@@ -106,10 +107,14 @@ def create_checkout_session(
             metadata={
                 "user_id": str(current_user.id),
                 "user_email": current_user.email,
-                "is_demo": str(is_demo)
-            }
+                "is_demo": str(is_demo),
+            },
         )
-        return {"checkout_url": session.url, "session_id": session.id, "is_demo": is_demo}
+        return {
+            "checkout_url": session.url,
+            "session_id": session.id,
+            "is_demo": is_demo,
+        }
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -122,9 +127,12 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
 
     try:
         if STRIPE_WEBHOOK_SECRET:
-            event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, STRIPE_WEBHOOK_SECRET
+            )
         else:
             import json
+
             event = json.loads(payload)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Webhook error: {e}")
@@ -137,15 +145,39 @@ async def stripe_webhook(request: Request, db: Session = Depends(database.get_db
             if user:
                 order = crud.create_order_from_cart(db, user_id, "stripe")
                 if order:
-                    print(f"[STRIPE] Order {order.order_number} created for user {user_id}")
+                    print(
+                        f"[STRIPE] Order {order.order_number} created for user {user_id}"
+                    )
+                    # Notify business admins of payment received
+                    amount = session.get("amount_total", 0) / 100
+                    notify_business_admins(
+                        db,
+                        user.business_number,
+                        "Payment Received",
+                        f"Payment of ${amount:.2f} received for order #{order.order_number}",
+                        "payment",
+                    )
 
     elif event["type"] == "payment_intent.succeeded":
         intent = event["data"]["object"]
         user_id = int(intent["metadata"].get("user_id", 0))
         if user_id:
-            order = crud.create_order_from_cart(db, user_id, "stripe")
-            if order:
-                print(f"[STRIPE] Order {order.order_number} created via PaymentIntent for user {user_id}")
+            user = db.query(database.User).filter(database.User.id == user_id).first()
+            if user:
+                order = crud.create_order_from_cart(db, user_id, "stripe")
+                if order:
+                    print(
+                        f"[STRIPE] Order {order.order_number} created via PaymentIntent for user {user_id}"
+                    )
+                    # Notify business admins of payment received
+                    amount = intent.get("amount", 0) / 100
+                    notify_business_admins(
+                        db,
+                        user.business_number,
+                        "Payment Received",
+                        f"Payment of ${amount:.2f} received for order #{order.order_number}",
+                        "payment",
+                    )
 
     return {"status": "ok"}
 
@@ -155,5 +187,7 @@ def get_stripe_config():
     """Return Stripe publishable key for frontend."""
     pub_key = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
     if not pub_key:
-        raise HTTPException(status_code=500, detail="Stripe publishable key not configured")
+        raise HTTPException(
+            status_code=500, detail="Stripe publishable key not configured"
+        )
     return {"publishable_key": pub_key}

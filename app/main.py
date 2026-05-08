@@ -3,20 +3,47 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqladmin import Admin, ModelView
-from app.database import create_tables, engine, User, Location, ProductService, Invoice, Order, Reservation
-from app.routers import auth, settings, invoices, reports, cart, orders, reservations, client, dashboard, payment_methods, payments, coupons, flash_sales
+from app.database import (
+    create_tables,
+    engine,
+    User,
+    Location,
+    ProductService,
+    Invoice,
+    Order,
+    Reservation,
+)
+from app.routers import (
+    auth,
+    settings,
+    invoices,
+    reports,
+    cart,
+    orders,
+    reservations,
+    client,
+    dashboard,
+    payment_methods,
+    payments,
+    coupons,
+    flash_sales,
+    audit_logs,
+    notifications,
+)
 from app.email_service import send_email
 import os
 from starlette.middleware.base import BaseHTTPMiddleware
 
+
 class NoCacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         response = await call_next(request)
-        if request.url.path.endswith(('.html', '.css', '.js')):
+        if request.url.path.endswith((".html", ".css", ".js")):
             response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
         return response
+
 
 app = FastAPI(
     title="Car Wash Manager API",
@@ -29,23 +56,52 @@ app = FastAPI(
 # SQLAdmin setup
 admin = Admin(app, engine)
 
+
 class UserAdmin(ModelView, model=User):
     column_list = [User.id, User.email, User.is_demo]
-    
+
+
 class LocationAdmin(ModelView, model=Location):
     column_list = [Location.id, Location.name, Location.address, Location.status]
-    
+
+
 class ProductServiceAdmin(ModelView, model=ProductService):
-    column_list = [ProductService.id, ProductService.name, ProductService.price, ProductService.type]
-    
+    column_list = [
+        ProductService.id,
+        ProductService.name,
+        ProductService.price,
+        ProductService.type,
+    ]
+
+
 class InvoiceAdmin(ModelView, model=Invoice):
-    column_list = [Invoice.id, Invoice.invoice_number, Invoice.customer_name, Invoice.total_amount, Invoice.date]
-    
+    column_list = [
+        Invoice.id,
+        Invoice.invoice_number,
+        Invoice.customer_name,
+        Invoice.total_amount,
+        Invoice.date,
+    ]
+
+
 class OrderAdmin(ModelView, model=Order):
-    column_list = [Order.id, Order.order_number, Order.status, Order.total_amount, Order.created_at]
-    
+    column_list = [
+        Order.id,
+        Order.order_number,
+        Order.status,
+        Order.total_amount,
+        Order.created_at,
+    ]
+
+
 class ReservationAdmin(ModelView, model=Reservation):
-    column_list = [Reservation.id, Reservation.reservation_number, Reservation.status, Reservation.vehicle_plate]
+    column_list = [
+        Reservation.id,
+        Reservation.reservation_number,
+        Reservation.status,
+        Reservation.vehicle_plate,
+    ]
+
 
 admin.add_view(UserAdmin)
 admin.add_view(LocationAdmin)
@@ -85,13 +141,23 @@ app.include_router(invoices.router, prefix="/api/invoices", tags=["Invoices"])
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 app.include_router(cart.router, prefix="/api/cart", tags=["Cart"])
 app.include_router(orders.router, prefix="/api/orders", tags=["Orders"])
-app.include_router(reservations.router, prefix="/api/reservations", tags=["Reservations"])
+app.include_router(
+    reservations.router, prefix="/api/reservations", tags=["Reservations"]
+)
 app.include_router(client.router, prefix="/api/client", tags=["Client"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
-app.include_router(payment_methods.router, prefix="/api/payment-methods", tags=["Payment Methods"])
+app.include_router(
+    payment_methods.router, prefix="/api/payment-methods", tags=["Payment Methods"]
+)
 app.include_router(payments.router, prefix="/api/payments", tags=["Stripe Payments"])
 app.include_router(coupons.router, prefix="/api", tags=["Coupons"])
 app.include_router(flash_sales.router, prefix="/api", tags=["Flash Sales"])
+app.include_router(audit_logs.router, prefix="/api/audit-logs", tags=["Audit Logs"])
+app.include_router(
+    notifications.router, prefix="/api/notifications", tags=["Notifications"]
+)
+app.include_router(support_tickets.router, prefix="/api/support-tickets", tags=["Support Tickets"])
+
 
 @app.get("/api/health")
 def health_check():
@@ -101,6 +167,7 @@ def health_check():
 @app.post("/api/contact-sales")
 async def contact_sales(request: Request):
     from pydantic import BaseModel
+
     data = await request.json()
     name = data.get("name", "")
     email = data.get("email", "")
@@ -133,17 +200,20 @@ async def contact_sales(request: Request):
         "baxterdavid.mojica@gmail.com",
         f"💼 New Sales Inquiry from {name} — {business}",
         html,
-        f"New inquiry from {name} ({email})\nBusiness: {business}\nPhone: {phone}\nMessage: {message}"
+        f"New inquiry from {name} ({email})\nBusiness: {business}\nPhone: {phone}\nMessage: {message}",
     )
     return {"message": "Thank you! We'll be in touch shortly."}
+
 
 # Serve frontend static files BEFORE catch-all routes
 app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
 app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
 
+
 @app.get("/")
 def read_root():
     return FileResponse("frontend/index.html")
+
 
 @app.get("/{page}.html")
 def read_page(page: str):

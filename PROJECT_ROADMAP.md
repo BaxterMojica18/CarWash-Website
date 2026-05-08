@@ -165,7 +165,7 @@
   - Client-specific theme system (`for_client` flag)
 - [ ] GDPR compliance
 - [ ] Data encryption at rest
-- [x] Audit logging *(partial — via report cache)*
+- [x] Audit logging ✅ *(Full audit_logs table + viewer page + CUD logging across all routers — May 2026)*
 - [ ] Backup automation
 
 ### 12. Performance Optimization
@@ -713,7 +713,7 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 - [ ] Admin queue management shows live position changes
 - [ ] Browser push notifications for order/reservation status changes
 - [ ] Service worker integration for background push delivery
-- [ ] Notification preferences per user (opt-in/out per event type)
+- [x] Notification preferences per user (opt-in/out per event type) ✅ *(Session 13 — in-app notification preferences UI)*
 
 ### 📱 Feature 4: Mobile Optimization
 **Target Version:** V3.3 | **Priority:** Medium
@@ -773,7 +773,7 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 - [ ] Refresh token rotation — 15min access tokens + long-lived refresh tokens
 - [ ] Content Security Policy (CSP) headers on all pages
 - [ ] Subresource Integrity (SRI) for CDN scripts (Chart.js, Firebase SDK)
-- [ ] Audit log table — log all sensitive actions (login, permission changes, deletions)
+- [x] Audit log table — log all sensitive actions (login, permission changes, deletions) ✅ *(Session 13)*
 - [ ] CORS hardening — restrict to exact production domains only
 - [ ] `pip audit` + `npm audit` in CI/CD pipeline
 - [ ] Automated daily database backups on Render
@@ -802,7 +802,7 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 | Session 10 | V2.6 | Admin Side: Voucher CRUD, Flash Sales, Order UI | ✅ Done |
 | Session 11 | V2.7 | Top navbar, dashboard stat redesign, coupon UI | ✅ Done |
 | Session 12 | V2.8 | Dashboard grid refinement, dynamic theming, sidebar polish | ✅ Done |
-| Session 13 | V2.9 | Flash sale → shop, coupon → cart, sidebar nav links | ⏳ Next |
+| Session 13 | V2.9 | Queue/permissions theme fix, URL encryption, audit logging, notifications | ✅ Done |
 | Phase 3 | V3.x | PWA, advanced dashboard, WebSockets, mobile UX | 📅 Planned |
 | Phase 4 | V4.x | Next.js migration, AI, multi-location, security, payments | 🚀 Future |
 
@@ -861,10 +861,10 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 ## 🔜 Next Session (Session 11) — V2.7
 
 ### Planned:
-- [ ] Link flash sales to shop.html — show sale price/badge on product cards when a flash sale is active
-- [ ] Link coupons to cart.html — validate coupon code against backend on apply
+- [x] Link flash sales to shop.html — show sale price/badge on product cards when a flash sale is active ✅ *(Done in Session 12)*
+- [x] Link coupons to cart.html — validate coupon code against backend on apply ✅ *(Done in Session 12)*
 - [ ] Admin order UI improvements — bulk status update, order search/filter
-- [ ] Add `coupon-management.html` and `flash-sale-management.html` to admin sidebar navigation
+- [x] Add `coupon-management.html` and `flash-sale-management.html` to admin sidebar navigation ✅ *(Done in Session 13)*
 
 ---
 
@@ -989,9 +989,9 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 ## 🔜 Next Session (Session 13) — V2.9
 
 ### Planned:
-- [ ] Connect flash sales to `shop.html` — show sale badge + discounted price on product cards when a flash sale is active
-- [ ] Connect coupon validation to `cart.html` — call `POST /coupons/validate` on apply, show discount in order summary
-- [ ] Add `coupon-management.html` and `flash-sale-management.html` to admin sidebar navigation
+- [x] Connect flash sales to `shop.html` — show sale badge + discounted price on product cards when a flash sale is active ✅ *(Done in Session 12)*
+- [x] Connect coupon validation to `cart.html` — call `POST /coupons/validate` on apply, show discount in order summary ✅ *(Done in Session 12)*
+- [x] Add `coupon-management.html` and `flash-sale-management.html` to admin sidebar navigation ✅ *(Done in Session 13)*
 - [ ] Apply top navbar to remaining pages that haven't been updated yet
 
 ---
@@ -1040,11 +1040,100 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 | SMS Notifications (Twilio) | ⬜ Pending |
 | React + Next.js Frontend | ⬜ Pending |
 
-## 🔜 Next Session (Session 13) — V2.9
+## ✅ Completed in Session 13 *(May 8, 2026)* — V2.9
+
+### 🎨 UI/Theme Fixes
+- [x] **Queue Management Tiles** — Updated `queue-management.html` tiles to use `var(--sidebar-color)` instead of hardcoded gradients
+- [x] **Permissions Page Cleanup** — Removed all emoji from `permissions-management.html`, replaced with SVG icons, flat card style with themed border-top
+- [x] **Sidebar Tabs Emoji Removal** — Added icon entries for flash-sales, users, payment-methods, audit-logs, notifications in `normalizeSidebarIcons()`
+
+### 🔒 URL Encryption Improvement
+- [x] **32-char Route Tokens** — Upgraded `router.js` from 8-char to 32-char hex tokens with legacy backward compatibility
+- [x] **Full URL Obfuscation** — Intercepted all navigation paths (link clicks, JS assignments, direct URL entry) so `.html` never appears in URL bar
+
+### 📋 Audit Logging
+- [x] **Audit Log Table** — Created `audit_logs` table with indexes via `commands/database/add_audit_logs_table.py`
+- [x] **AuditLog Model** — Added SQLAlchemy model to `app/database.py`
+- [x] **Audit Utility** — Created `app/audit.py` with `log_audit()` and `get_client_ip()` helpers
+- [x] **Audit API Router** — `GET /api/audit-logs` with pagination, filtering, business scoping, admin-only access
+- [x] **CUD Logging Integration** — Added `log_audit()` calls to all write operations across 9 routers (settings, invoices, orders, reservations, cart, payment_methods, coupons, flash_sales, auth)
+- [x] **Audit Log Viewer Page** — `frontend/audit-logs.html` with filterable table (user, action, resource type, date range), pagination, expandable JSON details
+
+### 🔔 Notification System
+- [x] **Notifications Tables** — Created `notifications` + `notification_preferences` tables via `commands/database/add_notifications_tables.py`
+- [x] **Notification Models** — Added `Notification` and `NotificationPreference` SQLAlchemy models
+- [x] **Notification Service** — Created `app/notification_service.py` with `create_notification()`, `notify_business_admins()`, `get_or_create_preferences()`
+- [x] **Notification API** — Full CRUD: `GET /api/notifications` (paginated + unread count), `PATCH /{id}/read`, `PATCH /read-all`, `DELETE /{id}` (soft-delete), `GET/PUT /preferences`
+- [x] **Bell Icon Dropdown** — Dynamic badge, dropdown panel with 10 recent notifications, mark-as-read, relative timestamps, click-outside-to-close
+- [x] **Auto-generate Notifications** — Triggers on: new order, order status change, reservation status change, payment received, coupon applied, flash sale activated, permission changes
+- [x] **Notification Preferences** — Toggle switches in Settings page for 6 notification types, persisted immediately on change
+
+### 📊 Current Version: 6.9.0 (Public: V2.9)
+
+## 🔄 Updated Status (Session 13)
+
+| Feature | Status |
+|---------|--------|
+| Queue/permissions theme fix | ✅ Done |
+| URL encryption (32-char tokens) | ✅ Done |
+| Audit logging (full system) | ✅ Done |
+| Notification system (full) | ✅ Done |
+| Bell icon dropdown | ✅ Done |
+| Notification preferences UI | ✅ Done |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| SMS Notifications (Twilio) | ⬜ Pending |
+| React + Next.js Frontend | ⬜ Pending |
+
+## 🔜 Next Session (Session 14) — V3.0
 
 ### Planned:
-- [ ] Apply router.js to remaining pages not yet updated
-- [ ] Flash sale management linked to sidebar nav
-- [ ] Queue management real-time updates (polling or WebSocket)
-- [ ] Payment history page
-- [ ] Mobile PWA manifest + service worker
+- [ ] Connect flash sales to `shop.html` — show sale badge + discounted price on product cards when a flash sale is active
+- [ ] Progressive Web App (PWA) — manifest.json, service worker, offline fallback
+- [ ] WebSocket integration for real-time queue updates
+- [ ] Browser push notifications for order/reservation status changes
+
+
+---
+
+## ✅ Completed in Session 13 *(May 8, 2026)* — V2.9
+
+### 🐛 Bug Fixes
+- [x] **Sidebar collapse re-open** — collapsed sidebar now shows expand chevron; `.sidebar-close` no longer hidden when collapsed
+- [x] **business_sub_name migration** — column added to DB + `start.sh` for Render
+- [x] **Dashboard sidebar active color** — fixed CSS variable override conflict
+
+### 👤 Profile Edit in Top Navbar
+- [x] Inline edit modal from navbar dropdown — name + photo upload, saves to API, updates navbar live
+
+### 🖼️ Business Logo Update Button
+- [x] Dedicated "Update Logo" button in Settings — saves logo independently from full business form
+
+### 🌐 Footer & Support Tickets
+- [x] Footer updated to BuxTek Inc. 2025 branding
+- [x] "Contact Customer Support" button in footer opens ticket submission modal
+- [x] `SupportTicket` model + `/api/support-tickets` router (submit, list, view, reply, close)
+- [x] `tickets.html` — owner-only tickets management page with reply-by-email feature
+- [x] Tickets tab in owner/superadmin sidebar
+
+### 📊 Current Version: 6.9.0 (Public: V2.9)
+
+## 🔄 Updated Status (Session 13)
+
+| Feature | Status |
+|---------|--------|
+| Sidebar collapse fix | ✅ Done |
+| Profile edit in navbar | ✅ Done |
+| Business logo update button | ✅ Done |
+| Footer BuxTek branding | ✅ Done |
+| Support ticket system | ✅ Done |
+| Flash sale → shop.html | ⬜ Pending |
+| Coupon validation → cart.html | ⬜ Pending |
+| Real-time WebSockets for Queue | ⬜ Pending |
+
+## 🔜 Next Session (Session 14) — V3.0
+
+### Planned:
+- [ ] Connect flash sales to `shop.html` — show sale badge + discounted price on product cards
+- [ ] Connect coupon validation to `cart.html` — validate against backend on apply
+- [ ] Apply top navbar to remaining pages not yet updated
+- [ ] PWA manifest + service worker (offline support)

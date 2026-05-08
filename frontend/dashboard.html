@@ -20,26 +20,7 @@
     </nav>
     <main class="content">
         <header style="display: flex; justify-content: space-between; align-items: center;">
-            <h1>Dashboard</h1>
-            <div class="profile-dropdown">
-                <div class="profile-icon" onclick="toggleProfileMenu()">
-                    <img id="profilePhoto" src="" alt="Profile">
-                </div>
-                <div class="profile-menu" id="profileMenu" style="display: none;">
-                    <div class="profile-info">
-                        <img id="menuProfilePhoto" src="" alt="Profile" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #667eea;">
-                        <div>
-                            <strong id="profileName">Demo User</strong>
-                            <p id="profileRole" style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Admin</p>
-                            <p id="profileBiz" style="font-size: 11px; margin-top: 5px; color: #667eea; background: rgba(102, 126, 234, 0.1); padding: 2px 5px; border-radius: 4px; display: none; font-weight: bold;"></p>
-                        </div>
-                    </div>
-                    <hr style="margin: 10px 0; border: none; border-top: 1px solid #e0e0e0;">
-                    <a href="#" onclick="showEditProfile(); return false;">&#9999;&#65039; Edit Profile</a>
-                    <a href="settings.html">&#9881;&#65039; Settings</a>
-                    <a href="login.html" onclick="logout()">&#128682; Logout</a>
-                </div>
-            </div>
+            <div class="welcome-greeting" id="welcomeGreeting"></div>
         </header>
         <div style="margin-bottom: 25px; display: flex; align-items: center; gap: 12px;">
             <label for="dashboardFilter" style="font-weight: 600; color: #2c3e50; font-size: 15px;">Filter by:</label>
@@ -149,6 +130,7 @@
                 </div>
             </div>
         </div>
+        <div class="quick-actions-card" id="quickActionsContainer"></div>
         <div class="charts-section">
             <div class="chart-card">
                 <h3 id="revenueChartTitle">Weekly Revenue</h3>

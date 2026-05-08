@@ -42,7 +42,7 @@
         </header>
 
         <div class="filters" style="display: flex; gap: 10px; margin-bottom: 30px; padding: 15px; border-radius: 15px; flex-wrap: wrap; background: white; border: 1px solid #e0e0e0; justify-content: center;">
-            <button onclick="filterReservations('all')" class="filter-btn active" data-filter="all" style="padding: 12px 20px; border: 2px solid #667eea; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: #667eea; color: white; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">All Reservations</button>
+            <button onclick="filterReservations('all')" class="filter-btn active" data-filter="all" style="padding: 12px 20px; border: 2px solid var(--sidebar-color, #667eea); cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: var(--sidebar-color, #667eea); color: white; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">All Reservations</button>
             <button onclick="filterReservations('pending')" class="filter-btn" data-filter="pending" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Pending</button>
             <button onclick="filterReservations('accepted')" class="filter-btn" data-filter="accepted" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">Accepted</button>
             <button onclick="filterReservations('in_progress')" class="filter-btn" data-filter="in_progress" style="padding: 12px 20px; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: all 0.3s ease; background: white; color: #333;">In Progress</button>
@@ -119,11 +119,14 @@
 
         function filterReservations(status) {
             currentFilter = status;
+            const sidebarColor = getComputedStyle(document.documentElement).getPropertyValue('--sidebar-color').trim() || '#667eea';
             document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
                 if (btn.dataset.filter === status) {
-                    btn.style.background = '#667eea';
+                    btn.classList.add('active');
+                    btn.style.background = sidebarColor;
                     btn.style.color = 'white';
-                    btn.style.border = '2px solid #667eea';
+                    btn.style.border = '2px solid ' + sidebarColor;
                     btn.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.3)';
                 } else {
                     btn.style.background = 'white';
@@ -221,7 +224,7 @@
     <style>
         .queue-card { background: white; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeSlideIn 0.45s ease both; }
         .queue-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
-        .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .card-header { background: var(--sidebar-color, #667eea); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .order-info h3 { color: white; margin: 0 0 8px 0; font-size: 1.3rem; }
         .order-date { color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9rem; }
         .status-badge { padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -235,16 +238,16 @@
         .order-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .detail-item { display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 10px; }
         .detail-label { font-weight: 600; color: #495057; }
-        .detail-value { font-weight: bold; color: #667eea; }
+        .detail-value { font-weight: bold; color: var(--sidebar-color, #667eea); }
         .card-actions { padding: 20px; background: #f8f9fa; display: flex; gap: 10px; flex-wrap: wrap; }
         .action-btn { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease; color: white; }
         .action-btn:hover { transform: scale(1.05); }
-        .accept-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
-        .reject-btn { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
-        .process-btn { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
-        .complete-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+        .accept-btn { background: var(--sidebar-color, #28a745); }
+        .reject-btn { background: #dc3545; }
+        .process-btn { background: var(--primary-color, #007bff); }
+        .complete-btn { background: #28a745; }
         .empty-state { text-align: center; color: #666; font-size: 1.5rem; padding: 60px 20px; display: flex; justify-content: center; align-items: center; }
-        #location-select:hover, #location-select:focus { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.3); }
+        #location-select:hover, #location-select:focus { border-color: var(--sidebar-color, #667eea); box-shadow: 0 2px 8px rgba(102,126,234,0.3); }
     </style>
 </body>
 </html>

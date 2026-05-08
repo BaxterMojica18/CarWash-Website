@@ -109,7 +109,6 @@ function previewTheme() {
     const cardColor = adjustBrightness(document.getElementById('cardColor').value, document.getElementById('cardBrightness').value);
     const inputColor = adjustBrightness(document.getElementById('inputColor').value, document.getElementById('inputBrightness').value);
     const dropdownColor = adjustBrightness(document.getElementById('dropdownColor').value, document.getElementById('dropdownBrightness').value);
-    const buttonColor = document.getElementById('buttonColor').value;
     const sidebarColor = document.getElementById('sidebarColor').value;
     const sidebarActiveColor = document.getElementById('sidebarActiveColor').value;
     const bgColor = document.getElementById('bgColor').value;
@@ -119,7 +118,7 @@ function previewTheme() {
     document.documentElement.style.setProperty('--text-color', textColor);
     document.documentElement.style.setProperty('--card-bg', cardColor);
     document.documentElement.style.setProperty('--card-text', textColor);
-    document.documentElement.style.setProperty('--primary-color', buttonColor);
+    document.documentElement.style.setProperty('--primary-color', sidebarColor);
     document.documentElement.style.setProperty('--sidebar-color', sidebarColor);
     document.documentElement.style.setProperty('--sidebar-active-color', sidebarActiveColor);
     document.documentElement.style.setProperty('--bg-color', bgColor);
@@ -134,6 +133,7 @@ function previewTheme() {
 document.getElementById('themeForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const forClientCheckbox = document.getElementById('forClient');
+    const sidebarColor = document.getElementById('sidebarColor').value;
     const data = {
         preset_name: document.getElementById('presetName').value,
         text_color: document.getElementById('textColor').value,
@@ -144,8 +144,8 @@ document.getElementById('themeForm').addEventListener('submit', async function(e
         input_brightness: parseInt(document.getElementById('inputBrightness').value),
         dropdown_color: document.getElementById('dropdownColor').value,
         dropdown_brightness: parseInt(document.getElementById('dropdownBrightness').value),
-        button_color: document.getElementById('buttonColor').value,
-        sidebar_color: document.getElementById('sidebarColor').value,
+        button_color: sidebarColor,
+        sidebar_color: sidebarColor,
         sidebar_active_color: document.getElementById('sidebarActiveColor').value,
         bg_color: document.getElementById('bgColor').value,
         delete_button_brightness: parseInt(document.getElementById('deleteBrightness').value),
@@ -159,6 +159,11 @@ document.getElementById('themeForm').addEventListener('submit', async function(e
         showToast(`${label} preset saved!`, 'success');
         loadPresets();
         loadClientPresets();
+        // Reset active preset tracking
+        window._activePresetId = null;
+        document.getElementById('applyPresetBtn').style.display = 'none';
+        document.getElementById('updatePresetBtn').style.display = 'none';
+        document.getElementById('deletePresetBtn').style.display = 'none';
     } catch (error) {
         showToast('Failed to save theme', 'error');
     }
@@ -182,14 +187,38 @@ async function loadPresets() {
 
 async function loadPreset() {
     const id = document.getElementById('presetSelect').value;
-    if (!id) return;
+    if (!id) {
+        window._activePresetId = null;
+        document.getElementById('applyPresetBtn').style.display = 'none';
+        document.getElementById('updatePresetBtn').style.display = 'none';
+        document.getElementById('deletePresetBtn').style.display = 'none';
+        return;
+    }
     
     try {
         await API.settings.activateTheme(id);
         const theme = await API.settings.getActiveTheme();
         applyThemeFromData(theme);
+        // Cache theme colors in localStorage so they persist across pages
+        if (theme) {
+            localStorage.setItem('cachedThemeColors', JSON.stringify({
+                bg_color: theme.bg_color,
+                text_color: theme.text_color,
+                button_color: theme.button_color || theme.sidebar_color,
+                sidebar_color: theme.sidebar_color,
+                card_color: theme.card_color,
+                sidebar_active_color: theme.sidebar_active_color
+            }));
+        }
+        // Track active preset for update/delete
+        window._activePresetId = id;
+        document.getElementById('applyPresetBtn').style.display = 'inline-block';
+        document.getElementById('updatePresetBtn').style.display = 'inline-block';
+        document.getElementById('deletePresetBtn').style.display = 'inline-block';
+        showToast('Theme preset applied!', 'success');
     } catch (error) {
         console.error('Failed to load preset');
+        showToast('Failed to apply preset', 'error');
     }
 }
 
@@ -235,8 +264,7 @@ function applyThemeFromData(theme) {
     document.getElementById('inputBrightness').value = theme.input_brightness;
     document.getElementById('dropdownColor').value = theme.dropdown_color;
     document.getElementById('dropdownBrightness').value = theme.dropdown_brightness;
-    document.getElementById('buttonColor').value = theme.button_color;
-    document.getElementById('sidebarColor').value = theme.sidebar_color;
+    document.getElementById('sidebarColor').value = theme.sidebar_color || theme.button_color;
     document.getElementById('sidebarActiveColor').value = theme.sidebar_active_color;
     document.getElementById('bgColor').value = theme.bg_color;
     document.getElementById('deleteBrightness').value = theme.delete_button_brightness || 100;
@@ -292,6 +320,7 @@ document.getElementById('businessForm').addEventListener('submit', async functio
     const logoType = localStorage.getItem('logoType') || 'none';
     const data = {
         business_name: document.getElementById('businessName').value,
+        business_sub_name: document.getElementById('businessSubName').value || null,
         logo: logoType === 'none' ? null : localStorage.getItem('logo'),
         logo_type: logoType,
         address: document.getElementById('businessAddress').value,
@@ -301,6 +330,7 @@ document.getElementById('businessForm').addEventListener('submit', async functio
     try {
         await API.settings.saveBusiness(data);
         localStorage.setItem('businessName', data.business_name);
+        localStorage.setItem('businessSubName', data.business_sub_name || '');
         // Refresh sidebar branding if menu.js functions are available
         if (typeof applyBrandingFromStorage === 'function') {
             applyBrandingFromStorage();
@@ -691,6 +721,24 @@ loadPresets();
 loadClientPresets();
 loadPaymentMethods();
 loadMyProfile();
+loadBusinessInfo();
+
+async function loadBusinessInfo() {
+    try {
+        const business = await API.settings.getBusiness();
+        if (business) {
+            if (business.business_name) document.getElementById('businessName').value = business.business_name;
+            if (business.address) document.getElementById('businessAddress').value = business.address;
+            if (business.phone) document.getElementById('businessPhone').value = business.phone;
+            const subNameField = document.getElementById('businessSubName');
+            if (subNameField && business.business_sub_name) {
+                subNameField.value = business.business_sub_name;
+            }
+        }
+    } catch (e) {
+        // Business info not found — leave defaults
+    }
+}
 
 // Profile and Settings loading
 async function loadMyProfile() {
@@ -890,3 +938,182 @@ document.getElementById('moduleForm').addEventListener('submit', async function(
         showToast('Failed to save module', 'error');
     }
 });
+
+// Notification Preferences
+const NOTIFICATION_PREF_FIELDS = [
+    'order_notifications',
+    'reservation_notifications',
+    'payment_notifications',
+    'coupon_notifications',
+    'flash_sale_notifications',
+    'permission_notifications'
+];
+
+async function loadNotificationPreferences() {
+    try {
+        const response = await fetch(`${API_BASE}/notifications/preferences`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (!response.ok) return;
+        const prefs = await response.json();
+
+        NOTIFICATION_PREF_FIELDS.forEach(field => {
+            const checkbox = document.getElementById(`pref_${field}`);
+            if (checkbox && prefs[field] !== undefined) {
+                checkbox.checked = prefs[field];
+            }
+        });
+    } catch (error) {
+        console.error('Failed to load notification preferences:', error);
+    }
+}
+
+async function saveNotificationPreferences() {
+    const body = {};
+    NOTIFICATION_PREF_FIELDS.forEach(field => {
+        const checkbox = document.getElementById(`pref_${field}`);
+        if (checkbox) {
+            body[field] = checkbox.checked;
+        }
+    });
+
+    try {
+        const response = await fetch(`${API_BASE}/notifications/preferences`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify(body)
+        });
+        if (response.ok) {
+            showToast('Notification preferences saved', 'success');
+        } else {
+            showToast('Failed to save notification preferences', 'error');
+        }
+    } catch (error) {
+        showToast('Failed to save notification preferences', 'error');
+    }
+}
+
+// Attach toggle change listeners for notification preferences
+function initNotificationPreferences() {
+    NOTIFICATION_PREF_FIELDS.forEach(field => {
+        const checkbox = document.getElementById(`pref_${field}`);
+        if (checkbox) {
+            checkbox.addEventListener('change', saveNotificationPreferences);
+        }
+    });
+    loadNotificationPreferences();
+}
+
+initNotificationPreferences();
+
+// ===== Update & Delete Preset =====
+
+async function updatePreset() {
+    const id = window._activePresetId;
+    if (!id) {
+        showToast('No preset selected to update', 'error');
+        return;
+    }
+
+    const sidebarColor = document.getElementById('sidebarColor').value;
+    const forClientCheckbox = document.getElementById('forClient');
+    const data = {
+        preset_name: document.getElementById('presetName').value,
+        text_color: document.getElementById('textColor').value,
+        text_brightness: parseInt(document.getElementById('textBrightness').value),
+        card_color: document.getElementById('cardColor').value,
+        card_brightness: parseInt(document.getElementById('cardBrightness').value),
+        input_color: document.getElementById('inputColor').value,
+        input_brightness: parseInt(document.getElementById('inputBrightness').value),
+        dropdown_color: document.getElementById('dropdownColor').value,
+        dropdown_brightness: parseInt(document.getElementById('dropdownBrightness').value),
+        button_color: sidebarColor,
+        sidebar_color: sidebarColor,
+        sidebar_active_color: document.getElementById('sidebarActiveColor').value,
+        bg_color: document.getElementById('bgColor').value,
+        delete_button_brightness: parseInt(document.getElementById('deleteBrightness').value),
+        delete_button_saturation: parseInt(document.getElementById('deleteSaturation').value),
+        for_client: forClientCheckbox ? forClientCheckbox.checked : false
+    };
+
+    try {
+        const response = await fetch(`${API_BASE}/settings/theme/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify(data)
+        });
+        if (response.ok) {
+            // Re-activate the theme so updated colors apply immediately
+            await API.settings.activateTheme(id);
+            const theme = await API.settings.getActiveTheme();
+            if (theme) applyThemeFromData(theme);
+            showToast('Preset updated successfully!', 'success');
+            loadPresets();
+            loadClientPresets();
+        } else {
+            showToast('Failed to update preset', 'error');
+        }
+    } catch (error) {
+        showToast('Failed to update preset', 'error');
+    }
+}
+
+async function deletePreset() {
+    const id = window._activePresetId;
+    if (!id) {
+        showToast('No preset selected to delete', 'error');
+        return;
+    }
+
+    if (!confirm('Are you sure you want to delete this preset? This cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/settings/theme/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (response.ok) {
+            showToast('Preset deleted', 'success');
+            window._activePresetId = null;
+            document.getElementById('applyPresetBtn').style.display = 'none';
+            document.getElementById('updatePresetBtn').style.display = 'none';
+            document.getElementById('deletePresetBtn').style.display = 'none';
+            document.getElementById('presetSelect').value = '';
+            document.getElementById('presetName').value = '';
+            loadPresets();
+            loadClientPresets();
+        } else {
+            showToast('Failed to delete preset', 'error');
+        }
+    } catch (error) {
+        showToast('Failed to delete preset', 'error');
+    }
+}
+
+async function saveLogo() {
+    const logoType = localStorage.getItem('logoType') || 'none';
+    const logo = logoType === 'none' ? null : localStorage.getItem('logo');
+    const data = {
+        business_name: document.getElementById('businessName').value,
+        business_sub_name: document.getElementById('businessSubName').value || null,
+        logo,
+        logo_type: logoType,
+        address: document.getElementById('businessAddress').value,
+        phone: document.getElementById('businessPhone').value
+    };
+    try {
+        await API.settings.saveBusiness(data);
+        if (typeof applyBrandingFromStorage === 'function') applyBrandingFromStorage();
+        showToast('Logo updated!', 'success');
+    } catch (e) {
+        showToast('Failed to update logo', 'error');
+    }
+}

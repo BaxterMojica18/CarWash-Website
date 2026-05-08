@@ -182,10 +182,66 @@
     </section>
 
     <footer class="footer">
-        <div class="container">
-            <p>&copy; 2025 CarWash Management System. All rights reserved. | Philippines</p>
+        <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <p style="margin:0;">&copy; 2025 BuxTek Inc. All rights reserved. | Philippines</p>
+            <button onclick="openSupportTicket()" style="background:none;border:1px solid rgba(255,255,255,0.4);color:inherit;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Contact Customer Support
+            </button>
         </div>
     </footer>
+
+    <!-- Support Ticket Modal -->
+    <div id="supportTicketModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;overflow-y:auto;">
+        <div style="max-width:500px;margin:40px auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:25px 30px;display:flex;justify-content:space-between;align-items:center;">
+                <h2 style="color:white;margin:0;font-size:20px;">Contact Customer Support</h2>
+                <button onclick="closeSupportTicket()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;line-height:1;">&times;</button>
+            </div>
+            <form id="supportTicketForm" onsubmit="submitSupportTicket(event)" style="padding:30px;display:flex;flex-direction:column;gap:16px;">
+                <div>
+                    <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Name *</label>
+                    <input type="text" id="ticketName" required style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Email Address *</label>
+                    <input type="email" id="ticketEmail" required style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Mobile Number</label>
+                    <input type="tel" id="ticketPhone" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Concern *</label>
+                    <textarea id="ticketConcern" required rows="4" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea>
+                </div>
+                <button type="submit" id="ticketSubmitBtn" style="padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">Submit Ticket</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        function openSupportTicket() { document.getElementById('supportTicketModal').style.display = 'block'; }
+        function closeSupportTicket() { document.getElementById('supportTicketModal').style.display = 'none'; }
+        async function submitSupportTicket(e) {
+            e.preventDefault();
+            const btn = document.getElementById('ticketSubmitBtn');
+            btn.disabled = true; btn.textContent = 'Submitting...';
+            const data = {
+                name: document.getElementById('ticketName').value,
+                email: document.getElementById('ticketEmail').value,
+                phone: document.getElementById('ticketPhone').value,
+                concern: document.getElementById('ticketConcern').value
+            };
+            try {
+                const res = await fetch(`${API_BASE}/support-tickets`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+                if (res.ok) {
+                    document.getElementById('supportTicketForm').innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:48px;margin-bottom:12px;">&#10003;</div><h3>Ticket Submitted!</h3><p style="color:#666;">We\'ll get back to you at ' + data.email + '</p></div>';
+                    setTimeout(closeSupportTicket, 3000);
+                } else { btn.disabled = false; btn.textContent = 'Submit Ticket'; alert('Failed to submit. Please try again.'); }
+            } catch(err) { btn.disabled = false; btn.textContent = 'Submit Ticket'; alert('Failed to submit. Please try again.'); }
+        }
+        window.addEventListener('click', (e) => { if (e.target === document.getElementById('supportTicketModal')) closeSupportTicket(); });
+    </script>
 
     <!-- Contact Sales Modal -->
     <div id="contactSalesModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; overflow-y:auto;">

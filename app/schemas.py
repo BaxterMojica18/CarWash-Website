@@ -2,27 +2,33 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional, List, Dict
 
+
 class FirebaseLoginRequest(BaseModel):
     id_token: str
     email: EmailStr
     display_name: Optional[str] = None
+
 
 # Password Reset Schemas
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
     reset_method: Optional[str] = "link"  # "link" or "otp"
 
+
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
+
 
 class ForgotPasswordResponse(BaseModel):
     message: str
     reset_token: Optional[str] = None  # Temporary: shown until email service is set up
 
+
 class VerifyOtpRequest(BaseModel):
     email: EmailStr
     otp_code: str
+
 
 class VerifyOtpResponse(BaseModel):
     message: str
@@ -33,18 +39,23 @@ class VerifyOtpResponse(BaseModel):
 class UserPreferenceUpdate(BaseModel):
     sms_opt_in: bool
 
+
 class UserPreferenceResponse(UserPreferenceUpdate):
     id: int
     user_id: int
+
     class Config:
         from_attributes = True
+
 
 class UserPhoneUpdate(BaseModel):
     phone_number: str
 
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
 
 class Token(BaseModel):
     access_token: str
@@ -52,17 +63,22 @@ class Token(BaseModel):
     is_demo: bool
     permissions: List[str] = []
 
+
 class LocationBase(BaseModel):
     name: str
     address: str
 
+
 class LocationCreate(LocationBase):
     pass
 
+
 class Location(LocationBase):
     id: int
+
     class Config:
         from_attributes = True
+
 
 class ProductServiceBase(BaseModel):
     name: str
@@ -72,18 +88,23 @@ class ProductServiceBase(BaseModel):
     quantity: Optional[float] = None
     quantity_unit: Optional[str] = None
 
+
 class ProductServiceCreate(ProductServiceBase):
     pass
 
+
 class ProductService(ProductServiceBase):
     id: int
+
     class Config:
         from_attributes = True
+
 
 class InvoiceItemCreate(BaseModel):
     product_service_id: int
     quantity: int
     unit_price: float
+
 
 class InvoiceItem(BaseModel):
     id: int
@@ -91,13 +112,16 @@ class InvoiceItem(BaseModel):
     quantity: int
     unit_price: float
     subtotal: float
+
     class Config:
         from_attributes = True
+
 
 class InvoiceCreate(BaseModel):
     customer_name: str
     location_id: int
     items: List[InvoiceItemCreate]
+
 
 class Invoice(BaseModel):
     id: int
@@ -107,14 +131,17 @@ class Invoice(BaseModel):
     total_amount: float
     location_id: int
     items: List[InvoiceItem]
+
     class Config:
         from_attributes = True
+
 
 class DashboardStats(BaseModel):
     total_revenue: float
     monthly_wash_count: int
     total_invoices: int
     active_locations: int
+
 
 class CustomThemeCreate(BaseModel):
     preset_name: str
@@ -134,50 +161,63 @@ class CustomThemeCreate(BaseModel):
     delete_button_saturation: int = 100
     for_client: bool = False
 
+
 class CustomTheme(CustomThemeCreate):
     id: int
     user_id: int
     is_active: bool
     for_client: bool = False
+
     class Config:
         from_attributes = True
 
+
 class BusinessInfoCreate(BaseModel):
     business_name: str
+    business_sub_name: Optional[str] = None
     logo: Optional[str] = None
     logo_type: Optional[str] = None
     address: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
 
+
 class BusinessInfo(BusinessInfoCreate):
     id: int
     user_id: int
+
     class Config:
         from_attributes = True
+
 
 class InvoiceCustomizationCreate(BaseModel):
     invoice_address: Optional[str] = None
     invoice_phone: Optional[str] = None
     invoice_email: Optional[str] = None
 
+
 class InvoiceCustomization(InvoiceCustomizationCreate):
     id: int
     user_id: int
+
     class Config:
         from_attributes = True
+
 
 class UserProfileCreate(BaseModel):
     name: str
     role: str
     photo: Optional[str] = None
 
+
 class UserProfile(UserProfileCreate):
     id: int
     user_id: int
     business_number: Optional[str] = None
+
     class Config:
         from_attributes = True
+
 
 class UserPermissions(BaseModel):
     user_id: int
@@ -187,17 +227,21 @@ class UserPermissions(BaseModel):
     hidden_sidebar_tabs: Optional[List[str]] = []
     business_number: Optional[str] = None
 
+
 class UpdateSidebarSettings(BaseModel):
     settings: Dict[str, bool]
+
 
 class UpdateUserRoles(BaseModel):
     user_id: int
     roles: List[str]
 
+
 class CreateUser(BaseModel):
     name: str
     email: EmailStr
     role: str
+
 
 class UserRegister(BaseModel):
     fullName: str
@@ -208,16 +252,20 @@ class UserRegister(BaseModel):
     account_type: str  # admin, staff, client, owner
     business_number: Optional[str] = None
 
+
 class UpdateUserPermissions(BaseModel):
     user_id: int
     permissions: List[str]
+
 
 class CartItemCreate(BaseModel):
     product_service_id: int
     quantity: int
 
+
 class CartItemUpdate(BaseModel):
     quantity: int
+
 
 class CartItemResponse(BaseModel):
     id: int
@@ -225,14 +273,18 @@ class CartItemResponse(BaseModel):
     quantity: int
     price_at_add: float
     product_service: ProductService
+
     class Config:
         from_attributes = True
+
 
 class OrderCreate(BaseModel):
     payment_method: Optional[str] = None
 
+
 class OrderStatusUpdate(BaseModel):
     status: str
+
 
 class OrderItemResponse(BaseModel):
     id: int
@@ -241,8 +293,10 @@ class OrderItemResponse(BaseModel):
     unit_price: float
     subtotal: float
     product_service: ProductService
+
     class Config:
         from_attributes = True
+
 
 class OrderResponse(BaseModel):
     id: int
@@ -253,16 +307,20 @@ class OrderResponse(BaseModel):
     payment_method: Optional[str]
     created_at: datetime
     items: List[OrderItemResponse]
+
     class Config:
         from_attributes = True
+
 
 class ReservationCreate(BaseModel):
     service_id: int
     location_id: int
     vehicle_plate: str
 
+
 class ReservationStatusUpdate(BaseModel):
     status: str
+
 
 class ReservationResponse(BaseModel):
     id: int
@@ -277,8 +335,10 @@ class ReservationResponse(BaseModel):
     created_at: datetime
     service: ProductService
     location: Location
+
     class Config:
         from_attributes = True
+
 
 class ClientDashboard(BaseModel):
     active_orders: List[OrderResponse]

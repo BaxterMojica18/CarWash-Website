@@ -162,6 +162,12 @@ const API = {
             apiRequest('/settings/invoice-custom', {
                 method: 'POST',
                 body: JSON.stringify(data)
+            }),
+        getProfile: () => apiRequest('/settings/profile'),
+        saveProfile: (data) =>
+            apiRequest('/settings/profile', {
+                method: 'POST',
+                body: JSON.stringify(data)
             })
     },
     
@@ -180,5 +186,20 @@ const API = {
                 body: JSON.stringify({ status })
             }),
         getQueue: (locationId) => apiRequest(`/reservations/queue?location_id=${locationId}`)
+    },
+
+    profile: {
+        getPhone: () => apiRequest('/settings/phone'),
+        savePhone: (data) =>
+            apiRequest('/settings/phone', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }),
+        getPreferences: () => apiRequest('/settings/preferences'),
+        savePreferences: (data) =>
+            apiRequest('/settings/preferences', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            })
     }
 };

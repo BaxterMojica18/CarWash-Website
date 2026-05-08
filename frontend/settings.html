@@ -5,6 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Car Wash Management</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .notification-prefs-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .notification-pref-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: var(--card-bg, #ffffff);
+            border: 1px solid var(--border-color, #e0e0e0);
+            border-radius: 10px;
+            transition: box-shadow 0.2s;
+        }
+        .notification-pref-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        .pref-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .pref-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--card-text, #333);
+        }
+        .pref-desc {
+            font-size: 12px;
+            color: var(--card-text, #888);
+            opacity: 0.7;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+        .toggle-slider::before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #fff;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--primary-color, #667eea);
+        }
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(22px);
+        }
+        .toggle-switch input:focus + .toggle-slider {
+            box-shadow: 0 0 2px var(--primary-color, #667eea);
+        }
+    </style>
     <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
 </head>
 <body>
@@ -37,20 +115,87 @@
             </form>
         </div>
         
+        <div class="settings-section" id="notificationPreferencesSection">
+            <h2>Notification Preferences</h2>
+            <p style="color: var(--card-text, #666); font-size: 14px; margin-bottom: 20px;">Choose which types of notifications you want to receive.</p>
+            <div class="notification-prefs-grid" id="notificationPrefsGrid">
+                <div class="notification-pref-item">
+                    <div class="pref-info">
+                        <span class="pref-label">Orders</span>
+                        <span class="pref-desc">New orders and order status updates</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="pref_order_notifications" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="notification-pref-item">
+                    <div class="pref-info">
+                        <span class="pref-label">Reservations</span>
+                        <span class="pref-desc">Reservation status changes and queue updates</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="pref_reservation_notifications" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="notification-pref-item">
+                    <div class="pref-info">
+                        <span class="pref-label">Payments</span>
+                        <span class="pref-desc">Payment confirmations and receipts</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="pref_payment_notifications" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="notification-pref-item">
+                    <div class="pref-info">
+                        <span class="pref-label">Coupons</span>
+                        <span class="pref-desc">Coupon usage and new discount alerts</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="pref_coupon_notifications" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="notification-pref-item">
+                    <div class="pref-info">
+                        <span class="pref-label">Flash Sales</span>
+                        <span class="pref-desc">Flash sale announcements and expiration alerts</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="pref_flash_sale_notifications" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="notification-pref-item">
+                    <div class="pref-info">
+                        <span class="pref-label">Permissions</span>
+                        <span class="pref-desc">Role and permission changes to your account</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="pref_permission_notifications" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
         <div class="settings-section" id="userManagementSection" style="display: none;">
             <div class="section-header">
                 <h2>User Management</h2>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn-primary" onclick="window.location.href='permissions-management.html'">🔐 Manage Permissions</button>
+                    <button class="btn-primary" onclick="window.location.href='permissions-management.html'">&#128272; Manage Permissions</button>
                     <button class="btn-primary" onclick="showAddUser()">+ Add User</button>
                 </div>
             </div>
             <div id="businessCodeBox" style="background: #f0f4ff; border: 2px dashed #667eea; border-radius: 12px; padding: 20px; margin-bottom: 25px; display: none;">
-                <p style="margin: 0 0 10px 0; font-weight: 600; color: #2c3e50;">🏢 Business / Company Code</p>
+                <p style="margin: 0 0 10px 0; font-weight: 600; color: #2c3e50;">&#127970; Business / Company Code</p>
                 <p style="margin: 0 0 12px 0; font-size: 13px; color: #666;">Share this code with staff, admins, and clients so they can join your business.</p>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <input type="text" id="businessCodeDisplay" readonly style="flex: 1; padding: 10px 14px; border: 2px solid #667eea; border-radius: 8px; font-size: 16px; font-weight: 700; letter-spacing: 2px; background: white; color: #667eea;">
-                    <button onclick="copyBusinessCode()" class="btn-primary" style="white-space: nowrap;">📋 Copy Code</button>
+                    <button onclick="copyBusinessCode()" class="btn-primary" style="white-space: nowrap;">&#128203; Copy Code</button>
                 </div>
             </div>
             <div class="users-grid" id="usersGrid">
@@ -119,11 +264,7 @@
                         <input type="range" id="dropdownBrightness" min="50" max="150" value="100">
                     </div>
                     <div class="form-group">
-                        <label>Button Color</label>
-                        <input type="color" id="buttonColor" value="#667eea">
-                    </div>
-                    <div class="form-group">
-                        <label>Sidebar Color</label>
+                        <label>Sidebar &amp; Button Color</label>
                         <input type="color" id="sidebarColor" value="#2c3e50">
                     </div>
                     <div class="form-group">
@@ -152,16 +293,19 @@
                 </div>
                 <div class="form-group" style="display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 12px; background: linear-gradient(135deg, rgba(102,126,234,0.08), rgba(118,75,162,0.08)); border-radius: 8px; border: 1px solid rgba(102,126,234,0.15);">
                     <input type="checkbox" id="forClient" style="width: 18px; height: 18px; accent-color: #667eea;">
-                    <label for="forClient" style="margin: 0; font-weight: 500; cursor: pointer;">🛒 Save for Client Only</label>
+                    <label for="forClient" style="margin: 0; font-weight: 500; cursor: pointer;">&#128722; Save for Client Only</label>
                     <span style="font-size: 11px; color: #888; margin-left: auto;">When checked, this theme only applies to client-facing pages</span>
                 </div>
-                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                     <button type="button" class="btn-primary" onclick="previewTheme()">Preview</button>
                     <button type="submit" class="btn-primary">Save as Preset</button>
+                    <button type="button" class="btn-primary" id="applyPresetBtn" onclick="loadPreset()" style="display: none; background: #17a2b8;">Apply Preset</button>
+                    <button type="button" class="btn-primary" id="updatePresetBtn" onclick="updatePreset()" style="display: none; background: #28a745;">Update Preset</button>
+                    <button type="button" class="btn-primary" id="deletePresetBtn" onclick="deletePreset()" style="display: none; background: #dc3545;">Delete Preset</button>
                 </div>
             </form>
             <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(102,126,234,0.15);">
-                <h3 style="margin-bottom: 12px;">🛒 Client Theme Presets</h3>
+                <h3 style="margin-bottom: 12px;">&#128722; Client Theme Presets</h3>
                 <p style="font-size: 13px; color: #888; margin-bottom: 12px;">These themes are only visible to client accounts. Create a different look for your customer-facing pages.</p>
                 <div class="form-group">
                     <select id="clientPresetSelect" onchange="loadClientPreset()">
@@ -224,7 +368,7 @@
                     </select>
                 </div>
                 <button type="submit" class="btn-primary">Save Dashboard Settings</button>
-                <button type="button" class="btn-primary" onclick="window.location.href='edit-dashboard.html'" style="margin-left: 10px;">✏️ Edit Dashboard</button>
+                <button type="button" class="btn-primary" onclick="window.location.href='edit-dashboard.html'" style="margin-left: 10px;">&#9999;&#65039; Edit Dashboard</button>
             </form>
             
             <h3 style="margin-top: 30px;">Dashboard Modules</h3>
@@ -233,7 +377,7 @@
         </div>
         
         <div class="settings-section" id="notificationEmailSection" style="display:none;">
-            <h2>📧 Notification Email</h2>
+            <h2>&#128231; Notification Email</h2>
             <p style="color:#666; font-size:14px; margin-bottom:15px;">This email receives all order and reservation alerts when no business owner is linked. Used as the default fallback for demo accounts.</p>
             <form id="notifEmailForm">
                 <div class="form-group">
@@ -252,25 +396,30 @@
                     <input type="text" id="businessName" value="Premium Car Wash">
                 </div>
                 <div class="form-group">
+                    <label>Sub-Name / Tagline</label>
+                    <input type="text" id="businessSubName" placeholder="e.g., Premium Car Care Services">
+                </div>
+                <div class="form-group">
                     <label>Logo</label>
                     <div class="logo-upload">
                         <div class="logo-preview" id="logoPreview">
-                            <span id="currentLogo">🚗</span>
+                            <span id="currentLogo">&#128663;</span>
                         </div>
                         <div class="form-group">
                             <label>Predefined Logos</label>
                             <select id="logoSelect" onchange="selectPredefinedLogo()">
                                 <option value="none">No Logo</option>
-                                <option value="🚗">🚗 Car</option>
-                                <option value="💧">💧 Water Drop</option>
-                                <option value="🫧">🫧 Bubbles</option>
-                                <option value="✨">✨ Sparkles</option>
-                                <option value="🧼">🧼 Soap</option>
-                                <option value="🚿">🚿 Shower</option>
+                                <option value="&#128663;">&#128663; Car</option>
+                                <option value="&#128167;">&#128167; Water Drop</option>
+                                <option value="&#129767;">&#129767; Bubbles</option>
+                                <option value="&#10024;">&#10024; Sparkles</option>
+                                <option value="&#129532;">&#129532; Soap</option>
+                                <option value="&#128703;">&#128703; Shower</option>
                             </select>
                         </div>
                         <p style="font-size: 12px; opacity: 0.7; margin: 10px 0;">Or upload custom logo:</p>
                         <input type="file" id="logoFile" accept="image/*" onchange="previewLogo()">
+                        <button type="button" id="updateLogoBtn" class="btn-primary" style="margin-top:10px;padding:8px 16px;font-size:13px;" onclick="saveLogo()">Update Logo</button>
                     </div>
                 </div>
                 <div class="form-group">
@@ -450,14 +599,14 @@
         <div id="ewalletModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeEWalletModal()">&times;</span>
-                <h2>📱 E-Wallet Configuration</h2>
+                <h2>&#128241; E-Wallet Configuration</h2>
                 <form id="ewalletForm">
                     <input type="hidden" id="ewalletId">
                     <div class="form-group">
                         <label>Account Number / Phone Number</label>
                         <div style="display: flex; gap: 10px;">
                             <input type="text" id="ewalletAccount" placeholder="09123456789" style="flex: 1;">
-                            <button type="button" class="btn-primary" onclick="copyAccountNumber()">📋 Copy</button>
+                            <button type="button" class="btn-primary" onclick="copyAccountNumber()">&#128203; Copy</button>
                         </div>
                     </div>
                     <div class="form-group">
@@ -465,7 +614,7 @@
                         <input type="file" id="ewalletQR" accept="image/*">
                         <div id="qrPreview" style="margin-top: 10px;"></div>
                     </div>
-                    <button type="submit" class="btn-primary">💾 Save E-Wallet</button>
+                    <button type="submit" class="btn-primary">&#128190; Save E-Wallet</button>
                 </form>
             </div>
         </div>
