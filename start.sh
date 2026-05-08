@@ -16,6 +16,7 @@ c.execute(text('ALTER TABLE settings_theme_selection ADD COLUMN IF NOT EXISTS fo
 c.execute(text(\"ALTER TABLE role_sidebar_settings ADD COLUMN IF NOT EXISTS business_number VARCHAR DEFAULT '__global__'\"))
 c.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE'))
 c.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITHOUT TIME ZONE'))
+c.execute(text('ALTER TABLE business_info ADD COLUMN IF NOT EXISTS business_sub_name VARCHAR'))
 c.commit()
 c.close()
 print('Column migrations OK')

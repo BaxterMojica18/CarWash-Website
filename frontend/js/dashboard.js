@@ -1,5 +1,52 @@
 let revenueChart = null;
 
+// ── Welcome Greeting ──────────────────────────────────────────────────
+function renderGreeting(profileName) {
+    const container = document.getElementById('welcomeGreeting');
+    if (!container) return;
+    const name = profileName && profileName.trim() ? profileName.trim() : '';
+    const greeting = name ? `Welcome back, ${name}!` : 'Welcome back!';
+    container.innerHTML = `
+        <h1>${greeting}</h1>
+        <p class="greeting-subtext">Here's what's happening today</p>
+    `;
+}
+
+async function loadGreeting() {
+    try {
+        const profile = await API.settings.getProfile();
+        renderGreeting(profile && profile.name ? profile.name : '');
+    } catch (e) {
+        renderGreeting('');
+    }
+}
+
+// ── Quick Actions Widget ──────────────────────────────────────────────
+function renderQuickActions() {
+    const container = document.getElementById('quickActionsContainer');
+    if (!container) return;
+    const actions = [
+        { label: 'New Order', page: 'order-management.html', icon: '<svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+        { label: 'Queue Management', page: 'queue-management.html', icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
+        { label: 'Create Invoice', page: 'invoices.html', icon: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+        { label: 'View Reports', page: 'reports.html', icon: '<svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>' },
+        { label: 'Manage Products', page: 'products.html', icon: '<svg viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>' },
+        { label: 'Settings', page: 'settings.html', icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' }
+    ];
+
+    container.innerHTML = `
+        <h3>Quick Actions</h3>
+        <div class="quick-actions-grid">
+            ${actions.map(a => `
+                <button class="quick-action-tile" onclick="window.navigateTo ? window.navigateTo('${a.page}') : (window.location.href='${a.page}')">
+                    <div class="quick-action-icon">${a.icon}</div>
+                    <span>${a.label}</span>
+                </button>
+            `).join('')}
+        </div>
+    `;
+}
+
 async function loadDashboard(period = 'weekly') {
     try {
         const stats = await API.invoices.getStats();
@@ -236,12 +283,16 @@ function loadProfile() {
     // Placeholder user icon SVG
     const placeholderImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjNjY3ZWVhIi8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjE1IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjAgNzVDMjAgNjUgMzAgNTUgNTAgNTVDNzAgNTUgODAgNjUgODAgNzVWODVIMjBWNzVaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=';
     
-    document.getElementById('profileName').textContent = name;
-    document.getElementById('profileRole').textContent = role;
+    const profileNameEl = document.getElementById('profileName');
+    const profileRoleEl = document.getElementById('profileRole');
+    if (profileNameEl) profileNameEl.textContent = name;
+    if (profileRoleEl) profileRoleEl.textContent = role;
     
     const profileImg = photo || placeholderImage;
-    document.getElementById('profilePhoto').src = profileImg;
-    document.getElementById('menuProfilePhoto').src = profileImg;
+    const profilePhotoEl = document.getElementById('profilePhoto');
+    const menuProfilePhotoEl = document.getElementById('menuProfilePhoto');
+    if (profilePhotoEl) profilePhotoEl.src = profileImg;
+    if (menuProfilePhotoEl) menuProfilePhotoEl.src = profileImg;
 }
 
 function toggleProfileMenu() {
@@ -347,13 +398,19 @@ async function applyDashboardSettings() {
         });
         const settings = await response.json();
         
-        document.documentElement.style.setProperty('--primary-color', settings.primary_color);
-        document.documentElement.style.setProperty('--bg-color', settings.background_color);
-        if (settings.sidebar_color) document.documentElement.style.setProperty('--sidebar-color', settings.sidebar_color);
-        document.querySelector('.content').style.color = settings.text_color || '#333333';
+        // Only apply dashboard settings colors if no theme preset is cached
+        // Theme presets take priority over dashboard settings
+        const hasCachedTheme = localStorage.getItem('cachedThemeColors');
+        if (!hasCachedTheme) {
+            document.documentElement.style.setProperty('--primary-color', settings.primary_color);
+            document.documentElement.style.setProperty('--bg-color', settings.background_color);
+            if (settings.sidebar_color) document.documentElement.style.setProperty('--sidebar-color', settings.sidebar_color);
+            document.querySelector('.content').style.color = settings.text_color || '#333333';
+        }
         
         const buttonColor = settings.button_color || settings.primary_color;
         const sidebarActive = settings.sidebar_active_color || '#34495e';
+        document.documentElement.style.setProperty('--sidebar-active-color', sidebarActive);
         const style = document.createElement('style');
         style.id = 'dashboard-colors';
         const existingStyle = document.getElementById('dashboard-colors');
@@ -369,7 +426,6 @@ async function applyDashboardSettings() {
             .stat-card h3 { color: ${cardTextColor} !important; }
             .stat-card .stat-value { color: ${cardTextColor} !important; }
             .stat-card .stat-subtext { color: ${cardTextColor} !important; opacity: 0.7; }
-            .sidebar a.active, .sidebar a:hover { background: ${sidebarActive} !important; }
         `;
         document.head.appendChild(style);
         
@@ -512,4 +568,6 @@ applyDashboardSettings().then(hasCustomModules => {
         loadDashboard();
     }
     loadProfile();
+    loadGreeting();
+    renderQuickActions();
 });
