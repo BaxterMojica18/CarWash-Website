@@ -22,6 +22,9 @@ env_path = Path(__file__).parent.parent / ".env"
 if env_path.exists():
     load_dotenv(dotenv_path=env_path, override=False)
 DATABASE_URL = os.getenv("DATABASE_URL")
+# Fix postgres:// prefix (used by some providers like Heroku/Aiven) to postgresql://
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 if DATABASE_URL and "%" in DATABASE_URL:
     parts = DATABASE_URL.split("@")
     if len(parts) == 2:
@@ -30,7 +33,12 @@ if DATABASE_URL and "%" in DATABASE_URL:
             user, password = user_pass.split(":", 1)
             DATABASE_URL = f"postgresql://{user}:{unquote(password)}@{parts[1]}"
 
-engine = create_engine(DATABASE_URL)
+# Aiven (and some other providers) require SSL — pass it as connect_args
+_connect_args = {}
+if DATABASE_URL and "aivencloud.com" in DATABASE_URL:
+    _connect_args = {"sslmode": "require"}
+
+engine = create_engine(DATABASE_URL, connect_args=_connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -88,6 +96,7 @@ class User(Base):
     phone_number = Column(String, nullable=True)
     account_type = Column(String, nullable=True)  # admin, staff, client, owner
     business_number = Column(String, index=True, nullable=True)
+    onboarding_completed = Column(Boolean, default=False)
     invoices = relationship("Invoice", back_populates="creator")
     roles = relationship("Role", secondary=user_roles)
 
@@ -470,3 +479,21 @@ class SupportTicket(Base):
     reply = Column(String, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     replied_at = Column(DateTime, nullable=True)
+
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+    id = Column(Integer, primary_key=True, index=True)
+    business_number = Column(String, unique=True, index=True, nullable=False)
+    plan_type = Column(String, nullable=True)  # "lite", "plus", "pro"
+    status = Column(
+        String, default="trial"
+    )  # "trial", "active", "expired", "cancelled"
+    is_trial = Column(Boolean, default=True)
+    started_at = Column(DateTime, server_default=func.now())
+    expires_at = Column(DateTime, nullable=True)
+    trial_end_date = Column(DateTime, nullable=True)
+    stripe_subscription_id = Column(String, nullable=True)
+    stripe_customer_id = Column(String, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, nullable=True)
