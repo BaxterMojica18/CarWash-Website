@@ -687,6 +687,15 @@ function renderTabs(sidebarUl, data, currentPath, normalizedPath) {
         sidebar.appendChild(collapseBtn);
     }
 
+    // Re-apply sidebar collapsed state after re-render (fixes tab-switch issue)
+    const _sidebar = document.getElementById('sidebar');
+    const _content = document.querySelector('.content');
+    if (_sidebar && localStorage.getItem('sidebarCollapsed') === '1') {
+        _sidebar.classList.add('collapsed');
+        if (_content) _content.classList.add('sidebar-collapsed');
+    }
+    updateToggleButton();
+
     // Inject client bottom nav on mobile for client accounts
     if (isClient && window.innerWidth <= 768 && !document.querySelector('.client-bottom-nav')) {
         const s = document.createElement('script');
