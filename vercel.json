@@ -30,7 +30,9 @@
     { "source": "/payment-methods", "destination": "/frontend/payment-methods.html" },
     { "source": "/edit-dashboard", "destination": "/frontend/edit-dashboard.html" },
     { "source": "/audit-logs", "destination": "/frontend/audit-logs.html" },
-    { "source": "/login", "destination": "/frontend/login.html" }
+    { "source": "/login", "destination": "/frontend/login.html" },
+    { "source": "/onboarding", "destination": "/frontend/onboarding.html" },
+    { "source": "/plan-selection", "destination": "/frontend/plan-selection.html" }
   ],
   "redirects": [
     { "source": "/dashboard.html", "destination": "/dashboard", "statusCode": 301 },
@@ -55,7 +57,9 @@
     { "source": "/users.html", "destination": "/users", "statusCode": 301 },
     { "source": "/payment-methods.html", "destination": "/payment-methods", "statusCode": 301 },
     { "source": "/edit-dashboard.html", "destination": "/edit-dashboard", "statusCode": 301 },
-    { "source": "/audit-logs.html", "destination": "/audit-logs", "statusCode": 301 }
+    { "source": "/audit-logs.html", "destination": "/audit-logs", "statusCode": 301 },
+    { "source": "/onboarding.html", "destination": "/onboarding", "statusCode": 301 },
+    { "source": "/plan-selection.html", "destination": "/plan-selection", "statusCode": 301 }
   ],
   "routes": [
     {

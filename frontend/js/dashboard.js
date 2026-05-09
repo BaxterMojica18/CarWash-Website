@@ -406,18 +406,18 @@ async function applyDashboardSettings() {
             document.documentElement.style.setProperty('--bg-color', settings.background_color);
             if (settings.sidebar_color) document.documentElement.style.setProperty('--sidebar-color', settings.sidebar_color);
             document.querySelector('.content').style.color = settings.text_color || '#333333';
+            const sidebarActive = settings.sidebar_active_color || '#34495e';
+            document.documentElement.style.setProperty('--sidebar-active-color', sidebarActive);
         }
         
-        const buttonColor = settings.button_color || settings.primary_color;
-        const sidebarActive = settings.sidebar_active_color || '#34495e';
-        document.documentElement.style.setProperty('--sidebar-active-color', sidebarActive);
+        const buttonColor = hasCachedTheme ? 'var(--sidebar-color)' : (settings.button_color || settings.primary_color);
         const style = document.createElement('style');
         style.id = 'dashboard-colors';
         const existingStyle = document.getElementById('dashboard-colors');
         if (existingStyle) existingStyle.remove();
         
-        const cardColor = settings.card_color || '#ffffff';
-        const cardTextColor = settings.card_text_color || '#333333';
+        const cardColor = hasCachedTheme ? 'var(--card-bg)' : (settings.card_color || '#ffffff');
+        const cardTextColor = hasCachedTheme ? 'var(--card-text)' : (settings.card_text_color || '#333333');
         style.textContent = `
             .btn-primary { background: ${buttonColor} !important; }
             .stat-card { 

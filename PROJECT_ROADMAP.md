@@ -1170,3 +1170,62 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 - [ ] Update `README.md` database badge and connection docs
 
 ### 📊 Version Target: V2.9.1 (bugfix patch)
+
+---
+
+## ✅ Completed in Session 15
+
+### 🚀 Onboarding & Paywall System (V3.0)
+- [x] `add_subscriptions_table.py` — migration for subscriptions table + onboarding_completed column
+- [x] `Subscription` model in `database.py`
+- [x] `onboarding_completed` column on `User` model
+- [x] `SubscriptionStatus`, `CreateCheckoutRequest`, `OnboardingStatusResponse` schemas
+- [x] `get_business_subscription()`, `activate_trial()`, `update_subscription_from_webhook()`, `mark_onboarding_completed()` in `crud.py`
+- [x] `subscriptions.py` router — activate-trial, create-checkout, status, billing-history, webhook
+- [x] `onboarding.py` router — complete, status endpoints
+- [x] `check_subscription_active` feature gate in `dependencies.py`
+- [x] `/me/permissions` extended with `onboarding_completed` + `subscription` data
+- [x] `onboarding.html` — multi-step onboarding with role-based slides + paywall
+- [x] `plan-selection.html` — standalone plan management page
+- [x] `trial-banner.js` — trial expiry warning banner (≤3 days)
+- [x] `login.js` — onboarding redirect logic after login
+- [x] `menu.js` — trial banner auto-loading on all admin pages
+- [x] `api.js` — API.subscriptions + API.onboarding namespaces
+- [x] `router.js` — new page tokens for onboarding + plan-selection
+- [x] `vercel.json` — rewrites for new pages
+- [x] `start.sh` — migration added to startup sequence
+
+### 🗄️ Database & Infrastructure (Session 15)
+- [x] Aiven PostgreSQL migration completed — all tables synced
+- [x] All sequences reset to correct values
+- [x] role_permissions duplicates cleaned up
+- [x] Demo accounts seeded to Aiven via `setup_demo_accounts.py`
+- [x] SSL connect_args fix for Aiven in `database.py`
+- [x] schemas.py SubscriptionStatus ordering fix
+
+### 📊 Current Version: 7.0.0 (Public: V3.0)
+
+## 🔄 Updated Status (Session 15)
+
+| Feature | Status |
+|---------|--------|
+| Onboarding flow (multi-step slides) | ✅ Done |
+| Paywall + plan selection | ✅ Done |
+| Free trial activation (14 days) | ✅ Done |
+| Stripe subscription checkout | ✅ Done |
+| Trial expiry banner | ✅ Done |
+| Subscription webhook handler | ✅ Done |
+| Aiven database migration | ✅ Done |
+| Demo data seeded to Aiven | ✅ Done |
+| SMS Notifications (Twilio) | ⬜ Pending |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| React + Next.js Frontend | ⬜ Pending |
+
+## 🔜 Next Session (Session 16) — V3.1
+
+### Planned:
+- [ ] Stripe live mode activation (swap test keys for live keys)
+- [ ] Payment history page — all transactions with receipt download
+- [ ] Refund processing via Stripe API
+- [ ] Add `STRIPE_PRICE_LITE`, `STRIPE_PRICE_PLUS`, `STRIPE_PRICE_PRO` to Render env vars
+- [ ] Test full onboarding → trial → upgrade flow end-to-end on production

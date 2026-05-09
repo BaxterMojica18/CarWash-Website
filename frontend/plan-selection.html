@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan Selection - Car Wash Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
+    <style>
+        .plans-section {
+            margin-bottom: 30px;
+        }
+        .plans-section h2 {
+            font-size: 22px;
+            color: var(--text-color);
+            margin-bottom: 8px;
+        }
+        .plans-section .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+        .plan-card {
+            background: var(--card-bg);
+            border: 2px solid #eee;
+            border-radius: 14px;
+            padding: 30px 24px;
+            position: relative;
+            transition: all 0.3s ease;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .plan-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .plan-card.popular {
+            border-color: var(--primary-color);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .plan-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--card-text);
+            margin-bottom: 8px;
+        }
+        .plan-price {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+        .plan-period {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 24px;
+            text-align: left;
+        }
+        .plan-features li {
+            padding: 7px 0;
+            font-size: 14px;
+            color: var(--card-text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .plan-features li svg {
+            width: 16px;
+            height: 16px;
+            stroke: #28a745;
+            flex-shrink: 0;
+        }
+        .btn-plan {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-plan:hover {
+            background: var(--primary-color);
+            color: #fff;
+        }
+        .btn-plan.primary {
+            background: var(--primary-color);
+            color: #fff;
+        }
+        .btn-plan.primary:hover {
+            opacity: 0.9;
+        }
+        .status-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .status-section h3 {
+            color: var(--card-text);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        .status-badge.trial { background: #fff3cd; color: #856404; }
+        .status-badge.active { background: #d4edda; color: #155724; }
+        .status-badge.expired { background: #f8d7da; color: #721c24; }
+        .status-badge.cancelled { background: #e2e3e5; color: #383d41; }
+        .status-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .status-info-item {
+            padding: 12px;
+            background: var(--bg-color);
+            border-radius: 8px;
+        }
+        .status-info-item label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .status-info-item span {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--card-text);
+        }
+        .billing-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .billing-table th,
+        .billing-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .billing-table th {
+            background: var(--bg-color);
+            font-weight: 600;
+            color: var(--card-text);
+        }
+        .billing-empty {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+        @media (max-width: 768px) {
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <span id="sidebarLogo"></span>
+            <h2 id="sidebarName"></h2>
+        </div>
+        <ul>
+            <!-- Tabs are dynamically generated in menu.js -->
+        </ul>
+    </nav>
+    <main class="content">
+        <header>
+            <h1>Subscription Plans</h1>
+        </header>
+
+        <!-- Current Status -->
+        <div class="status-section" id="statusSection" style="display:none;">
+            <h3>Current Subscription</h3>
+            <div id="statusContent"></div>
+        </div>
+
+        <!-- Plans -->
+        <div class="plans-section">
+            <h2>Choose a Plan</h2>
+            <p class="subtitle">Select the plan that best fits your business needs.</p>
+            <div class="plans-grid" id="plansGrid"></div>
+        </div>
+
+        <!-- Billing History -->
+        <div class="status-section" id="billingSection" style="display:none;">
+            <h3>Billing History</h3>
+            <div id="billingContent"></div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/toast.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+
+        const plans = [
+            {
+                name: 'Lite',
+                key: 'lite',
+                price: '&#8369;990',
+                features: ['Up to 50 orders/month', 'Basic invoicing', '1 location', 'Email support'],
+                popular: false
+            },
+            {
+                name: 'Plus',
+                key: 'plus',
+                price: '&#8369;1,990',
+                features: ['Unlimited orders', 'Advanced invoicing', 'Up to 3 locations', 'Queue management', 'Priority support'],
+                popular: true
+            },
+            {
+                name: 'Pro',
+                key: 'pro',
+                price: '&#8369;2,990',
+                features: ['Everything in Plus', 'Unlimited locations', 'Custom reports', 'API access', 'Dedicated support'],
+                popular: false
+            }
+        ];
+
+        function renderPlans() {
+            const grid = document.getElementById('plansGrid');
+            grid.innerHTML = plans.map(plan => `
+                <div class="plan-card${plan.popular ? ' popular' : ''}">
+                    ${plan.popular ? '<span class="popular-badge">Popular</span>' : ''}
+                    <div class="plan-name">${plan.name}</div>
+                    <div class="plan-price">${plan.price}</div>
+                    <div class="plan-period">per month</div>
+                    <ul class="plan-features">
+                        ${plan.features.map(f => `<li>${checkIcon} ${f}</li>`).join('')}
+                    </ul>
+                    <button class="btn-plan${plan.popular ? ' primary' : ''}" onclick="subscribePlan('${plan.key}')">Subscribe to ${plan.name}</button>
+                </div>
+            `).join('');
+        }
+
+        async function loadStatus() {
+            try {
+                const status = await API.subscriptions.getStatus();
+                if (status && status.status) {
+                    const section = document.getElementById('statusSection');
+                    section.style.display = 'block';
+                    let html = `<span class="status-badge ${status.status}">${status.status}</span>`;
+                    html += '<div class="status-info">';
+                    if (status.plan_type) {
+                        html += `<div class="status-info-item"><label>Plan</label><span>${status.plan_type}</span></div>`;
+                    }
+                    if (status.days_remaining !== undefined && status.days_remaining !== null) {
+                        html += `<div class="status-info-item"><label>Days Remaining</label><span>${status.days_remaining}</span></div>`;
+                    }
+                    if (status.trial_end_date) {
+                        const d = new Date(status.trial_end_date);
+                        html += `<div class="status-info-item"><label>Trial Ends</label><span>${d.toLocaleDateString()}</span></div>`;
+                    }
+                    html += '</div>';
+                    document.getElementById('statusContent').innerHTML = html;
+                }
+            } catch(e) {
+                console.warn('Could not load subscription status:', e);
+            }
+        }
+
+        async function loadBillingHistory() {
+            try {
+                const data = await API.subscriptions.getBillingHistory();
+                if (data && data.invoices && data.invoices.length > 0) {
+                    const section = document.getElementById('billingSection');
+                    section.style.display = 'block';
+                    let html = '<table class="billing-table"><thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+                    data.invoices.forEach(inv => {
+                        const date = new Date(inv.date || inv.created * 1000).toLocaleDateString();
+                        const amount = inv.amount_paid ? `&#8369;${(inv.amount_paid / 100).toFixed(2)}` : '-';
+                        html += `<tr><td>${date}</td><td>${amount}</td><td>${inv.status || 'paid'}</td></tr>`;
+                    });
+                    html += '</tbody></table>';
+                    document.getElementById('billingContent').innerHTML = html;
+                } else {
+                    const section = document.getElementById('billingSection');
+                    section.style.display = 'block';
+                    document.getElementById('billingContent').innerHTML = '<div class="billing-empty">No billing history yet.</div>';
+                }
+            } catch(e) {
+                console.warn('Could not load billing history:', e);
+            }
+        }
+
+        window.subscribePlan = async function(plan) {
+            try {
+                const result = await API.subscriptions.createCheckout(plan);
+                if (result && result.checkout_url) {
+                    window.location.href = result.checkout_url;
+                } else {
+                    showToast('Could not create checkout session. Please try again.', 'error');
+                }
+            } catch(e) {
+                showToast('Error: ' + (e.message || 'Could not start checkout'), 'error');
+            }
+        };
+
+        // Handle query params
+        function handleQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('payment') === 'success') {
+                showToast('Payment successful! Your subscription is now active.', 'success');
+                // Clean URL
+                history.replaceState({}, '', window.location.pathname);
+            } else if (params.get('payment') === 'cancelled') {
+                showToast('Payment was cancelled. You can try again anytime.', 'warning');
+                history.replaceState({}, '', window.location.pathname);
+            }
+        }
+
+        // Init
+        renderPlans();
+        loadStatus();
+        loadBillingHistory();
+        handleQueryParams();
+
+        // Redirect if no token
+        if (!getToken()) {
+            window.location.href = '/login.html';
+        }
+    })();
+    </script>
+</body>
+</html>

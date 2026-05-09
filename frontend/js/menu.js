@@ -62,7 +62,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (sidebar) {
         const closeBtn = document.createElement('button');
         closeBtn.className = 'sidebar-close';
-        closeBtn.onclick = toggleMenu;
+        closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleMenu(e);
+        };
         sidebar.insertBefore(closeBtn, sidebar.firstChild);
         updateToggleButton();
         
@@ -104,6 +107,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inject the Top Navbar
     injectTopNavbar();
+
+    // Load trial banner for authenticated users
+    if (localStorage.getItem('token')) {
+        const bannerScript = document.createElement('script');
+        bannerScript.src = 'js/trial-banner.js';
+        bannerScript.onload = function() {
+            if (typeof initTrialBanner === 'function') {
+                initTrialBanner();
+            }
+        };
+        document.head.appendChild(bannerScript);
+    }
 });
 
 function getInitials(name) {

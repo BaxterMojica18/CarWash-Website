@@ -201,5 +201,23 @@ const API = {
                 method: 'POST',
                 body: JSON.stringify(data)
             })
+    },
+
+    subscriptions: {
+        activateTrial: () =>
+            apiRequest('/subscriptions/activate-trial', { method: 'POST' }),
+        createCheckout: (plan) =>
+            apiRequest('/subscriptions/create-checkout', {
+                method: 'POST',
+                body: JSON.stringify({ plan })
+            }),
+        getStatus: () => apiRequest('/subscriptions/status'),
+        getBillingHistory: () => apiRequest('/subscriptions/billing-history')
+    },
+
+    onboarding: {
+        complete: () =>
+            apiRequest('/onboarding/complete', { method: 'POST' }),
+        getStatus: () => apiRequest('/onboarding/status')
     }
 };

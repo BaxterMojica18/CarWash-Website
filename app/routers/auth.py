@@ -156,6 +156,32 @@ def get_my_permissions(
         )
         hidden_tabs = list(set([s.page_name for s in user_hidden_settings]))
 
+    # Subscription and onboarding data
+    onboarding_completed = current_user.onboarding_completed or False
+    subscription_data = None
+
+    if current_user.business_number:
+        subscription = (
+            db.query(database.Subscription)
+            .filter(
+                database.Subscription.business_number == current_user.business_number
+            )
+            .first()
+        )
+        if subscription:
+            days_remaining = None
+            if subscription.trial_end_date:
+                delta = subscription.trial_end_date - datetime.utcnow()
+                days_remaining = max(0, delta.days)
+            subscription_data = {
+                "status": subscription.status,
+                "plan_type": subscription.plan_type,
+                "is_trial": subscription.is_trial,
+                "trial_end_date": subscription.trial_end_date,
+                "days_remaining": days_remaining,
+                "stripe_subscription_id": subscription.stripe_subscription_id,
+            }
+
     return {
         "user_id": current_user.id,
         "email": current_user.email,
@@ -163,6 +189,8 @@ def get_my_permissions(
         "permissions": permissions,
         "hidden_sidebar_tabs": hidden_tabs,
         "business_number": current_user.business_number,
+        "onboarding_completed": onboarding_completed,
+        "subscription": subscription_data,
     }
 
 

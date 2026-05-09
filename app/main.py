@@ -30,6 +30,8 @@ from app.routers import (
     audit_logs,
     notifications,
     support_tickets,
+    subscriptions,
+    onboarding,
 )
 from app.email_service import send_email
 import os
@@ -157,7 +159,13 @@ app.include_router(audit_logs.router, prefix="/api/audit-logs", tags=["Audit Log
 app.include_router(
     notifications.router, prefix="/api/notifications", tags=["Notifications"]
 )
-app.include_router(support_tickets.router, prefix="/api/support-tickets", tags=["Support Tickets"])
+app.include_router(
+    support_tickets.router, prefix="/api/support-tickets", tags=["Support Tickets"]
+)
+app.include_router(
+    subscriptions.router, prefix="/api/subscriptions", tags=["Subscriptions"]
+)
+app.include_router(onboarding.router, prefix="/api/onboarding", tags=["Onboarding"])
 
 
 @app.get("/api/health")

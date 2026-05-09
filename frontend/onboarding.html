@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Car Wash Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script>(function(){if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-pre-collapsed');})()</script>
+    <style>
+        body {
+            background: linear-gradient(135deg, var(--sidebar-color) 0%, var(--primary-color) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .onboarding-container {
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .step-dot.active {
+            background: #fff;
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        .step-dot.completed {
+            background: rgba(255,255,255,0.7);
+        }
+        .slide-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 60px 50px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            display: none;
+            animation: fadeSlideUp 0.4s ease;
+        }
+        .slide-card.active {
+            display: block;
+        }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .slide-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: #fff;
+            fill: none;
+            stroke-width: 2;
+        }
+        .slide-card h2 {
+            font-size: 26px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .slide-card p {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding: 0 10px;
+        }
+        .btn-onboard {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-next {
+            background: var(--primary-color);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .btn-back {
+            background: #f0f0f0;
+            color: #555;
+        }
+        .btn-back:hover {
+            background: #e0e0e0;
+        }
+        .btn-skip {
+            background: transparent;
+            color: rgba(255,255,255,0.8);
+            border: 1px solid rgba(255,255,255,0.4);
+            position: absolute;
+            top: -50px;
+            right: 0;
+        }
+        .btn-skip:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        /* Paywall styles */
+        .paywall-slide {
+            padding: 40px 30px;
+        }
+        .paywall-slide h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .paywall-subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .plan-card {
+            border: 2px solid #eee;
+            border-radius: 14px;
+            padding: 25px 20px;
+            position: relative;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .plan-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .plan-card.popular {
+            border-color: var(--primary-color);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .plan-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .plan-price {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+        .plan-period {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 18px;
+        }
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px;
+            text-align: left;
+        }
+        .plan-features li {
+            padding: 6px 0;
+            font-size: 13px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .plan-features li svg {
+            width: 16px;
+            height: 16px;
+            stroke: #28a745;
+            flex-shrink: 0;
+        }
+        .btn-plan {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-plan:hover {
+            background: var(--primary-color);
+            color: #fff;
+        }
+        .btn-plan.primary {
+            background: var(--primary-color);
+            color: #fff;
+        }
+        .btn-plan.primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .trial-btn {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 15px;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .trial-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .social-proof {
+            color: #999;
+            font-size: 13px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .social-proof svg {
+            width: 16px;
+            height: 16px;
+            stroke: #28a745;
+        }
+        @media (max-width: 768px) {
+            .slide-card {
+                padding: 40px 25px;
+            }
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
+            .slide-card h2 {
+                font-size: 22px;
+            }
+            .btn-skip {
+                position: static;
+                margin-bottom: 15px;
+                display: block;
+                width: 100%;
+                color: rgba(255,255,255,0.8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="onboarding-container">
+        <button class="btn-onboard btn-skip" onclick="skipOnboarding()">Skip</button>
+        <div class="step-indicator" id="stepIndicator"></div>
+        <div id="slidesContainer"></div>
+        <div class="nav-buttons" id="navButtons">
+            <button class="btn-onboard btn-back" id="btnBack" onclick="prevStep()">Back</button>
+            <button class="btn-onboard btn-next" id="btnNext" onclick="nextStep()">Next</button>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/router.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+
+        // Role-based slides
+        const businessSlides = [
+            {
+                icon: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+                headline: 'Tired of manual tracking?',
+                description: 'Automated invoicing and order management that saves you hours every week. No more spreadsheets or paper records.'
+            },
+            {
+                icon: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>',
+                headline: 'Lost invoices and scattered data?',
+                description: 'Centralized dashboard with real-time reports. Everything in one place, accessible from any device.'
+            },
+            {
+                icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+                headline: 'No queue visibility?',
+                description: 'Real-time queue management with live updates. Know exactly who is waiting and how long.'
+            },
+            {
+                icon: '<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+                headline: 'Ready to grow your business?',
+                description: 'Everything you need in one platform. Invoicing, orders, queue management, reports, and more.'
+            }
+        ];
+
+        const clientSlides = [
+            {
+                icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+                headline: 'Tired of long wait times?',
+                description: 'Real-time queue position tracking. Know exactly when it is your turn without waiting in line.'
+            },
+            {
+                icon: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+                headline: 'No booking visibility?',
+                description: 'Easy online booking and order tracking. Schedule services and track your orders in real time.'
+            },
+            {
+                icon: '<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+                headline: 'Ready for a better experience?',
+                description: 'Track orders, book services, stay informed. A seamless experience from start to finish.'
+            }
+        ];
+
+        // Detect role
+        function getUserRole() {
+            try {
+                const sidebarData = localStorage.getItem('user_sidebar_data');
+                if (sidebarData) {
+                    const parsed = JSON.parse(sidebarData);
+                    if (parsed.roles && parsed.roles.length > 0) {
+                        return parsed.roles[0].toLowerCase();
+                    }
+                }
+            } catch(e) {}
+            try {
+                const roles = localStorage.getItem('roles');
+                if (roles) {
+                    const parsed = JSON.parse(roles);
+                    if (parsed.length > 0) return parsed[0].toLowerCase();
+                }
+            } catch(e) {}
+            return 'owner';
+        }
+
+        const role = getUserRole();
+        const isClient = role === 'client';
+        const slides = isClient ? clientSlides : businessSlides;
+        const totalSteps = slides.length + 1; // +1 for paywall
+        let currentStep = 0;
+
+        function buildStepIndicator() {
+            const container = document.getElementById('stepIndicator');
+            container.innerHTML = '';
+            for (let i = 0; i < totalSteps; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'step-dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => goToStep(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function buildSlides() {
+            const container = document.getElementById('slidesContainer');
+            let html = '';
+            slides.forEach((slide, i) => {
+                html += `
+                    <div class="slide-card${i === 0 ? ' active' : ''}" data-step="${i}">
+                        <div class="slide-icon">${slide.icon}</div>
+                        <h2>${slide.headline}</h2>
+                        <p>${slide.description}</p>
+                    </div>
+                `;
+            });
+            // Paywall slide
+            html += `
+                <div class="slide-card paywall-slide" data-step="${slides.length}">
+                    <h2>Choose Your Plan</h2>
+                    <p class="paywall-subtitle">Start with a 15-day free trial. Cancel anytime.</p>
+                    <div class="plans-grid">
+                        <div class="plan-card">
+                            <div class="plan-name">Lite</div>
+                            <div class="plan-price">&#8369;990</div>
+                            <div class="plan-period">per month</div>
+                            <ul class="plan-features">
+                                <li>${checkIcon} Up to 50 orders/month</li>
+                                <li>${checkIcon} Basic invoicing</li>
+                                <li>${checkIcon} 1 location</li>
+                                <li>${checkIcon} Email support</li>
+                            </ul>
+                            <button class="btn-plan" onclick="selectPlan('lite')">Select Lite</button>
+                        </div>
+                        <div class="plan-card popular">
+                            <span class="popular-badge">Popular</span>
+                            <div class="plan-name">Plus</div>
+                            <div class="plan-price">&#8369;1,990</div>
+                            <div class="plan-period">per month</div>
+                            <ul class="plan-features">
+                                <li>${checkIcon} Unlimited orders</li>
+                                <li>${checkIcon} Advanced invoicing</li>
+                                <li>${checkIcon} Up to 3 locations</li>
+                                <li>${checkIcon} Queue management</li>
+                                <li>${checkIcon} Priority support</li>
+                            </ul>
+                            <button class="btn-plan primary" onclick="selectPlan('plus')">Select Plus</button>
+                        </div>
+                        <div class="plan-card">
+                            <div class="plan-name">Pro</div>
+                            <div class="plan-price">&#8369;2,990</div>
+                            <div class="plan-period">per month</div>
+                            <ul class="plan-features">
+                                <li>${checkIcon} Everything in Plus</li>
+                                <li>${checkIcon} Unlimited locations</li>
+                                <li>${checkIcon} Custom reports</li>
+                                <li>${checkIcon} API access</li>
+                                <li>${checkIcon} Dedicated support</li>
+                            </ul>
+                            <button class="btn-plan" onclick="selectPlan('pro')">Select Pro</button>
+                        </div>
+                    </div>
+                    <button class="trial-btn" onclick="startTrial()">Start 15-Day Free Trial</button>
+                    <div class="social-proof">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        Join 100+ car wash businesses already using our platform
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function updateUI() {
+            // Update dots
+            const dots = document.querySelectorAll('.step-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'completed');
+                if (i === currentStep) dot.classList.add('active');
+                else if (i < currentStep) dot.classList.add('completed');
+            });
+            // Update slides
+            const cards = document.querySelectorAll('.slide-card');
+            cards.forEach((card, i) => {
+                card.classList.remove('active');
+                if (i === currentStep) card.classList.add('active');
+            });
+            // Update buttons
+            const btnBack = document.getElementById('btnBack');
+            const btnNext = document.getElementById('btnNext');
+            const navButtons = document.getElementById('navButtons');
+            btnBack.style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+            // Hide next on paywall
+            if (currentStep === totalSteps - 1) {
+                navButtons.style.display = 'none';
+            } else {
+                navButtons.style.display = 'flex';
+            }
+        }
+
+        function goToStep(step) {
+            if (step < 0 || step >= totalSteps) return;
+            currentStep = step;
+            updateUI();
+        }
+
+        window.nextStep = function() {
+            goToStep(currentStep + 1);
+        };
+
+        window.prevStep = function() {
+            goToStep(currentStep - 1);
+        };
+
+        window.skipOnboarding = async function() {
+            try {
+                await API.onboarding.complete();
+            } catch(e) { console.warn('Skip onboarding error:', e); }
+            localStorage.setItem('onboarding_completed', 'true');
+            redirectToDashboard();
+        };
+
+        window.startTrial = async function() {
+            const btn = document.querySelector('.trial-btn');
+            btn.disabled = true;
+            btn.textContent = 'Activating...';
+            try {
+                await API.subscriptions.activateTrial();
+                await API.onboarding.complete();
+                localStorage.setItem('onboarding_completed', 'true');
+                redirectToDashboard();
+            } catch(e) {
+                btn.disabled = false;
+                btn.textContent = 'Start 15-Day Free Trial';
+                alert('Failed to activate trial: ' + (e.message || 'Unknown error'));
+            }
+        };
+
+        window.selectPlan = async function(plan) {
+            try {
+                const result = await API.subscriptions.createCheckout(plan);
+                if (result && result.checkout_url) {
+                    await API.onboarding.complete();
+                    localStorage.setItem('onboarding_completed', 'true');
+                    window.location.href = result.checkout_url;
+                } else {
+                    alert('Could not create checkout session. Please try again.');
+                }
+            } catch(e) {
+                alert('Error: ' + (e.message || 'Could not start checkout'));
+            }
+        };
+
+        function redirectToDashboard() {
+            const r = getUserRole();
+            if (r === 'client') {
+                window.location.href = '/client-dashboard.html';
+            } else {
+                window.location.href = '/dashboard.html';
+            }
+        }
+
+        // Init
+        buildStepIndicator();
+        buildSlides();
+        updateUI();
+
+        // Redirect if no token
+        if (!getToken()) {
+            window.location.href = '/login.html';
+        }
+    })();
+    </script>
+</body>
+</html>

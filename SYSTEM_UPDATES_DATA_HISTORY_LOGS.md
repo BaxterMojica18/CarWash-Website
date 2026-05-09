@@ -1,8 +1,50 @@
 # System Updates, Data & History Logs
 
-> **Last Updated:** May 8, 2026  
-> **Version:** 6.9.3  
+> **Last Updated:** May 10, 2026  
+> **Version:** 6.10.0  
 > **Branch:** main
+
+---
+
+## Latest Updates (May 10, 2026 — Session 20)
+### 🚀 Onboarding & Paywall — User Model Extension
+**Status:** ✅ Completed
+**Date:** May 10, 2026
+**Version Bump:** Minor (6.9.5 → 6.10.0)
+
+#### Summary:
+Added `onboarding_completed` boolean column (default `False`) to the `User` SQLAlchemy model in `app/database.py`. This field tracks whether a user has completed the multi-step onboarding flow, enabling the login handler to redirect new users to the onboarding page before granting dashboard access. Part of the Onboarding & Paywall feature.
+
+#### Files Modified:
+- ✅ `app/database.py` — Added `onboarding_completed = Column(Boolean, default=False)` to the `User` model class for tracking onboarding completion state per user.
+
+---
+
+## Latest Updates (May 9, 2026 — Session 19)
+### 🐛 Database URL Prefix Fix — PostgreSQL Compatibility
+**Status:** ✅ Completed
+**Date:** May 9, 2026
+**Version Bump:** Patch (6.9.4 → 6.9.5)
+
+#### Summary:
+Fixed a database connection compatibility issue where providers like Heroku or Aiven supply `DATABASE_URL` with the `postgres://` prefix, which SQLAlchemy 1.4+ does not accept. Added an early check in `app/database.py` that replaces `postgres://` with `postgresql://` (once) before the URL is used to create the engine. This prevents `sqlalchemy.exc.NoSuchModuleError` in production environments using those providers.
+
+#### Files Modified:
+- ✅ `app/database.py` — Added `postgres://` → `postgresql://` prefix replacement after loading `DATABASE_URL` from environment, ensuring compatibility with all PostgreSQL hosting providers.
+
+---
+
+## Latest Updates (May 9, 2026 — Session 18)
+### 🐛 Dashboard Settings — Extend Cached Theme Priority to Cards & Buttons
+**Status:** ✅ Completed
+**Date:** May 9, 2026
+**Version Bump:** Patch (6.9.3 → 6.9.4)
+
+#### Summary:
+Extended the cached theme priority fix in `loadDashboardSettings()` so that `button_color`, `card_color`, `card_text_color`, and `sidebar_active_color` also respect the cached theme preset. When `cachedThemeColors` exists in localStorage, buttons now use `var(--sidebar-color)` and cards use `var(--card-bg)` / `var(--card-text)` instead of dashboard settings values. The `--sidebar-active-color` property is now only set when no cached theme is present (moved inside the `!hasCachedTheme` block). This prevents dashboard settings from overriding the user's selected theme preset for these additional properties.
+
+#### Files Modified:
+- ✅ `frontend/js/dashboard.js` — `buttonColor` now resolves to `var(--sidebar-color)` when cached theme exists; `cardColor` and `cardTextColor` use `var(--card-bg)` and `var(--card-text)` respectively; `--sidebar-active-color` only applied from dashboard settings when no cached theme is present.
 
 ---
 
@@ -2617,3 +2659,157 @@ Fixed sidebar click behavior when collapsed. Previously, clicking anywhere on th
 - [ ] **Sidebar stuck after collapse** — clicking the collapse button does not immediately re-open; requires clicking a nav tab first before it opens
 - [ ] **Dashboard sidebar hover color mismatch** — hover/active color on dashboard page does not match the active theme (regression from dashboard.js CSS variable fix)
 - [ ] **Database migration to Aiven** — move PostgreSQL from Render to Aiven for better reliability and control
+
+---
+
+## Latest Updates (Session 15)
+
+> **Version:** 7.0.0 (Public: V3.0) | **Branch:** `feature/onboarding-paywall-subscription`
+
+---
+
+### 🚀 Onboarding & Paywall System — Full Implementation
+**Status:** ✅ Completed | **Verified working**
+
+#### Overview:
+Complete onboarding flow and subscription/paywall system built from scratch. New users (and existing users with `onboarding_completed=false`) are redirected through a multi-step onboarding after login, then hit a paywall where they choose a plan or activate a free trial before accessing the dashboard.
+
+---
+
+#### Backend
+
+**`commands/database/add_subscriptions_table.py`** — NEW:
+- Migration script: creates `subscriptions` table + adds `onboarding_completed` column to `users`
+- Added to `start.sh` so it runs automatically on every Render deploy
+
+**`app/database.py`:**
+- Added `Subscription` model with fields: `user_id`, `plan_type`, `status`, `trial_end_date`, `stripe_subscription_id`, `stripe_customer_id`, `started_at`, `expires_at`
+- Added `onboarding_completed` column to `User` model (Boolean, default False)
+
+**`app/schemas.py`:**
+- Added `SubscriptionStatus` schema — status, plan_type, is_trial, trial_end_date, days_remaining, stripe_subscription_id
+- Added `CreateCheckoutRequest` schema — plan field (lite/plus/pro)
+- Added `OnboardingStatusResponse` schema
+- Fixed `SubscriptionStatus` ordering — moved before `UserPermissions` to resolve `NameError`
+
+**`app/crud.py`:**
+- `get_business_subscription()` — fetch active subscription for a user
+- `activate_trial()` — creates a 14-day free trial subscription record
+- `update_subscription_from_webhook()` — updates subscription from Stripe webhook events
+- `mark_onboarding_completed()` — sets `onboarding_completed = True` for a user
+
+**`app/routers/subscriptions.py`** — NEW:
+- `POST /api/subscriptions/activate-trial` — activates 14-day free trial
+- `POST /api/subscriptions/create-checkout` — creates Stripe Checkout Session for plan upgrade
+- `GET /api/subscriptions/status` — returns current subscription status
+- `GET /api/subscriptions/billing-history` — returns billing history
+- `POST /api/subscriptions/webhook` — handles Stripe webhook events (checkout.session.completed, customer.subscription.updated/deleted)
+
+**`app/routers/onboarding.py`** — NEW:
+- `POST /api/onboarding/complete` — marks onboarding as completed for current user
+- `GET /api/onboarding/status` — returns onboarding completion status
+
+**`app/dependencies.py`:**
+- Added `check_subscription_active()` — feature gate dependency that blocks access if subscription is expired/inactive
+
+**`app/routers/auth.py`:**
+- Extended `GET /me/permissions` response to include `onboarding_completed` and `subscription` data
+- Frontend uses this to decide whether to redirect to onboarding or dashboard after login
+
+**`app/main.py`:**
+- Registered `subscriptions.router` under `/api/subscriptions`
+- Registered `onboarding.router` under `/api/onboarding`
+
+---
+
+#### Frontend
+
+**`frontend/onboarding.html`** — NEW:
+- Multi-step onboarding with role-based slides (different content for owner vs client)
+- Final step is the paywall — choose Lite/Plus/Pro plan or activate free trial
+- Redirects to dashboard on completion
+
+**`frontend/plan-selection.html`** — NEW:
+- Standalone plan management page for existing users to upgrade/change plans
+- Shows current plan status, trial days remaining, upgrade options
+
+**`frontend/js/trial-banner.js`** — NEW:
+- Auto-loads a dismissible warning banner when trial is expiring (≤3 days remaining)
+- Shows upgrade CTA linking to `plan-selection.html`
+
+**`frontend/js/login.js`:**
+- After successful login, checks `onboarding_completed` from `/me/permissions`
+- Redirects to `onboarding.html` if not completed, otherwise to `dashboard.html`
+
+**`frontend/js/menu.js`:**
+- Auto-loads `trial-banner.js` on all admin/staff pages
+- Injects trial expiry banner into page if subscription is expiring
+
+**`frontend/js/api.js`:**
+- Added `API.subscriptions` namespace: `activateTrial()`, `createCheckout()`, `getStatus()`, `getBillingHistory()`
+- Added `API.onboarding` namespace: `complete()`, `getStatus()`
+
+**`frontend/js/router.js`:**
+- Added route tokens for `onboarding.html` and `plan-selection.html`
+
+**`vercel.json`:**
+- Added rewrites and redirects for new pages (`/onboarding`, `/plan-selection`)
+
+**`start.sh`:**
+- Added `python commands/database/add_subscriptions_table.py` to startup sequence
+
+---
+
+#### Stripe Setup Required (Render Environment Variables):
+```
+STRIPE_PRICE_LITE=price_xxx
+STRIPE_PRICE_PLUS=price_xxx
+STRIPE_PRICE_PRO=price_xxx
+```
+Create Stripe Products/Prices in Stripe dashboard first, then add the price IDs to Render.
+
+#### Onboarding Flow:
+```
+Login → /me/permissions check → onboarding_completed?
+  No  → onboarding.html (slides) → paywall → activate trial OR Stripe checkout → dashboard
+  Yes → dashboard.html (normal flow)
+```
+
+#### Files Created/Modified:
+- ✅ `commands/database/add_subscriptions_table.py` — NEW migration
+- ✅ `app/database.py` — Subscription model, onboarding_completed on User
+- ✅ `app/schemas.py` — SubscriptionStatus, CreateCheckoutRequest, OnboardingStatusResponse + ordering fix
+- ✅ `app/crud.py` — subscription + onboarding CRUD functions
+- ✅ `app/routers/subscriptions.py` — NEW full subscription API
+- ✅ `app/routers/onboarding.py` — NEW onboarding endpoints
+- ✅ `app/dependencies.py` — check_subscription_active feature gate
+- ✅ `app/routers/auth.py` — /me/permissions extended with subscription data
+- ✅ `app/main.py` — new routers registered
+- ✅ `frontend/onboarding.html` — NEW multi-step onboarding + paywall
+- ✅ `frontend/plan-selection.html` — NEW plan management page
+- ✅ `frontend/js/trial-banner.js` — NEW trial expiry warning banner
+- ✅ `frontend/js/login.js` — onboarding redirect logic
+- ✅ `frontend/js/menu.js` — trial banner auto-loading
+- ✅ `frontend/js/api.js` — API.subscriptions + API.onboarding namespaces
+- ✅ `frontend/js/router.js` — new page tokens
+- ✅ `vercel.json` — rewrites for new pages
+- ✅ `start.sh` — migration added to startup
+- ✅ `.env.example` — STRIPE_PRICE_* vars documented
+
+---
+
+## Change Log
+
+### Version 7.0.0 / V3.0 (Session 15)
+- ✅ Full onboarding flow — multi-step slides with role-based content
+- ✅ Paywall system — plan selection with Stripe Checkout integration
+- ✅ Free trial activation — 14-day trial via `POST /api/subscriptions/activate-trial`
+- ✅ Subscription management — status, billing history, webhook handler
+- ✅ Trial expiry banner — auto-loads on all admin pages when ≤3 days remaining
+- ✅ Login redirect logic — checks `onboarding_completed` and routes accordingly
+- ✅ Feature gate — `check_subscription_active` dependency for gating endpoints
+- ✅ `onboarding_completed` column added to users table via migration
+- ✅ `subscriptions` table created via migration
+- ✅ schemas.py SubscriptionStatus ordering fix (NameError resolved)
+- ✅ Aiven database migration completed — all tables and sequences synced
+- ✅ Demo accounts seeded to Aiven via `setup_demo_accounts.py`

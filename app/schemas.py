@@ -219,6 +219,30 @@ class UserProfile(UserProfileCreate):
         from_attributes = True
 
 
+# Subscription & Onboarding Schemas
+
+
+class SubscriptionStatus(BaseModel):
+
+
+    status: Optional[str] = None
+
+
+    plan_type: Optional[str] = None
+
+
+    is_trial: Optional[bool] = None
+
+
+    trial_end_date: Optional[datetime] = None
+
+
+    days_remaining: Optional[int] = None
+
+
+    stripe_subscription_id: Optional[str] = None
+
+
 class UserPermissions(BaseModel):
     user_id: int
     email: str
@@ -226,6 +250,8 @@ class UserPermissions(BaseModel):
     permissions: List[str]
     hidden_sidebar_tabs: Optional[List[str]] = []
     business_number: Optional[str] = None
+    onboarding_completed: Optional[bool] = None
+    subscription: Optional[SubscriptionStatus] = None
 
 
 class UpdateSidebarSettings(BaseModel):
@@ -345,3 +371,21 @@ class ClientDashboard(BaseModel):
     order_history: List[OrderResponse]
     active_reservations: List[ReservationResponse]
     reservation_history: List[ReservationResponse]
+
+
+# Subscription & Onboarding Schemas
+class SubscriptionStatus(BaseModel):
+    status: Optional[str] = None
+    plan_type: Optional[str] = None
+    is_trial: Optional[bool] = None
+    trial_end_date: Optional[datetime] = None
+    days_remaining: Optional[int] = None
+    stripe_subscription_id: Optional[str] = None
+
+
+class CreateCheckoutRequest(BaseModel):
+    plan: str  # "lite", "plus", "pro"
+
+
+class OnboardingStatusResponse(BaseModel):
+    onboarding_completed: bool

@@ -31,7 +31,9 @@
         'a1c3e5f7b2d4f6a8c3e5a7b9d4f6a8c0': 'users.html',
         'b2d4f6a8c3e5a7b9d4f6a8c0e5a7b9d1': 'payment-methods.html',
         'c3e5a7b9d4f6a8c0e5a7b9d1f6a8c0e2': 'edit-dashboard.html',
-        'd4f6a8c0e5a7b9d1f6a8c0e2a7b9d1f3': 'audit-logs.html'
+        'd4f6a8c0e5a7b9d1f6a8c0e2a7b9d1f3': 'audit-logs.html',
+        'e5a7b9d1f6a8c0e2a7b9d1f3c4e6a8b0': 'onboarding.html',
+        'f6a8c0e2a7b9d1f3c4e6a8b0d5e7a9c1': 'plan-selection.html'
     };
 
     // Legacy 8-char hashes for backward compatibility (bookmarks, shared links)

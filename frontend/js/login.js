@@ -20,10 +20,8 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         localStorage.setItem('isDemo', response.is_demo);
         localStorage.setItem('user_permissions', JSON.stringify(response.permissions || []));
         
-        // Redirect based on permissions
-        const permissions = response.permissions || [];
-        const isClient = permissions.includes('manage_cart') && !permissions.includes('manage_users');
-        window.location.href = isClient ? '/shop.html' : '/dashboard.html';
+        // Check onboarding status and redirect
+        await checkOnboardingAndRedirect(response.permissions || []);
 
     } catch (error) {
         alert('Login failed: ' + error.message);
@@ -53,10 +51,8 @@ function handleLoginSuccess(response, email) {
     localStorage.setItem('isDemo', response.is_demo);
     localStorage.setItem('user_permissions', JSON.stringify(response.permissions || []));
     
-    // Redirect based on permissions
-    const permissions = response.permissions || [];
-    const isClient = permissions.includes('manage_cart') && !permissions.includes('manage_users');
-    window.location.href = isClient ? '/shop.html' : '/dashboard.html';
+    // Check onboarding status and redirect
+    checkOnboardingAndRedirect(response.permissions || []);
 }
 
 let currentIndex = 0;
@@ -112,10 +108,35 @@ async function quickLogin(type) {
         localStorage.setItem('isDemo', response.is_demo);
         localStorage.setItem('user_permissions', JSON.stringify(response.permissions || []));
         
-        const permissions = response.permissions || [];
-        const isClient = permissions.includes('manage_cart') && !permissions.includes('manage_users');
-        window.location.href = isClient ? '/shop.html' : '/dashboard.html';
+        // Check onboarding status and redirect
+        await checkOnboardingAndRedirect(response.permissions || []);
     } catch (error) {
         alert(`${type.charAt(0).toUpperCase() + type.slice(1)} login failed: ` + error.message);
     }
+}
+
+async function checkOnboardingAndRedirect(permissions) {
+    try {
+        const meData = await fetch(`${API_BASE}/auth/me/permissions`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        }).then(r => r.json());
+
+        const onboardingCompleted = meData.onboarding_completed;
+        localStorage.setItem('onboarding_completed', onboardingCompleted ? 'true' : 'false');
+
+        if (meData.roles) {
+            localStorage.setItem('roles', JSON.stringify(meData.roles));
+        }
+
+        if (onboardingCompleted === false) {
+            window.location.href = '/onboarding.html';
+            return;
+        }
+    } catch(e) {
+        console.warn('Could not check onboarding status:', e);
+    }
+
+    // Default redirect based on permissions
+    const isClient = permissions.includes('manage_cart') && !permissions.includes('manage_users');
+    window.location.href = isClient ? '/shop.html' : '/dashboard.html';
 }

@@ -318,13 +318,21 @@ function previewLogo() {
 document.getElementById('businessForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const logoType = localStorage.getItem('logoType') || 'none';
+    const logoData = logoType === 'none' ? null : localStorage.getItem('logo');
+    
+    // Warn if logo is too large (>500KB base64)
+    if (logoData && logoData.length > 500000) {
+        showToast('Logo image is too large. Please use a smaller image.', 'error');
+        return;
+    }
+    
     const data = {
         business_name: document.getElementById('businessName').value,
         business_sub_name: document.getElementById('businessSubName').value || null,
-        logo: logoType === 'none' ? null : localStorage.getItem('logo'),
+        logo: logoData,
         logo_type: logoType,
-        address: document.getElementById('businessAddress').value,
-        phone: document.getElementById('businessPhone').value
+        address: document.getElementById('businessAddress').value || null,
+        phone: document.getElementById('businessPhone').value || null
     };
     
     try {
@@ -337,6 +345,7 @@ document.getElementById('businessForm').addEventListener('submit', async functio
         }
         showToast('Business information saved!', 'success');
     } catch (error) {
+        console.error('Business save error:', error);
         showToast('Failed to save business info', 'error');
     }
 });

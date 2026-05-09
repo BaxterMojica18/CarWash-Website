@@ -6,6 +6,7 @@ python -c "from app.database import create_tables; create_tables()"
 python commands/database/migrate_db.py || true
 python commands/database/add_signup_columns.py || true
 python commands/database/add_user_soft_delete_columns.py || true
+python commands/database/add_subscriptions_table.py || true
 
 # Run column migrations
 python -c "
