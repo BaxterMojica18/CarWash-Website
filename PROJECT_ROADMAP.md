@@ -1229,3 +1229,47 @@ Full redesign of the client-facing shopping experience to match modern e-commerc
 - [ ] Refund processing via Stripe API
 - [ ] Add `STRIPE_PRICE_LITE`, `STRIPE_PRICE_PLUS`, `STRIPE_PRICE_PRO` to Render env vars
 - [ ] Test full onboarding → trial → upgrade flow end-to-end on production
+
+---
+
+## ✅ Completed in Session 16
+
+### 🐛 Bug Fixes (V3.0.1)
+- [x] Profile photo upload — base64 conversion, JSON payload, instant navbar update
+- [x] Profile form submit handler added to `profile.js` (was missing entirely)
+- [x] Photo preview on file select before saving
+- [x] Success/error toast after profile save
+- [x] Sidebar collapsed state persists on tab switch (re-applied after `renderTabs()`)
+- [x] Dashboard quick actions widget visible (`#quickActionsContainer` div added)
+- [x] Quick actions CSS — responsive grid, hover lift, theme color icon backgrounds
+
+### 🗄️ Infrastructure (Session 15-16)
+- [x] Aiven PostgreSQL fully migrated and operational
+- [x] All sequences reset, role_permissions cleaned, demo data seeded
+- [x] `schemas.py` SubscriptionStatus ordering fix
+- [x] SSL connect_args fix for Aiven in `database.py`
+
+### 📊 Current Version: 7.0.1 (Public: V3.0.1)
+
+## 🔄 Updated Status (Session 16)
+
+| Feature | Status |
+|---------|--------|
+| Profile photo upload fix | ✅ Done |
+| Sidebar collapsed state on tab switch | ✅ Done |
+| Dashboard quick actions widget | ✅ Done |
+| Onboarding + paywall system | ✅ Done |
+| Aiven database migration | ✅ Done |
+| Stripe live mode activation | ⬜ Pending |
+| Payment history page | ⬜ Pending |
+| Real-time WebSockets for Queue | ⬜ Pending |
+| SMS Notifications (Twilio) | ⬜ Pending |
+
+## 🔜 Next Session (Session 17) — V3.1
+
+### Planned:
+- [ ] Add `STRIPE_PRICE_LITE`, `STRIPE_PRICE_PLUS`, `STRIPE_PRICE_PRO` to Render env vars
+- [ ] Test full onboarding → trial → upgrade flow end-to-end on production
+- [ ] Payment history page — all transactions with receipt download
+- [ ] Refund processing via Stripe API
+- [ ] Queue management real-time updates (polling improvement or WebSocket)

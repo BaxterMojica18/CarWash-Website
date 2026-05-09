@@ -2813,3 +2813,85 @@ Login → /me/permissions check → onboarding_completed?
 - ✅ schemas.py SubscriptionStatus ordering fix (NameError resolved)
 - ✅ Aiven database migration completed — all tables and sequences synced
 - ✅ Demo accounts seeded to Aiven via `setup_demo_accounts.py`
+
+---
+
+## Latest Updates (Session 16)
+
+> **Version:** 7.0.1 (Public: V3.0.1) | **Branch:** `fix/profile-photo-sidebar-quickactions`
+
+---
+
+### 🐛 Bug Fixes — Profile Photo, Sidebar State, Dashboard Quick Actions
+**Status:** ✅ Completed | **Verified pushed to main**
+
+---
+
+#### 📸 Fix 1: Profile Photo Upload Not Saving
+**Root Cause:** `profile.js` had `showEditProfile()`, `closeEditProfile()`, and `loadProfileData()` but **no form submit handler**. Clicking Save did nothing — no request was sent, no toast shown.
+
+**Additionally:** The backend `POST /settings/profile` expects `photo` as a base64 string (JSON), not a file upload (multipart/form-data). Previous attempts used `FormData` which the backend rejected.
+
+**Fix (`frontend/js/profile.js` — full rewrite):**
+- Added `initProfileForm()` — attaches submit handler to `#profileForm` once (guarded by `dataset.handlerAttached`)
+- Photo file converted to base64 via `FileReader.readAsDataURL()` before sending
+- Payload sent as `Content-Type: application/json` with `{ name, role, photo }`
+- Photo preview shown immediately on file select (`change` event on `#editPhoto`)
+- After successful save: navbar photo + name updated instantly without page reload
+- Success toast shown via `showToast()` if available, fallback to self-injected green toast div
+- Error toast shown on failure with backend error message
+- Save button shows "Saving..." and is disabled during request
+- `showEditProfile()` now pre-fills current name/role from the navbar display elements
+- `initProfileForm()` called on both `DOMContentLoaded` and direct call from `showEditProfile()`
+
+---
+
+#### 🔲 Fix 2: Sidebar Stays Collapsed When Switching Tabs
+**Root Cause:** `renderTabs()` in `menu.js` re-renders the entire sidebar `<ul>` and re-injects the collapse button, but never re-checked `localStorage` for the collapsed state after re-render. So on background sync (second render), the sidebar would flash open.
+
+**Fix (`frontend/js/menu.js`):**
+- Added collapsed state re-application block at the end of `renderTabs()`:
+  ```js
+  if (localStorage.getItem('sidebarCollapsed') === '1') {
+      sidebar.classList.add('collapsed');
+      content.classList.add('sidebar-collapsed');
+  }
+  updateToggleButton();
+  ```
+- Now the sidebar correctly stays collapsed across all tab navigations and background syncs
+
+---
+
+#### ⚡ Fix 3: Dashboard Quick Actions Not Visible
+**Root Cause:** `renderQuickActions()` in `dashboard.js` was being called and targeting `#quickActionsContainer`, but that `div` did not exist in `dashboard.html`. The function ran silently with no output.
+
+**Additionally:** No CSS existed for `.quick-actions-grid` or `.quick-action-tile`.
+
+**Fix:**
+- `frontend/dashboard.html` — added `<div id="quickActionsContainer">` before the charts section
+- `frontend/css/style.css` — added full quick actions CSS:
+  - `.quick-actions-grid` — responsive auto-fill grid (min 130px columns)
+  - `.quick-action-tile` — card with hover lift, theme-colored icon background
+  - `.quick-action-icon` — 36×36px rounded box using `var(--sidebar-color)`
+  - Mobile: 3-column grid at ≤768px
+
+---
+
+#### Files Modified:
+- ✅ `frontend/js/profile.js` — full rewrite: submit handler, base64 photo, preview, toast, UI update
+- ✅ `frontend/js/menu.js` — sidebar collapsed state re-applied after renderTabs()
+- ✅ `frontend/dashboard.html` — added quickActionsContainer div
+- ✅ `frontend/css/style.css` — quick actions widget CSS added
+
+---
+
+## Change Log
+
+### Version 7.0.1 / V3.0.1 (Session 16)
+- ✅ Profile photo upload now works — base64 conversion, JSON payload, instant UI update
+- ✅ Profile form submit handler added to profile.js (was missing entirely)
+- ✅ Photo preview shown on file select before saving
+- ✅ Success/error toast shown after profile save attempt
+- ✅ Sidebar collapsed state persists correctly when switching tabs
+- ✅ Dashboard quick actions widget now visible (container div was missing)
+- ✅ Quick actions CSS added with theme color support and hover effects
